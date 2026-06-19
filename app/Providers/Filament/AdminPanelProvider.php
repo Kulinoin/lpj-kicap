@@ -9,6 +9,8 @@ use Filament\Http\Middleware\DispatchServingFilamentEvent;
 use Filament\Pages\Dashboard;
 use Filament\Panel;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
+use Filament\Notifications\Notification;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\FileUpload;
 use Filament\Actions\Action;
@@ -38,14 +40,30 @@ class AdminPanelProvider extends PanelProvider
                 ->icon('heroicon-o-user-circle')
                 ->modalHeading('Profil Saya')
                 ->modalWidth('lg')
+                ->modalSubmitActionLabel('Simpan Profil')
                 ->fillForm(fn (): array => [
+                    'profile_photo_path' => Auth::user()?->profile_photo_path,
                     'username' => Auth::user()?->username,
                     'email' => Auth::user()?->email,
                     'name' => Auth::user()?->name,
                     'whatsapp' => Auth::user()?->whatsapp,
-                    'profile_photo_path' => Auth::user()?->profile_photo_path,
+                    'password' => null,
+                    'password_confirmation' => null,
                 ])
                 ->form([
+                    FileUpload::make('profile_photo_path')
+                        ->label('Foto Profil')
+                        ->disk('public')
+                        ->directory('profile-photos')
+                        ->image()
+                        ->avatar()
+                        ->maxSize(2048)
+                        ->columnSpanFull()
+                        ->extraAttributes([
+                            'class' => 'kicap-profile-photo-center',
+                            'style' => 'display:flex;flex-direction:column;align-items:center;text-align:center;',
+                        ])
+                        ->helperText('Ganti profile avatar.'),
                     TextInput::make('username')
                         ->label('Username')
                         ->disabled()
@@ -62,20 +80,64 @@ class AdminPanelProvider extends PanelProvider
                         ->label('WhatsApp')
                         ->tel()
                         ->maxLength(30),
-                    FileUpload::make('profile_photo_path')
-                        ->label('Foto Profil')
-                        ->disk('public')
-                        ->directory('profile-photos')
-                        ->image()
-                        ->avatar()
-                        ->maxSize(2048),
+                    TextInput::make('password')
+                        ->label('Password Baru')
+                        ->password()
+                        ->revealable()
+                        ->maxLength(255)
+                        ->helperText('Kosongkan jika tidak ingin mengganti password. Minimal 8 karakter.'),
+                    TextInput::make('password_confirmation')
+                        ->label('Konfirmasi Password Baru')
+                        ->password()
+                        ->revealable()
+                        ->maxLength(255),
                 ])
                 ->action(function (array $data): void {
-                    Auth::user()?->forceFill([
-                        'name' => $data['name'] ?? Auth::user()?->name,
+                    $user = Auth::user();
+
+                    if (! $user) {
+                        return;
+                    }
+
+                    $password = (string) ($data['password'] ?? '');
+                    $passwordConfirmation = (string) ($data['password_confirmation'] ?? '');
+
+                    if ($password !== '') {
+                        if (strlen($password) < 8) {
+                            Notification::make()
+                                ->title('Password minimal 8 karakter')
+                                ->danger()
+                                ->send();
+
+                            return;
+                        }
+
+                        if ($password !== $passwordConfirmation) {
+                            Notification::make()
+                                ->title('Konfirmasi password tidak sama')
+                                ->danger()
+                                ->send();
+
+                            return;
+                        }
+                    }
+
+                    $payload = [
+                        'name' => $data['name'] ?? $user->name,
                         'whatsapp' => $data['whatsapp'] ?? null,
-                        'profile_photo_path' => $data['profile_photo_path'] ?? Auth::user()?->profile_photo_path,
-                    ])->save();
+                        'profile_photo_path' => $data['profile_photo_path'] ?? $user->profile_photo_path,
+                    ];
+
+                    if ($password !== '') {
+                        $payload['password'] = Hash::make($password);
+                    }
+
+                    $user->forceFill($payload)->save();
+
+                    Notification::make()
+                        ->title('Profil berhasil diperbarui')
+                        ->success()
+                        ->send();
                 }),
             ])
             ->colors([

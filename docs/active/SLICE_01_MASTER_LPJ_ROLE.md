@@ -145,3 +145,18 @@ Catatan:
 
 Catatan:
 - Halaman `MyProfile` tetap disimpan sebagai fallback teknis, tetapi tidak didaftarkan ke navigation/sidebar.
+
+## Patch Avatar Sync & Password Profile
+
+Penyesuaian setelah Slice 01 commit:
+
+- Foto profil diletakkan di bagian paling atas modal profile.
+- Avatar pojok kanan atas memakai `profile_photo_path` melalui kontrak Filament `HasAvatar`.
+- Bagian ganti password ditambahkan di bawah sendiri.
+- Password baru bersifat opsional.
+- Username dan email tetap terkunci.
+
+## Patch Center Profile Photo
+
+- Area foto profil pada modal profile diposisikan di tengah/center.
+- Fallback halaman profile juga disesuaikan agar foto profil tampil center.

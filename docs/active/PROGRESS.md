@@ -78,3 +78,15 @@ Slice 01 — Master LPJ & Role.
 - Menambahkan modal profile dari user menu.
 - Menyembunyikan halaman MyProfile dari navigation/sidebar.
 - Username dan email tetap terkunci.
+
+### Patch Avatar Sync & Password Profile
+
+- Memindahkan foto profil ke bagian paling atas modal profile.
+- Menyinkronkan foto profil dengan avatar pojok kanan atas.
+- Menambahkan field ganti password di bagian bawah modal profile.
+- Menambahkan test avatar dan password profile.
+
+### Patch Center Profile Photo
+
+- Memusatkan posisi foto profil pada modal profile.
+- Memusatkan posisi foto profil pada fallback page profile.

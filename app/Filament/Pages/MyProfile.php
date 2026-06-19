@@ -5,6 +5,7 @@ namespace App\Filament\Pages;
 use Filament\Notifications\Notification;
 use Filament\Pages\Page;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
 use Livewire\WithFileUploads;
 
@@ -31,6 +32,10 @@ class MyProfile extends Page
     public ?string $whatsapp = null;
 
     public ?string $profile_photo_path = null;
+
+    public ?string $password = null;
+
+    public ?string $password_confirmation = null;
 
     public $photo = null;
 
@@ -61,6 +66,7 @@ class MyProfile extends Page
             'name' => ['required', 'string', 'max:255'],
             'whatsapp' => ['nullable', 'string', 'max:30'],
             'photo' => ['nullable', 'image', 'max:2048'],
+            'password' => ['nullable', 'string', 'min:8', 'same:password_confirmation'],
         ]);
 
         $user = Auth::user();
@@ -74,14 +80,22 @@ class MyProfile extends Page
             $profilePhotoPath = $this->photo->store('profile-photos', 'public');
         }
 
-        $user->forceFill([
+        $payload = [
             'name' => $this->name,
             'whatsapp' => $this->whatsapp,
             'profile_photo_path' => $profilePhotoPath,
-        ])->save();
+        ];
+
+        if ($this->password) {
+            $payload['password'] = Hash::make($this->password);
+        }
+
+        $user->forceFill($payload)->save();
 
         $this->profile_photo_path = $profilePhotoPath;
         $this->photo = null;
+        $this->password = null;
+        $this->password_confirmation = null;
 
         Notification::make()
             ->title('Profil berhasil diperbarui')
