@@ -28,3 +28,11 @@ Route::get('/health', function () {
 });
 
 Route::view('/app/{any?}', 'app')->where('any', '.*');
+
+
+// slice-01-master-lpj-types
+Route::get('/api/master/lpj-types', function () {
+    return \App\Models\LpjType::query()
+        ->active()
+        ->get(['id', 'name', 'slug', 'description', 'is_external_event', 'sort_order']);
+});
