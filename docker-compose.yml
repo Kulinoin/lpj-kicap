@@ -21,5 +21,20 @@ services:
       timeout: 5s
       retries: 10
 
+  phpmyadmin:
+    profiles:
+      - tools
+    image: phpmyadmin:5.2
+    container_name: kicap-lpj-phpmyadmin
+    restart: unless-stopped
+    depends_on:
+      - mysql
+    ports:
+      - "127.0.0.1:8190:80"
+    environment:
+      PMA_HOST: mysql
+      PMA_PORT: 3306
+      UPLOAD_LIMIT: 64M
+
 volumes:
   kicap_lpj_mysql_data:
