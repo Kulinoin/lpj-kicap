@@ -1,0 +1,25 @@
+name: kicap-lpj
+
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: kicap-lpj-mysql
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:3460:3306"
+    environment:
+      MYSQL_DATABASE: lpj_kicap
+      MYSQL_USER: lpj_kicap
+      MYSQL_PASSWORD: lpj_kicap_secret
+      MYSQL_ROOT_PASSWORD: lpj_kicap_root_secret
+      TZ: Asia/Jakarta
+    volumes:
+      - kicap_lpj_mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-ulpj_kicap", "-plpj_kicap_secret"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  kicap_lpj_mysql_data:
