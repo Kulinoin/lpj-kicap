@@ -33,7 +33,7 @@ const navItems = [
     { key: 'beranda', label: 'Beranda', icon: Home },
     { key: 'operasional', label: 'Operasional', icon: PlusCircle },
     { key: 'keuangan', label: 'Keuangan', icon: Wallet, isPrimary: true },
-    { key: 'selesai', label: 'Selesai', icon: CheckCircle2 },
+    { key: 'dokumentasi', label: 'Dokumentasi', icon: Camera },
     { key: 'profil', label: 'Profil', icon: UserRound },
 ];
 
@@ -68,6 +68,21 @@ const emptyFinanceForms = {
         note: '',
     },
 };
+
+function buildRevisionForms(transactions = []) {
+    return Object.fromEntries(
+        transactions.map((transaction) => [
+            transaction.id,
+            {
+                category: transaction.category ?? '',
+                description: transaction.description ?? '',
+                spent_at: transaction.spent_at ?? new Date().toISOString().slice(0, 10),
+                no_proof_reason: transaction.no_proof_reason ?? '',
+                proof: null,
+            },
+        ])
+    );
+}
 
 const emptyParticipant = {
     name: '',
@@ -152,6 +167,7 @@ function KicapApp() {
         password_confirmation: '',
     });
     const [financeForms, setFinanceForms] = useState(emptyFinanceForms);
+    const [revisionForms, setRevisionForms] = useState({});
     const [executionForms, setExecutionForms] = useState(emptyExecutionForms);
     const [profilePhoto, setProfilePhoto] = useState(null);
     const [profilePhotoPreview, setProfilePhotoPreview] = useState(null);
@@ -252,6 +268,7 @@ function KicapApp() {
                 setSelectedLpj(detail);
                 setOperationalDrafts(drafts);
                 setFinanceForms(emptyFinanceForms);
+                setRevisionForms(buildRevisionForms(detail.finance?.transactions));
                 setExecutionForms({
                     participants: rowsOrEmpty(detail.execution?.participants, emptyParticipant),
                     committees: rowsOrEmpty(detail.execution?.committees, emptyCommittee),
@@ -266,6 +283,7 @@ function KicapApp() {
                     setSelectedLpj(null);
                     setOperationalDrafts({});
                     setExecutionForms(emptyExecutionForms);
+                    setRevisionForms({});
                     setOperationalSaveMessage('Detail event belum bisa dibuka');
                 }
             })
@@ -459,6 +477,7 @@ function KicapApp() {
                         finance: payload.data.finance,
                     };
                 });
+                setRevisionForms(buildRevisionForms(payload.data.finance.transactions));
                 setFinanceForms((current) => ({
                     ...current,
                     [formKey]: emptyFinanceForms[formKey],
@@ -468,6 +487,111 @@ function KicapApp() {
             .catch((error) => {
                 const firstMessage = Object.values(error?.errors ?? {})?.[0]?.[0];
                 setFinanceMessage(firstMessage ?? 'Transaksi belum tersimpan');
+            });
+    };
+
+    const handleSubmitReview = () => {
+        if (!selectedLpj?.can_submit_review) {
+            return;
+        }
+
+        setOperationalSaveMessage('Mengajukan review...');
+
+        fetch(`/api/app/lpjs/${selectedLpj.id}/submit-review`, {
+            method: 'POST',
+            headers: {
+                Accept: 'application/json',
+                'X-CSRF-TOKEN': getCsrfToken(),
+            },
+        })
+            .then(async (response) => {
+                if (!response.ok) {
+                    throw await response.json();
+                }
+
+                return response.json();
+            })
+            .then((payload) => {
+                setSelectedLpj((current) => {
+                    if (!current) {
+                        return current;
+                    }
+
+                    return {
+                        ...current,
+                        completeness_status: payload.data.completeness_status,
+                        completeness_label: payload.data.completeness_label,
+                        submitted_at: payload.data.submitted_at,
+                        review: payload.data.review,
+                    };
+                });
+                setOperationalSaveMessage('Event diajukan untuk review');
+            })
+            .catch(() => {
+                setOperationalSaveMessage('Event belum bisa diajukan');
+            });
+    };
+
+    const updateRevisionForm = (transactionId, field, value) => {
+        setRevisionForms((current) => ({
+            ...current,
+            [transactionId]: {
+                ...(current[transactionId] ?? {}),
+                [field]: value,
+            },
+        }));
+    };
+
+    const handleRevisionSubmit = (event, transaction) => {
+        event.preventDefault();
+
+        if (!transaction.can_submit_revision) {
+            return;
+        }
+
+        setFinanceMessage('Mengirim revisi transaksi...');
+
+        const form = revisionForms[transaction.id] ?? {};
+        const formData = new FormData();
+
+        Object.entries(form).forEach(([key, value]) => {
+            if (value !== null && value !== '') {
+                formData.append(key, value);
+            }
+        });
+
+        fetch(`/api/app/lpjs/${selectedLpj.id}/financial-transactions/${transaction.id}/revision`, {
+            method: 'POST',
+            headers: {
+                Accept: 'application/json',
+                'X-CSRF-TOKEN': getCsrfToken(),
+            },
+            body: formData,
+        })
+            .then(async (response) => {
+                if (!response.ok) {
+                    throw await response.json();
+                }
+
+                return response.json();
+            })
+            .then((payload) => {
+                setSelectedLpj((current) => {
+                    if (!current) {
+                        return current;
+                    }
+
+                    return {
+                        ...current,
+                        finance: payload.data.finance,
+                    };
+                });
+                setRevisionForms(buildRevisionForms(payload.data.finance.transactions));
+                setFinanceMessage('Revisi dikirim untuk review Admin');
+            })
+            .catch((error) => {
+                const firstMessage = Object.values(error?.errors ?? {})?.[0]?.[0];
+                setFinanceMessage(firstMessage ?? 'Revisi belum terkirim');
             });
     };
 
@@ -483,37 +607,49 @@ function KicapApp() {
     const avatarSource = profilePhotoPreview ?? profile.avatar_url;
     const isOperationalNav = activeNav === 'operasional';
     const isFinanceNav = activeNav === 'keuangan';
-    const showDetail = (isOperationalNav || isFinanceNav) && selectedLpjId;
+    const isDocumentationNav = activeNav === 'dokumentasi';
+    const showDetail = (isOperationalNav || isFinanceNav || isDocumentationNav) && selectedLpjId;
     const pageTitle = activeNav === 'profil' ? 'Profil pengguna' : showDetail ? 'Detail Event' : 'Ruang kerja petugas';
     const visibleLpjs = useMemo(() => {
+        const sortByWorkPriority = (items) => [...items].sort((left, right) => {
+            const leftActive = left.status === 'aktif' ? 0 : 1;
+            const rightActive = right.status === 'aktif' ? 0 : 1;
+
+            if (leftActive !== rightActive) {
+                return leftActive - rightActive;
+            }
+
+            return right.id - left.id;
+        });
+
         if (activeNav === 'operasional' || activeNav === 'keuangan') {
-            return activeLpjs;
+            return sortByWorkPriority(activeLpjs);
         }
 
-        if (activeNav === 'selesai') {
-            return finishedLpjs;
+        if (activeNav === 'dokumentasi') {
+            return sortByWorkPriority(activeLpjs);
         }
 
-        return lpjs;
-    }, [activeLpjs, activeNav, finishedLpjs, lpjs]);
+        return sortByWorkPriority([...activeLpjs, ...finishedLpjs]);
+    }, [activeLpjs, activeNav, finishedLpjs]);
 
     const lpjHeading = {
-        beranda: 'Event aktif dan selesai',
+        beranda: 'Event terbaru',
         operasional: 'Operasional event',
         keuangan: 'Dana kegiatan',
-        selesai: 'Event selesai',
+        dokumentasi: 'Dokumentasi event',
     }[activeNav] ?? 'Aktif dan selesai';
 
     const emptyLpjMessage = {
         operasional: 'Belum ada event aktif untuk input operasional.',
         keuangan: 'Belum ada event aktif untuk dana kegiatan.',
-        selesai: 'Belum ada event selesai yang ditugaskan.',
+        dokumentasi: 'Belum ada event aktif untuk dokumentasi.',
     }[activeNav] ?? 'Belum ada event aktif atau selesai yang ditugaskan.';
 
     const openLpjDetail = (lpjId) => {
         setSelectedLpjId(lpjId);
 
-        if (!isOperationalNav && !isFinanceNav) {
+        if (!isOperationalNav && !isFinanceNav && !isDocumentationNav) {
             setActiveNav('operasional');
         }
     };
@@ -523,6 +659,7 @@ function KicapApp() {
         setSelectedLpj(null);
         setOperationalDrafts({});
         setFinanceForms(emptyFinanceForms);
+        setRevisionForms({});
         setExecutionForms(emptyExecutionForms);
         setIsOperationalDirty(false);
         setOperationalSaveMessage('');
@@ -759,10 +896,16 @@ function KicapApp() {
                                         <span className="open-detail-label">
                                             {isFinanceNav ? (
                                                 <Wallet size={14} strokeWidth={2.4} />
+                                            ) : isDocumentationNav ? (
+                                                <Camera size={14} strokeWidth={2.4} />
                                             ) : (
                                                 <ClipboardList size={14} strokeWidth={2.4} />
                                             )}
-                                            {isFinanceNav ? 'Buka keuangan' : 'Buka detail'}
+                                            {isFinanceNav
+                                                ? 'Buka keuangan'
+                                                : isDocumentationNav
+                                                    ? 'Buka dokumentasi'
+                                                    : 'Buka detail'}
                                         </span>
                                     </button>
                                 ))}
@@ -809,9 +952,23 @@ function KicapApp() {
                                         {selectedLpj.person_in_charge ?? '-'}
                                     </span>
                                 </div>
+                                <div className="review-strip">
+                                    <div>
+                                        <span>Kelengkapan</span>
+                                        <strong>{selectedLpj.completeness_label ?? 'Belum Lengkap'}</strong>
+                                    </div>
+                                    <button
+                                        type="button"
+                                        disabled={!selectedLpj.can_submit_review}
+                                        onClick={handleSubmitReview}
+                                    >
+                                        <ClipboardList size={15} strokeWidth={2.4} />
+                                        Ajukan Review
+                                    </button>
+                                </div>
                             </article>
 
-                            {isOperationalNav && (
+                            {(isOperationalNav || isDocumentationNav) && (
                                 <>
                                     <div className="narrative-header">
                                         <div>
@@ -1527,8 +1684,93 @@ function KicapApp() {
                                             <div>
                                                 <strong>{transaction.category}</strong>
                                                 <span>{transaction.source_label} · {transaction.status_label}</span>
+                                                {transaction.admin_note && (
+                                                    <small>Catatan Admin: {transaction.admin_note}</small>
+                                                )}
                                             </div>
                                             <b>{formatCurrency(transaction.amount)}</b>
+                                            {transaction.can_submit_revision && (
+                                                <form
+                                                    className="revision-form"
+                                                    onSubmit={(event) => handleRevisionSubmit(event, transaction)}
+                                                >
+                                                    <select
+                                                        value={revisionForms[transaction.id]?.category ?? transaction.category}
+                                                        onChange={(event) =>
+                                                            updateRevisionForm(
+                                                                transaction.id,
+                                                                'category',
+                                                                event.target.value
+                                                            )
+                                                        }
+                                                        required
+                                                    >
+                                                        {(selectedLpj.finance_category_options ?? []).map((category) => (
+                                                            <option value={category} key={category}>
+                                                                {category}
+                                                            </option>
+                                                        ))}
+                                                    </select>
+                                                    <input
+                                                        type="date"
+                                                        value={revisionForms[transaction.id]?.spent_at ?? transaction.spent_at}
+                                                        onChange={(event) =>
+                                                            updateRevisionForm(
+                                                                transaction.id,
+                                                                'spent_at',
+                                                                event.target.value
+                                                            )
+                                                        }
+                                                        required
+                                                    />
+                                                    <textarea
+                                                        value={
+                                                            revisionForms[transaction.id]?.description ??
+                                                            transaction.description
+                                                        }
+                                                        onChange={(event) =>
+                                                            updateRevisionForm(
+                                                                transaction.id,
+                                                                'description',
+                                                                event.target.value
+                                                            )
+                                                        }
+                                                        required
+                                                    />
+                                                    <input
+                                                        placeholder="Alasan jika tidak ada bukti"
+                                                        value={revisionForms[transaction.id]?.no_proof_reason ?? ''}
+                                                        onChange={(event) =>
+                                                            updateRevisionForm(
+                                                                transaction.id,
+                                                                'no_proof_reason',
+                                                                event.target.value
+                                                            )
+                                                        }
+                                                    />
+                                                    <label className="file-button">
+                                                        <UploadCloud size={15} strokeWidth={2.4} />
+                                                        <span>
+                                                            {revisionForms[transaction.id]?.proof?.name ?? 'Upload bukti revisi'}
+                                                        </span>
+                                                        <input
+                                                            accept="image/*,.pdf"
+                                                            type="file"
+                                                            onChange={(event) =>
+                                                                updateRevisionForm(
+                                                                    transaction.id,
+                                                                    'proof',
+                                                                    event.target.files?.[0] ?? null
+                                                                )
+                                                            }
+                                                        />
+                                                    </label>
+                                                    <button className="save-profile-button" type="submit">
+                                                        <Save size={17} strokeWidth={2.5} />
+                                                        Kirim Revisi
+                                                    </button>
+                                                </form>
+                                            )}
                                         </article>
                                     ))}
                                 </div>

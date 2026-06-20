@@ -90,7 +90,7 @@ button {
     margin: 0 0 3px;
     color: #ef5b4b;
     font-size: 10px;
-    font-weight: 900;
+    font-weight: 760;
     letter-spacing: 0;
     text-transform: uppercase;
 }
@@ -106,7 +106,7 @@ h1 {
     margin: 0;
     color: #142033;
     font-size: 22px;
-    font-weight: 900;
+    font-weight: 760;
     line-height: 1.12;
 }
 
@@ -114,7 +114,7 @@ h2 {
     margin: 0;
     color: #142033;
     font-size: 18px;
-    font-weight: 900;
+    font-weight: 740;
     line-height: 1.2;
 }
 
@@ -122,7 +122,7 @@ h3 {
     margin: 10px 0 4px;
     color: #172033;
     font-size: 16px;
-    font-weight: 900;
+    font-weight: 720;
     line-height: 1.25;
 }
 
@@ -156,14 +156,14 @@ h3 {
     display: block;
     color: #64748b;
     font-size: 11px;
-    font-weight: 800;
+    font-weight: 680;
 }
 
 .summary-tile strong {
     display: block;
     margin-top: 5px;
     font-size: 28px;
-    font-weight: 950;
+    font-weight: 760;
     line-height: 1;
 }
 
@@ -220,15 +220,53 @@ h3 {
 }
 
 .lpj-card {
+    position: relative;
     display: block;
     width: 100%;
-    padding: 14px;
+    min-height: 158px;
+    padding: 15px 15px 14px;
+    overflow: hidden;
     color: inherit;
     cursor: pointer;
     text-align: left;
+    transition: transform 160ms ease, box-shadow 160ms ease, border-color 160ms ease;
+}
+
+.lpj-card::before {
+    position: absolute;
+    inset: 0 auto 0 0;
+    width: 4px;
+    background: linear-gradient(180deg, #ef5b4b, #0f9488);
+    content: "";
+}
+
+.lpj-card::after {
+    position: absolute;
+    right: 12px;
+    bottom: 12px;
+    width: 72px;
+    height: 72px;
+    border-radius: 8px;
+    background: linear-gradient(135deg, rgba(239, 91, 75, 0.11), rgba(15, 148, 136, 0.10));
+    content: "";
+}
+
+.lpj-card:hover {
+    border-color: rgba(15, 148, 136, 0.22);
+    box-shadow: 0 18px 34px rgba(15, 23, 42, 0.10);
+    transform: translateY(-1px);
+}
+
+.lpj-card h3,
+.lpj-card .lpj-type,
+.lpj-card .meta-list {
+    position: relative;
+    z-index: 1;
 }
 
 .lpj-card-top {
+    position: relative;
+    z-index: 1;
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -243,7 +281,7 @@ h3 {
     padding: 0 9px;
     border-radius: 999px;
     font-size: 10px;
-    font-weight: 900;
+    font-weight: 720;
 }
 
 .status-pill.aktif {
@@ -270,7 +308,7 @@ h3 {
     margin: 0 0 12px;
     color: #64748b;
     font-size: 12px;
-    font-weight: 800;
+    font-weight: 650;
     line-height: 1.35;
 }
 
@@ -286,7 +324,7 @@ h3 {
     gap: 7px;
     color: #42526a;
     font-size: 12px;
-    font-weight: 750;
+    font-weight: 620;
     line-height: 1.35;
 }
 
@@ -296,6 +334,8 @@ h3 {
 }
 
 .open-detail-label {
+    position: relative;
+    z-index: 1;
     display: inline-flex;
     align-items: center;
     gap: 6px;
@@ -306,14 +346,14 @@ h3 {
     background: #fff0ed;
     color: #df4a3b;
     font-size: 11px;
-    font-weight: 900;
+    font-weight: 720;
 }
 
 .empty-state {
     padding: 20px;
     color: #64748b;
     font-size: 13px;
-    font-weight: 800;
+    font-weight: 650;
     line-height: 1.45;
     text-align: center;
 }
@@ -340,7 +380,7 @@ h3 {
     background: #ffffff;
     color: #475569;
     font-size: 12px;
-    font-weight: 900;
+    font-weight: 700;
     box-shadow: 0 10px 22px rgba(15, 23, 42, 0.08);
     cursor: pointer;
 }
@@ -360,6 +400,57 @@ h3 {
 .detail-hero h2 {
     margin-top: 12px;
     margin-bottom: 5px;
+}
+
+.review-strip {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 10px;
+    margin-top: 13px;
+    padding: 10px;
+    border-radius: 8px;
+    background: #f6f9fb;
+}
+
+.review-strip span,
+.review-strip strong {
+    display: block;
+    line-height: 1.25;
+}
+
+.review-strip span {
+    color: #64748b;
+    font-size: 10px;
+    font-weight: 650;
+}
+
+.review-strip strong {
+    margin-top: 2px;
+    color: #142033;
+    font-size: 13px;
+    font-weight: 720;
+}
+
+.review-strip button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 36px;
+    gap: 7px;
+    padding: 0 11px;
+    border: 0;
+    border-radius: 8px;
+    background: #ef5b4b;
+    color: #ffffff;
+    font-size: 11px;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.review-strip button:disabled {
+    background: #cbd5e1;
+    cursor: not-allowed;
 }
 
 .narrative-header {
@@ -383,7 +474,7 @@ h3 {
     background: #e9f8f5;
     color: #0f766e;
     font-size: 10px;
-    font-weight: 900;
+    font-weight: 700;
     text-overflow: ellipsis;
     white-space: nowrap;
 }
@@ -402,7 +493,7 @@ h3 {
 .narrative-card > span {
     color: #526176;
     font-size: 11px;
-    font-weight: 950;
+    font-weight: 700;
 }
 
 .narrative-card textarea {
@@ -415,7 +506,7 @@ h3 {
     background: #f6f9fb;
     color: #142033;
     font-size: 13px;
-    font-weight: 750;
+    font-weight: 520;
     line-height: 1.48;
     padding: 11px 12px;
 }
@@ -456,7 +547,7 @@ h3 {
     display: block;
     color: #64748b;
     font-size: 10px;
-    font-weight: 900;
+    font-weight: 660;
     line-height: 1.3;
 }
 
@@ -465,7 +556,7 @@ h3 {
     margin-top: 7px;
     color: #0f766e;
     font-size: 15px;
-    font-weight: 950;
+    font-weight: 760;
     line-height: 1.12;
     overflow-wrap: anywhere;
 }
@@ -482,7 +573,7 @@ h3 {
     gap: 7px;
     color: #526176;
     font-size: 12px;
-    font-weight: 950;
+    font-weight: 700;
 }
 
 .finance-form-title svg {
@@ -500,7 +591,7 @@ h3 {
     background: #f6f9fb;
     color: #142033;
     font-size: 13px;
-    font-weight: 800;
+    font-weight: 520;
     padding: 0 12px;
 }
 
@@ -543,7 +634,7 @@ h3 {
     background: #ffffff;
     color: #142033;
     font-size: 12px;
-    font-weight: 800;
+    font-weight: 520;
     padding: 0 10px;
 }
 
@@ -566,7 +657,7 @@ h3 {
     background: #e9f8f5;
     color: #0f766e;
     font-size: 12px;
-    font-weight: 950;
+    font-weight: 700;
     cursor: pointer;
 }
 
@@ -582,7 +673,7 @@ h3 {
     min-height: 36px;
     color: #526176;
     font-size: 12px;
-    font-weight: 900;
+    font-weight: 650;
 }
 
 .check-row input {
@@ -607,7 +698,7 @@ h3 {
     background: #f6f9fb;
     color: #42526a;
     font-size: 12px;
-    font-weight: 900;
+    font-weight: 620;
     text-decoration: none;
 }
 
@@ -628,7 +719,7 @@ h3 {
     background: #fff0ed;
     color: #df4a3b;
     font-size: 9px;
-    font-weight: 950;
+    font-weight: 700;
 }
 
 .finance-form textarea {
@@ -658,7 +749,7 @@ h3 {
     background: #e9f8f5;
     color: #0f766e;
     font-size: 12px;
-    font-weight: 900;
+    font-weight: 680;
     cursor: pointer;
 }
 
@@ -687,9 +778,9 @@ h3 {
 }
 
 .finance-history article {
-    display: flex;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
     align-items: center;
-    justify-content: space-between;
     gap: 10px;
     padding: 12px;
 }
@@ -704,22 +795,61 @@ h3 {
 .finance-history strong {
     color: #142033;
     font-size: 12px;
-    font-weight: 950;
+    font-weight: 720;
 }
 
 .finance-history span {
     margin-top: 3px;
     color: #64748b;
     font-size: 11px;
-    font-weight: 800;
+    font-weight: 600;
+}
+
+.finance-history small {
+    display: block;
+    margin-top: 5px;
+    color: #b7790a;
+    font-size: 11px;
+    font-weight: 650;
+    line-height: 1.35;
 }
 
 .finance-history b {
     flex: 0 0 auto;
     color: #ef5b4b;
     font-size: 12px;
-    font-weight: 950;
+    font-weight: 740;
     text-align: right;
+}
+
+.revision-form {
+    display: grid;
+    grid-column: 1 / -1;
+    gap: 8px;
+    padding-top: 10px;
+    border-top: 1px solid rgba(15, 23, 42, 0.08);
+}
+
+.revision-form input,
+.revision-form select,
+.revision-form textarea {
+    width: 100%;
+    min-height: 40px;
+    border: 0;
+    border-radius: 8px;
+    outline: 0;
+    background: #f6f9fb;
+    color: #142033;
+    font-size: 12px;
+    font-weight: 520;
+    padding: 0 10px;
+}
+
+.revision-form textarea {
+    min-height: 82px;
+    padding-top: 10px;
+    line-height: 1.45;
+    resize: vertical;
 }
 
 .profile-form {
@@ -794,7 +924,7 @@ h3 {
     overflow: hidden;
     color: #64748b;
     font-size: 12px;
-    font-weight: 800;
+    font-weight: 600;
     line-height: 1.35;
     text-overflow: ellipsis;
     white-space: nowrap;
@@ -824,7 +954,7 @@ h3 {
     gap: 7px;
     color: #526176;
     font-size: 11px;
-    font-weight: 900;
+    font-weight: 680;
 }
 
 .app-field svg,
@@ -842,7 +972,7 @@ h3 {
     background: #f6f9fb;
     color: #142033;
     font-size: 14px;
-    font-weight: 800;
+    font-weight: 520;
     padding: 0 12px;
 }
 
@@ -857,7 +987,7 @@ h3 {
     background: #e9f8f5;
     color: #0f766e;
     font-size: 12px;
-    font-weight: 900;
+    font-weight: 680;
     text-align: center;
 }
 
@@ -872,7 +1002,7 @@ h3 {
     background: linear-gradient(180deg, #ff806f 0%, #ef5b4b 100%);
     color: #ffffff;
     font-size: 14px;
-    font-weight: 900;
+    font-weight: 730;
     box-shadow: 0 16px 28px rgba(239, 91, 75, 0.28);
     cursor: pointer;
 }
@@ -926,7 +1056,7 @@ h3 {
     max-width: 100%;
     overflow: hidden;
     font-size: 8px;
-    font-weight: 900;
+    font-weight: 650;
     line-height: 1;
     text-overflow: ellipsis;
     white-space: nowrap;

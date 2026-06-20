@@ -2,7 +2,7 @@
 
 ## Status Terakhir
 
-Slice 04 — Pelaksanaan & Dokumentasi selesai implementasi dan validasi otomatis PASS pada 20 Juni 2026. Product concept rename ke Kicap Event sedang diterapkan sebagai pelurusan istilah, bukan perubahan alur kerja mesin.
+Slice 05 — Review & Finalisasi Event selesai implementasi dan validasi otomatis awal PASS pada 20 Juni 2026. Product concept rename ke Kicap Event tetap menjadi vocabulary lock: Event/Kegiatan adalah objek kerja, LPJ adalah output dokumen akhir.
 
 ## Vocabulary Lock Terbaru
 
@@ -28,22 +28,35 @@ Gunakan Event/Kegiatan untuk objek yang dibuat Admin, dibuka User, diisi operasi
 - Catatan operasional dan file dokumentasi/lampiran dapat ditandai `Masuk LPJ`.
 - LPJ `finish` tetap read-only untuk input pelaksanaan dan upload dokumentasi.
 
+## Baseline Terkunci dari Slice 05
+
+- User dapat mengajukan event/kegiatan aktif untuk review Admin.
+- Admin melihat checklist kelengkapan sebelum finalisasi.
+- Admin dapat review transaksi User sebagai `valid`, `ditolak`, `perlu_revisi`, atau `menunggu_bukti`.
+- Transaksi tanpa bukti wajib punya alasan sebelum divalidasi.
+- User dapat merevisi transaksi miliknya jika diminta Admin.
+- Pengeluaran valid dan sisa dana dihitung dari transaksi berstatus `valid`.
+- Event/kegiatan hanya dapat dikunci `finish` jika checklist finalisasi PASS.
+- Event/kegiatan `finish` mengunci input User untuk operasional, keuangan, pelaksanaan, dokumentasi, dan revisi transaksi.
+
 ## Next Slice
 
-Slice 05 — Review & Finalisasi Event.
+Slice 06 — Generate Dokumen LPJ.
 
-## Scope Awal Slice 05
+## Scope Awal Slice 06
 
-- Checklist kelengkapan event/kegiatan.
-- Review Admin.
-- Validasi transaksi.
-- Transaksi tanpa bukti dengan alasan.
-- Revisi transaksi.
-- Status event/kegiatan.
-- Rekonsiliasi saldo sederhana.
-- Lock final event/kegiatan sebagai dasar generate LPJ.
+- Cover formal.
+- Halaman pengesahan dengan kop lengkap.
+- Footer dan nomor halaman.
+- Isi LPJ global.
+- Keuangan global.
+- Rincian transaksi valid.
+- Dokumentasi.
+- Lampiran.
+- Export PDF.
+- Print-ready view.
 
-## Guardrail Slice 05
+## Guardrail Slice 06
 
 - User tetap tidak membuat LPJ.
 - User tetap tidak mengurus narasi formal Admin.
@@ -52,10 +65,12 @@ Slice 05 — Review & Finalisasi Event.
 - Jangan menampilkan transfer saldo di output final LPJ default.
 - Jangan menghitung reimbursement klaim sebagai pengeluaran LPJ kedua kali.
 
-## Validasi Rencana Slice 05
+## Validasi Rencana Slice 06
 
-- Admin melihat checklist kelengkapan LPJ.
-- Admin review transaksi User.
-- Admin dapat menandai transaksi valid/ditolak/perlu revisi.
-- LPJ dapat dikunci `finish`.
-- User tidak dapat input operasional/keuangan/pelaksanaan setelah `finish`.
+- PDF/print-ready hanya dapat dibuat untuk event/kegiatan `finish`.
+- PDF menampilkan data global event/kegiatan.
+- PDF hanya menampilkan transaksi valid.
+- Transfer saldo tidak tampil di LPJ akhir.
+- Klaim/reimbursement tidak tampil sebagai pengeluaran baru.
+- Dana talangan valid tampil sebagai biaya kegiatan.
+- Dokumentasi dan lampiran `Masuk LPJ` tersusun rapi.

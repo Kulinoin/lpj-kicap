@@ -235,6 +235,12 @@ class LpjFinanceService
                 'status_label' => LpjFinancialTransaction::statusLabels()[$transaction->status] ?? $transaction->status,
                 'spent_at' => $transaction->spent_at?->toDateString(),
                 'has_proof' => filled($transaction->proof_path),
+                'no_proof_reason' => $transaction->no_proof_reason,
+                'admin_note' => $transaction->admin_note,
+                'can_submit_revision' => $lpj->status === Lpj::STATUS_AKTIF && in_array($transaction->status, [
+                    LpjFinancialTransaction::STATUS_NEEDS_REVISION,
+                    LpjFinancialTransaction::STATUS_WAITING_PROOF,
+                ], true),
             ]);
 
         $claims = LpjAdvanceClaim::query()

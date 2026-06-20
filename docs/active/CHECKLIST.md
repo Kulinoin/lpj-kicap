@@ -1,5 +1,33 @@
 # Checklist Manual Aktif
 
+## Slice 05 — Review & Finalisasi Event
+
+- [ ] Login sebagai User.
+- [ ] Buka event/kegiatan aktif yang ditugaskan.
+- [ ] Pastikan detail menampilkan status kelengkapan.
+- [ ] Klik `Ajukan Review`.
+- [ ] Pastikan status kelengkapan menjadi `Siap Review`.
+- [ ] Login sebagai Admin.
+- [ ] Buka menu `Semua Event`.
+- [ ] Klik action `Checklist` pada event/kegiatan yang sama.
+- [ ] Pastikan checklist menampilkan data dasar, pelaksanaan, catatan masuk LPJ, dokumentasi/lampiran, review transaksi, alasan tanpa bukti, dan rekonsiliasi saldo.
+- [ ] Buka menu `Transaksi Event`.
+- [ ] Tandai transaksi dengan bukti/alasan sebagai `Valid`.
+- [ ] Tandai transaksi bermasalah sebagai `Revisi` atau `Minta Bukti`.
+- [ ] Login lagi sebagai User.
+- [ ] Buka tab `Keuangan`.
+- [ ] Pastikan transaksi yang diminta revisi menampilkan catatan Admin.
+- [ ] Kirim revisi transaksi dengan bukti atau alasan tanpa bukti.
+- [ ] Login sebagai Admin.
+- [ ] Validasi transaksi revisi.
+- [ ] Buka `Checklist` sampai semua item PASS.
+- [ ] Klik `Finalisasi`.
+- [ ] Pastikan status event/kegiatan menjadi `Selesai`.
+- [ ] Login sebagai User.
+- [ ] Pastikan event/kegiatan `finish` tampil read-only.
+- [ ] Pastikan User tidak bisa input operasional, keuangan, pelaksanaan, dokumentasi, atau revisi transaksi setelah `finish`.
+- [ ] Pastikan tidak ada tombol/endpoint PDF resmi untuk event/kegiatan yang belum `finish`.
+
 ## Product Concept Rename — Kicap Event
 
 - [ ] Pastikan brand aplikasi tampil sebagai `Kicap Event`.

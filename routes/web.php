@@ -9,6 +9,7 @@ use App\Models\User;
 use App\Services\ActivityExecutionService;
 use App\Services\ActivityNoteService;
 use App\Services\LpjFinanceService;
+use App\Services\LpjReviewService;
 use Filament\Facades\Filament;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -92,7 +93,7 @@ Route::middleware('auth')->group(function (): void {
         return response()->json(['data' => $lpjs]);
     });
 
-    Route::get('/api/app/lpjs/{lpj}', function (Request $request, Lpj $lpj, ActivityNoteService $activityNoteService, ActivityExecutionService $executionService, LpjFinanceService $financeService) {
+    Route::get('/api/app/lpjs/{lpj}', function (Request $request, Lpj $lpj, ActivityNoteService $activityNoteService, ActivityExecutionService $executionService, LpjFinanceService $financeService, LpjReviewService $reviewService) {
         /** @var User $user */
         $user = $request->user();
 
@@ -118,6 +119,9 @@ Route::middleware('auth')->group(function (): void {
                 'type_slug' => $lpj->type?->slug,
                 'status' => $lpj->status,
                 'status_label' => Lpj::statusLabels()[$lpj->status] ?? $lpj->status,
+                'completeness_status' => $lpj->completeness_status,
+                'completeness_label' => Lpj::completenessLabels()[$lpj->completeness_status] ?? $lpj->completeness_status,
+                'submitted_at' => $lpj->submitted_at?->toDateTimeString(),
                 'start_date' => $lpj->start_date?->toDateString(),
                 'end_date' => $lpj->end_date?->toDateString(),
                 'location' => $lpj->location,
@@ -128,10 +132,34 @@ Route::middleware('auth')->group(function (): void {
                 'organization_role' => $lpj->organization_role,
                 'person_in_charge' => $lpj->personInCharge?->name,
                 'can_input_operational_data' => $lpj->status === Lpj::STATUS_AKTIF && $assignment->can_edit_activity_data,
+                'can_submit_review' => $lpj->status === Lpj::STATUS_AKTIF,
+                'review' => $reviewService->reviewPayload($lpj),
                 'activity_notes' => $activityNoteService->payload($activityNotes),
                 'execution' => $executionService->payload($lpj, $user),
                 'finance_category_options' => array_values(LpjFinancialTransaction::categoryOptions()),
                 'finance' => $financeService->financePayload($lpj, $user),
+            ],
+        ]);
+    });
+
+    Route::post('/api/app/lpjs/{lpj}/submit-review', function (Request $request, Lpj $lpj, LpjReviewService $reviewService) {
+        /** @var User $user */
+        $user = $request->user();
+
+        abort_unless($user->isUser(), 403);
+
+        $lpj = Lpj::query()
+            ->visibleToAssignedUser($user)
+            ->findOrFail($lpj->id);
+
+        $lpj = $reviewService->submitForReview($lpj, $user);
+
+        return response()->json([
+            'data' => [
+                'completeness_status' => $lpj->completeness_status,
+                'completeness_label' => Lpj::completenessLabels()[$lpj->completeness_status] ?? $lpj->completeness_status,
+                'submitted_at' => $lpj->submitted_at?->toDateTimeString(),
+                'review' => $reviewService->reviewPayload($lpj),
             ],
         ]);
     });
@@ -359,6 +387,33 @@ Route::middleware('auth')->group(function (): void {
                 'finance' => $financeService->financePayload($lpj->fresh(), $user),
             ],
         ], 201);
+    });
+
+    Route::post('/api/app/lpjs/{lpj}/financial-transactions/{transaction}/revision', function (Request $request, Lpj $lpj, LpjFinancialTransaction $transaction, LpjReviewService $reviewService, LpjFinanceService $financeService) {
+        /** @var User $user */
+        $user = $request->user();
+
+        abort_unless($user->isUser(), 403);
+
+        $lpj = Lpj::query()
+            ->visibleToAssignedUser($user)
+            ->findOrFail($lpj->id);
+
+        $validated = $request->validate([
+            'category' => ['required', 'string', Rule::in(array_keys(LpjFinancialTransaction::categoryOptions()))],
+            'description' => ['required', 'string', 'max:5000'],
+            'spent_at' => ['required', 'date'],
+            'proof' => ['nullable', 'file', 'mimes:jpg,jpeg,png,webp,pdf', 'max:4096'],
+            'no_proof_reason' => ['required_without:proof', 'nullable', 'string', 'max:1000'],
+        ]);
+
+        $reviewService->submitTransactionRevision($lpj, $transaction, $user, $validated, $request->file('proof'));
+
+        return response()->json([
+            'data' => [
+                'finance' => $financeService->financePayload($lpj->fresh(), $user),
+            ],
+        ]);
     });
 
     Route::get('/api/app/profile', function (Request $request) {

@@ -205,3 +205,53 @@ Validasi PASS:
 Archive:
 
 - `archives/2026-06-20_210040_kicap-event-concept-rename.zip`
+
+## Slice 05 — Review & Finalisasi Event
+
+Status: Implementasi + validasi otomatis berjalan, menunggu review manual user sebelum commit/push.
+
+Selesai:
+
+- Menambahkan `LpjReviewService` untuk submit review, checklist kelengkapan, review transaksi, revisi transaksi, rekonsiliasi sederhana, dan finalisasi.
+- User PWA dapat mengajukan event/kegiatan aktif untuk review Admin.
+- User PWA dapat mengirim revisi transaksi miliknya saat Admin menandai transaksi `Perlu Revisi` atau `Menunggu Bukti`.
+- Admin dapat melihat checklist finalisasi melalui action pada tabel Event.
+- Admin dapat menandai transaksi sebagai `Valid`, `Ditolak`, `Perlu Revisi`, atau `Menunggu Bukti` melalui tabel Transaksi Event.
+- Transaksi tanpa bukti tidak dapat divalidasi jika tidak memiliki alasan.
+- Total pengeluaran valid dan sisa dana dihitung ulang dari transaksi berstatus `valid`.
+- Admin dapat mengunci event/kegiatan menjadi `finish` hanya setelah checklist finalisasi PASS.
+- Event/kegiatan `finish` tetap read-only untuk input User.
+- Tidak membuat endpoint PDF resmi/final pada Slice 05.
+
+Validasi otomatis PASS:
+
+- `php artisan test tests/Feature/Slice05ReviewFinalizationTest.php` — 4 tests, 20 assertions
+- `php artisan test tests/Feature/Slice02LpjDetailMobileInputTest.php` — 5 tests, 28 assertions
+- `php artisan test tests/Feature/Slice03OperationalFinanceTest.php` — 6 tests, 32 assertions
+- `php artisan test tests/Feature/Slice04ExecutionDocumentationTest.php` — 5 tests, 29 assertions
+- `php artisan route:list --path=api/app`
+- `php artisan route:list --path=admin`
+- `npm run build`
+- `php artisan test` — 49 tests, 181 assertions
+- `php artisan migrate:fresh --seed -n`
+
+Follow-up UX/Admin 2026-06-20:
+
+- User PWA: menu bawah `Selesai` diganti menjadi `Dokumentasi`.
+- User PWA: dashboard menampilkan event terbaru dengan prioritas event aktif.
+- User PWA: kartu event dibuat lebih modern dan font weight diturunkan agar tidak terasa penuh.
+- Admin Event: form Event dirapikan dari placeholder system Filament, sumber dana menjadi select `Lembaga/Sponsor/Dinas`, dan field audit/finalisasi tidak tampil sebagai input manual.
+- Admin Event: create/edit kembali ke list utama setelah simpan.
+- Admin Event: list Event dipadatkan ke kolom penting.
+- Admin Event: action cepat status ditambahkan, `Aktif` untuk draft dan `Selesai` untuk aktif dengan guardrail checklist finalisasi.
+- Admin Dana: select Event/User pada Dana Masuk dan Mutasi Saldo diberi prompt yang jelas.
+
+Validasi fokus PASS:
+
+- `php -l` file Filament yang dipatch.
+- `npm run build`.
+- `php artisan route:list --path=admin`.
+- `php artisan route:list --path=api/app`.
+- `php artisan test tests/Feature/Slice01MasterLpjRoleTest.php` — 7 tests, 24 assertions.
+- `php artisan test tests/Feature/Slice05ReviewFinalizationTest.php` — 4 tests, 20 assertions.
+- `php artisan tinker --execute='...'` form smoke — `forms ok`.

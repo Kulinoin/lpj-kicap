@@ -48,6 +48,7 @@ class UserForm
                         User::ROLE_ADMIN => 'Admin',
                         User::ROLE_USER => 'User',
                     ])
+                    ->placeholder('Pilih role')
                     ->required()
                     ->default(User::ROLE_USER)
                     ->live(),

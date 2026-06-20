@@ -3,11 +3,16 @@
 namespace App\Filament\Resources\Lpjs\Tables;
 
 use App\Models\Lpj;
+use App\Services\LpjReviewService;
+use Filament\Actions\Action;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
+use Filament\Notifications\Notification;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Validation\ValidationException;
 
 class LpjsTable
 {
@@ -23,9 +28,6 @@ class LpjsTable
                     ->searchable(),
                 TextColumn::make('type.name')
                     ->label('Tipe')
-                    ->sortable(),
-                TextColumn::make('creator.name')
-                    ->label('Dibuat Oleh')
                     ->sortable(),
                 TextColumn::make('personInCharge.name')
                     ->label('PJ')
@@ -43,6 +45,8 @@ class LpjsTable
                     ->searchable(),
                 TextColumn::make('completeness_status')
                     ->label('Kelengkapan')
+                    ->formatStateUsing(fn (string $state): string => Lpj::completenessLabels()[$state] ?? $state)
+                    ->badge()
                     ->searchable(),
                 TextColumn::make('start_date')
                     ->label('Mulai')
@@ -55,55 +59,12 @@ class LpjsTable
                 TextColumn::make('location')
                     ->label('Lokasi')
                     ->searchable(),
-                TextColumn::make('funding_source')
-                    ->label('Sumber Dana')
-                    ->searchable(),
-                TextColumn::make('assignment_letter_number')
-                    ->label('Surat Tugas')
-                    ->searchable(),
-                TextColumn::make('period_label')
-                    ->label('Periode')
-                    ->searchable(),
-                TextColumn::make('external_organizer')
-                    ->label('Penyelenggara')
-                    ->searchable(),
-                TextColumn::make('total_funds_received')
-                    ->label('Dana')
-                    ->numeric()
-                    ->sortable(),
                 TextColumn::make('total_valid_expense')
-                    ->label('Pengeluaran')
-                    ->numeric()
-                    ->sortable(),
-                TextColumn::make('total_remaining_fund')
-                    ->label('Sisa')
-                    ->numeric()
-                    ->sortable(),
-                TextColumn::make('submitted_at')
-                    ->label('Diajukan')
-                    ->dateTime()
-                    ->sortable(),
-                TextColumn::make('approved_at')
-                    ->label('Disetujui')
-                    ->dateTime()
-                    ->sortable(),
-                TextColumn::make('approved_by')
-                    ->label('Approver')
-                    ->numeric()
-                    ->sortable(),
-                TextColumn::make('finalized_at')
-                    ->label('Finish')
-                    ->dateTime()
-                    ->sortable(),
-                TextColumn::make('finalized_by')
-                    ->label('Finalizer')
-                    ->numeric()
-                    ->sortable(),
-                TextColumn::make('archived_at')
-                    ->label('Arsip')
-                    ->dateTime()
+                    ->label('Pengeluaran Valid')
+                    ->money('IDR')
                     ->sortable(),
                 TextColumn::make('created_at')
+                    ->label('Dibuat')
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
@@ -112,10 +73,60 @@ class LpjsTable
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
+            ->defaultSort('created_at', 'desc')
             ->filters([
                 //
             ])
             ->recordActions([
+                Action::make('activate')
+                    ->label('Aktif')
+                    ->icon('heroicon-o-play')
+                    ->color('success')
+                    ->requiresConfirmation()
+                    ->hidden(fn (Lpj $record): bool => $record->status !== Lpj::STATUS_DRAFT)
+                    ->action(function (Lpj $record): void {
+                        $record->forceFill([
+                            'status' => Lpj::STATUS_AKTIF,
+                        ])->save();
+
+                        Notification::make()
+                            ->title('Event diaktifkan')
+                            ->success()
+                            ->send();
+                    }),
+                Action::make('finish')
+                    ->label('Selesai')
+                    ->icon('heroicon-o-check-circle')
+                    ->color('success')
+                    ->requiresConfirmation()
+                    ->hidden(fn (Lpj $record): bool => $record->status !== Lpj::STATUS_AKTIF)
+                    ->modalHeading(fn (Lpj $record): string => 'Selesaikan '.$record->code)
+                    ->modalDescription('Event akan difinalisasi jika checklist sudah PASS. Setelah selesai, User tidak dapat input lagi.')
+                    ->action(function (Lpj $record): void {
+                        try {
+                            app(LpjReviewService::class)->finalize($record, Auth::user());
+
+                            Notification::make()
+                                ->title('Event selesai dan terkunci')
+                                ->success()
+                                ->send();
+                        } catch (ValidationException $exception) {
+                            Notification::make()
+                                ->title($exception->validator->errors()->first() ?: 'Checklist finalisasi belum lengkap')
+                                ->danger()
+                                ->send();
+                        }
+                    }),
+                Action::make('checklist')
+                    ->label('Checklist')
+                    ->icon('heroicon-o-clipboard-document-check')
+                    ->modalHeading(fn (Lpj $record): string => 'Checklist Finalisasi '.$record->code)
+                    ->modalSubmitAction(false)
+                    ->modalCancelActionLabel('Tutup')
+                    ->modalContent(fn (Lpj $record) => view('filament.lpj-review-checklist', [
+                        'record' => $record->fresh(),
+                        'review' => app(LpjReviewService::class)->reviewPayload($record->fresh()),
+                    ])),
                 EditAction::make(),
             ])
             ->toolbarActions([

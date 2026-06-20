@@ -37,6 +37,10 @@ class LpjBalanceMutationResource extends Resource
             Select::make('lpj_id')
                 ->label('Event')
                 ->relationship('lpj', 'title')
+                ->placeholder('Pilih event')
+                ->searchPrompt('Cari event')
+                ->loadingMessage('Memuat event')
+                ->noSearchResultsMessage('Event tidak ditemukan')
                 ->searchable()
                 ->preload()
                 ->required(),
@@ -47,6 +51,10 @@ class LpjBalanceMutationResource extends Resource
                     'name',
                     modifyQueryUsing: fn ($query) => $query->where('role', User::ROLE_USER)->where('is_active', true),
                 )
+                ->placeholder('Pilih user penerima')
+                ->searchPrompt('Cari user')
+                ->loadingMessage('Memuat user')
+                ->noSearchResultsMessage('User tidak ditemukan')
                 ->searchable()
                 ->preload()
                 ->required(),

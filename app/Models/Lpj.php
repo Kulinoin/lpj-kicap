@@ -165,6 +165,15 @@ class Lpj extends Model
         ];
     }
 
+    public static function completenessLabels(): array
+    {
+        return [
+            self::COMPLETENESS_BELUM_LENGKAP => 'Belum Lengkap',
+            self::COMPLETENESS_SIAP_REVIEW => 'Siap Review',
+            self::COMPLETENESS_SIAP_FINALISASI => 'Siap Finalisasi',
+        ];
+    }
+
     public static function userVisibleStatuses(): array
     {
         return [

@@ -37,12 +37,17 @@ class LpjFundReceiptResource extends Resource
             Select::make('lpj_id')
                 ->label('Event')
                 ->relationship('lpj', 'title')
+                ->placeholder('Pilih event')
+                ->searchPrompt('Cari event')
+                ->loadingMessage('Memuat event')
+                ->noSearchResultsMessage('Event tidak ditemukan')
                 ->searchable()
                 ->preload()
                 ->required(),
             Select::make('source_name')
                 ->label('Sumber Dana')
                 ->options(LpjFundReceipt::sourceOptions())
+                ->placeholder('Pilih sumber dana')
                 ->native(false)
                 ->required(),
             TextInput::make('amount')

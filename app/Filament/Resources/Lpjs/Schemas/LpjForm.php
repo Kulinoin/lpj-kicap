@@ -5,7 +5,6 @@ namespace App\Filament\Resources\Lpjs\Schemas;
 use App\Models\Lpj;
 use App\Models\User;
 use Filament\Forms\Components\DatePicker;
-use Filament\Forms\Components\DateTimePicker;
 use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Select;
@@ -31,6 +30,10 @@ class LpjForm
                 Select::make('lpj_type_id')
                     ->label('Tipe Event')
                     ->relationship('type', 'name')
+                    ->placeholder('Pilih tipe event')
+                    ->searchPrompt('Cari tipe event')
+                    ->loadingMessage('Memuat tipe event')
+                    ->noSearchResultsMessage('Tipe event tidak ditemukan')
                     ->searchable()
                     ->preload()
                     ->required(),
@@ -42,20 +45,22 @@ class LpjForm
                         'name',
                         modifyQueryUsing: fn ($query) => $query->where('role', User::ROLE_USER)->where('is_active', true),
                     )
+                    ->placeholder('Pilih penanggung jawab')
+                    ->searchPrompt('Cari user')
+                    ->loadingMessage('Memuat user')
+                    ->noSearchResultsMessage('User tidak ditemukan')
                     ->searchable()
                     ->preload(),
                 Select::make('status')
                     ->label('Status Event')
                     ->options(Lpj::statusLabels())
+                    ->placeholder('Pilih status')
                     ->required()
                     ->default('draft'),
                 Select::make('completeness_status')
                     ->label('Kelengkapan')
-                    ->options([
-                        Lpj::COMPLETENESS_BELUM_LENGKAP => 'Belum Lengkap',
-                        Lpj::COMPLETENESS_SIAP_REVIEW => 'Siap Review',
-                        Lpj::COMPLETENESS_SIAP_FINALISASI => 'Siap Finalisasi',
-                    ])
+                    ->options(Lpj::completenessLabels())
+                    ->placeholder('Pilih status kelengkapan')
                     ->required()
                     ->default(Lpj::COMPLETENESS_BELUM_LENGKAP),
                 DatePicker::make('start_date')
@@ -65,9 +70,16 @@ class LpjForm
                 TextInput::make('location')
                     ->label('Lokasi')
                     ->maxLength(255),
-                TextInput::make('funding_source')
+                Select::make('funding_source')
                     ->label('Sumber Dana')
-                    ->maxLength(255),
+                    ->options([
+                        'Lembaga' => 'Lembaga',
+                        'Sponsor' => 'Sponsor',
+                        'Dinas' => 'Dinas',
+                    ])
+                    ->placeholder('Pilih sumber dana')
+                    ->searchable()
+                    ->preload(),
                 TextInput::make('assignment_letter_number')
                     ->label('Nomor Surat Tugas')
                     ->maxLength(255),
@@ -98,6 +110,9 @@ class LpjForm
                 Repeater::make('assignedUsers')
                     ->label('User Ditugaskan')
                     ->relationship()
+                    ->addActionLabel('Tambah User Ditugaskan')
+                    ->reorderable(false)
+                    ->collapsible()
                     ->schema([
                         Select::make('user_id')
                             ->label('User')
@@ -106,6 +121,10 @@ class LpjForm
                                 'name',
                                 modifyQueryUsing: fn ($query) => $query->where('role', User::ROLE_USER)->where('is_active', true),
                             )
+                            ->placeholder('Pilih user')
+                            ->searchPrompt('Cari user')
+                            ->loadingMessage('Memuat user')
+                            ->noSearchResultsMessage('User tidak ditemukan')
                             ->searchable()
                             ->preload()
                             ->required(),
@@ -124,20 +143,6 @@ class LpjForm
                     ])
                     ->columns(2)
                     ->columnSpanFull(),
-                DateTimePicker::make('submitted_at')
-                    ->label('Diajukan Pada'),
-                DateTimePicker::make('approved_at')
-                    ->label('Disetujui Pada'),
-                TextInput::make('approved_by')
-                    ->label('Disetujui Oleh')
-                    ->numeric(),
-                DateTimePicker::make('finalized_at')
-                    ->label('Finish Pada'),
-                TextInput::make('finalized_by')
-                    ->label('Finish Oleh')
-                    ->numeric(),
-                DateTimePicker::make('archived_at')
-                    ->label('Diarsipkan Pada'),
             ]);
     }
 }

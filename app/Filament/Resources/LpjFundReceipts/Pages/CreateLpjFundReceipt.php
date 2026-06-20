@@ -25,4 +25,9 @@ class CreateLpjFundReceipt extends CreateRecord
     {
         return 'Dana masuk event tercatat';
     }
+
+    protected function getRedirectUrl(): string
+    {
+        return static::getResource()::getUrl('index');
+    }
 }

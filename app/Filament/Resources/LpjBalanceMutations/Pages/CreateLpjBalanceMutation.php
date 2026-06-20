@@ -26,4 +26,9 @@ class CreateLpjBalanceMutation extends CreateRecord
     {
         return 'Dana pegangan user tercatat';
     }
+
+    protected function getRedirectUrl(): string
+    {
+        return static::getResource()::getUrl('index');
+    }
 }

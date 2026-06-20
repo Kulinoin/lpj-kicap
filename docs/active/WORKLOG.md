@@ -1,5 +1,45 @@
 # Worklog Kicap Event
 
+## 2026-06-20 21:26 WIB — Slice 05 Review & Finalisasi Event
+
+- Menambahkan `LpjReviewService` untuk submit review, checklist, review transaksi, revisi transaksi, rekonsiliasi sederhana, dan finalisasi event/kegiatan.
+- Menambahkan action Admin pada tabel Event untuk melihat checklist finalisasi.
+- Menambahkan action Admin pada tabel Transaksi Event untuk validasi, tolak, minta revisi, dan minta bukti.
+- Menambahkan endpoint User `submit-review` untuk mengajukan event/kegiatan aktif ke review Admin.
+- Menambahkan endpoint User revisi transaksi untuk transaksi miliknya yang berstatus `perlu_revisi` atau `menunggu_bukti`.
+- Menambahkan payload PWA untuk kelengkapan, catatan Admin, alasan tanpa bukti, dan status revisi transaksi.
+- Menambahkan tombol `Ajukan Review` pada detail event/kegiatan User.
+- Menambahkan form revisi transaksi inline pada riwayat keuangan User.
+- Menjaga `finish` sebagai lock final untuk input operasional, keuangan, pelaksanaan, dokumentasi, dan revisi transaksi.
+- Tidak membuat PDF resmi/final pada Slice 05.
+- Validasi PASS: `php artisan test tests/Feature/Slice05ReviewFinalizationTest.php`.
+- Validasi PASS: `php artisan test tests/Feature/Slice02LpjDetailMobileInputTest.php`.
+- Validasi PASS: `php artisan test tests/Feature/Slice03OperationalFinanceTest.php`.
+- Validasi PASS: `php artisan test tests/Feature/Slice04ExecutionDocumentationTest.php`.
+- Validasi PASS: `php artisan route:list --path=api/app`.
+- Validasi PASS: `php artisan route:list --path=admin`.
+- Validasi PASS: `npm run build`.
+- Validasi PASS: `php artisan test`.
+- Validasi PASS: `php artisan migrate:fresh --seed -n`.
+
+## 2026-06-20 21:55 WIB — Slice 05 Follow-up UX/Admin
+
+- Mengganti menu bawah User PWA dari `Selesai` menjadi `Dokumentasi`.
+- Mengubah dashboard User agar event aktif diprioritaskan dan tetap menampilkan event selesai dari Beranda.
+- Menghaluskan font weight dan kartu event agar tidak terlalu penuh/kaku.
+- Merapikan form Admin Event: select prompt jelas, sumber dana select `Lembaga/Sponsor/Dinas`, field audit/finalisasi tidak lagi tampil sebagai input manual.
+- Membuat create/edit Event kembali ke list utama setelah simpan.
+- Memadatkan list Event ke kolom penting.
+- Menambahkan action `Aktif` untuk event draft dan `Selesai` untuk event aktif.
+- Merapikan select Dana Masuk, Mutasi Saldo, dan Role User agar tidak menampilkan key placeholder system.
+- Validasi fokus PASS: syntax file Filament yang dipatch.
+- Validasi fokus PASS: `npm run build`.
+- Validasi fokus PASS: `php artisan route:list --path=admin`.
+- Validasi fokus PASS: `php artisan route:list --path=api/app`.
+- Validasi fokus PASS: `php artisan test tests/Feature/Slice01MasterLpjRoleTest.php`.
+- Validasi fokus PASS: `php artisan test tests/Feature/Slice05ReviewFinalizationTest.php`.
+- Validasi fokus PASS: smoke form Filament via `php artisan tinker`.
+
 ## 2026-06-20 — Product Concept Rename
 
 - Mengunci pemahaman baru: `Event/Kegiatan` adalah objek utama aplikasi, sedangkan `LPJ` adalah output akhir/dokumen hasil event/kegiatan.
