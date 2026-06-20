@@ -62,3 +62,25 @@
 - Validasi PASS: `php artisan test tests/Feature/Slice01UsernameLoginFormTest.php`.
 - Validasi PASS: `php artisan test`.
 - Validasi PASS: `npm.cmd run build`.
+
+## 2026-06-20 15:02 +07 — Slice 02 LPJ Detail & Input Mobile
+
+- Menambahkan tabel `narrative_templates` dan `lpj_narratives`.
+- Menambahkan tabel `activity_notes`.
+- Menambahkan model `NarrativeTemplate` dan `LpjNarrative`.
+- Menambahkan model `ActivityNote`.
+- Menambahkan `ActivityNoteService` untuk catatan operasional User.
+- Menyiapkan `LpjNarrativeService` untuk fondasi narasi Admin berikutnya.
+- Menambahkan seed template narasi untuk lima tipe LPJ awal.
+- Menambahkan endpoint detail LPJ User dan simpan catatan operasional.
+- Mengunci akses detail hanya untuk User yang ditugaskan.
+- Mengunci input operasional hanya untuk LPJ `aktif`.
+- Mengunci LPJ `finish` sebagai read-only di PWA User.
+- Menghapus editor narasi dari PWA User karena narasi adalah urusan Admin.
+- Menambahkan detail LPJ dan autosave catatan operasional di React PWA.
+- Mengubah bottom navigation petugas menjadi 5 item dengan `Input Cepat` sebagai tombol tengah.
+- Mengganti label UX yang terlihat user ke bahasa Indonesia, termasuk `Input Cepat` dan `Selesai`.
+- Validasi PASS: `php artisan test tests/Feature/Slice02LpjDetailMobileInputTest.php`.
+- Validasi PASS: `php artisan test`.
+- Validasi PASS: `php artisan migrate:fresh --seed`.
+- Validasi PASS: `cmd.exe /c "cd /d D:\kulino\lpj-kicap && npm.cmd run build"`.

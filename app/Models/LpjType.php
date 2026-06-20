@@ -31,6 +31,11 @@ class LpjType extends Model
         return $this->hasMany(Lpj::class);
     }
 
+    public function narrativeTemplates(): HasMany
+    {
+        return $this->hasMany(NarrativeTemplate::class);
+    }
+
     public function scopeActive(Builder $query): Builder
     {
         return $query->where('is_active', true)->orderBy('sort_order')->orderBy('name');

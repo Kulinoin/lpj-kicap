@@ -1,20 +1,20 @@
 # Checklist Manual Aktif
 
-## Slice 01 Revisi — Master LPJ, Role, Login, dan UI Baseline
+## Slice 02 — LPJ Detail & Input Mobile
 
-- [ ] Buka halaman login tunggal Kicap LPJ.
-- [ ] Login Admin menggunakan username/email dan password.
-- [ ] Admin diarahkan ke `/admin`.
-- [ ] Login User menggunakan username/email dan password.
-- [ ] User diarahkan ke `/app`.
-- [ ] Checkbox `Ingat saya` bisa dipilih dan sesi tidak cepat putus.
-- [ ] User tidak bisa membuka panel Admin.
-- [ ] Admin bisa membuat LPJ.
-- [ ] User tidak punya akses membuat LPJ.
-- [ ] Status LPJ hanya `draft`, `aktif`, `finish`, `arsipkan`.
-- [ ] User hanya melihat LPJ `aktif` dan `finish` yang ditugaskan.
-- [ ] LPJ `draft` dan `arsipkan` tidak tampil di halaman user.
-- [ ] Bottom navigation user tampil mengambang dan nyaman di HP.
-- [ ] Layout user tetap proporsional di tablet.
-- [ ] Admin panel tampil responsive full-width.
-- [ ] Tema visual cocok dengan logo Kicap, nyaman, eye-catching, dan tidak monoton.
+- [ ] Login sebagai User.
+- [ ] Buka `/app` dari viewport HP.
+- [ ] Pastikan bottom navigation masih mengambang dan berisi 5 item: `Beranda`, `LPJ`, `Input Cepat`, `Selesai`, `Profil`.
+- [ ] Pastikan tab tengah bertuliskan `Input Cepat`.
+- [ ] Buka tab `Input Cepat`.
+- [ ] Buka LPJ aktif yang ditugaskan.
+- [ ] Pastikan detail LPJ tampil dengan kode, judul, tipe, tanggal, lokasi, dan penanggung jawab.
+- [ ] Pastikan yang tampil adalah `Input Operasional`, bukan editor narasi.
+- [ ] Isi `Hasil di Lapangan`, `Kendala`, atau `Saran Tindak Lanjut`.
+- [ ] Tunggu indikator `Catatan tersimpan`.
+- [ ] Refresh halaman dan pastikan catatan operasional tetap tersimpan.
+- [ ] Buka LPJ `finish` yang ditugaskan.
+- [ ] Pastikan status tampil sebagai `Selesai`.
+- [ ] Pastikan LPJ `finish` tidak bisa diedit dari PWA.
+- [ ] Pastikan LPJ `draft` dan `arsipkan` tetap tidak tampil di PWA User.
+- [ ] Pastikan teks UX yang terlihat user memakai bahasa Indonesia.

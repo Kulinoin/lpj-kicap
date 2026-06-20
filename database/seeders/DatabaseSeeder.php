@@ -12,6 +12,7 @@ class DatabaseSeeder extends Seeder
             KicapUserSeeder::class,
             OrganizationProfileSeeder::class,
             LpjTypeSeeder::class,
+            NarrativeTemplateSeeder::class,
             LpjDemoSeeder::class,
         ]);
     }

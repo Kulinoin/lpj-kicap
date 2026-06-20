@@ -1,10 +1,12 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import {
+    ArrowLeft,
     CalendarDays,
     Camera,
     CheckCircle2,
     ClipboardList,
+    FileText,
     Home,
     LockKeyhole,
     LogOut,
@@ -23,7 +25,8 @@ registerSW({ immediate: true });
 const navItems = [
     { key: 'beranda', label: 'Beranda', icon: Home },
     { key: 'lpj', label: 'LPJ', icon: ClipboardList },
-    { key: 'input', label: 'Input', icon: PlusCircle, isPrimary: true },
+    { key: 'input', label: 'Input Cepat', icon: PlusCircle, isPrimary: true },
+    { key: 'selesai', label: 'Selesai', icon: CheckCircle2 },
     { key: 'profil', label: 'Profil', icon: UserRound },
 ];
 
@@ -53,6 +56,9 @@ function getCsrfToken() {
 
 function KicapApp() {
     const [lpjs, setLpjs] = useState([]);
+    const [selectedLpjId, setSelectedLpjId] = useState(null);
+    const [selectedLpj, setSelectedLpj] = useState(null);
+    const [operationalDrafts, setOperationalDrafts] = useState({});
     const [profile, setProfile] = useState(emptyProfile);
     const [profileForm, setProfileForm] = useState({
         name: '',
@@ -63,8 +69,11 @@ function KicapApp() {
     const [profilePhoto, setProfilePhoto] = useState(null);
     const [profilePhotoPreview, setProfilePhotoPreview] = useState(null);
     const [isLoading, setIsLoading] = useState(true);
+    const [isDetailLoading, setIsDetailLoading] = useState(false);
     const [isSavingProfile, setIsSavingProfile] = useState(false);
+    const [isOperationalDirty, setIsOperationalDirty] = useState(false);
     const [profileMessage, setProfileMessage] = useState('');
+    const [operationalSaveMessage, setOperationalSaveMessage] = useState('');
     const [activeNav, setActiveNav] = useState('beranda');
 
     useEffect(() => {
@@ -114,6 +123,113 @@ function KicapApp() {
             isMounted = false;
         };
     }, []);
+
+    useEffect(() => {
+        if (!selectedLpjId) {
+            return;
+        }
+
+        let isMounted = true;
+
+        setIsDetailLoading(true);
+        setOperationalSaveMessage('');
+
+        fetch(`/api/app/lpjs/${selectedLpjId}`, {
+            headers: {
+                Accept: 'application/json',
+            },
+        })
+            .then((response) => {
+                if (!response.ok) {
+                    throw new Error('Detail LPJ tidak tersedia');
+                }
+
+                return response.json();
+            })
+            .then((payload) => {
+                if (!isMounted) {
+                    return;
+                }
+
+                const detail = payload.data;
+                const drafts = {};
+
+                detail.activity_notes.forEach((note) => {
+                    drafts[note.type] = note.content ?? '';
+                });
+
+                setSelectedLpj(detail);
+                setOperationalDrafts(drafts);
+                setIsOperationalDirty(false);
+            })
+            .catch(() => {
+                if (isMounted) {
+                    setSelectedLpj(null);
+                    setOperationalDrafts({});
+                    setOperationalSaveMessage('Detail LPJ belum bisa dibuka');
+                }
+            })
+            .finally(() => {
+                if (isMounted) {
+                    setIsDetailLoading(false);
+                }
+            });
+
+        return () => {
+            isMounted = false;
+        };
+    }, [selectedLpjId]);
+
+    useEffect(() => {
+        if (!selectedLpj?.can_input_operational_data || !isOperationalDirty) {
+            return undefined;
+        }
+
+        setOperationalSaveMessage('Menyimpan catatan...');
+
+        const timeoutId = window.setTimeout(() => {
+            const notes = selectedLpj.activity_notes.map((note) => ({
+                type: note.type,
+                content: operationalDrafts[note.type] ?? '',
+            }));
+
+            fetch(`/api/app/lpjs/${selectedLpj.id}/activity-notes`, {
+                method: 'POST',
+                headers: {
+                    Accept: 'application/json',
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': getCsrfToken(),
+                },
+                body: JSON.stringify({ notes }),
+            })
+                .then(async (response) => {
+                    if (!response.ok) {
+                        throw await response.json();
+                    }
+
+                    return response.json();
+                })
+                .then((payload) => {
+                    setSelectedLpj((current) => {
+                        if (!current) {
+                            return current;
+                        }
+
+                        return {
+                            ...current,
+                            activity_notes: payload.data.activity_notes,
+                        };
+                    });
+                    setIsOperationalDirty(false);
+                    setOperationalSaveMessage('Catatan tersimpan');
+                })
+                .catch(() => {
+                    setOperationalSaveMessage('Catatan belum tersimpan');
+                });
+        }, 900);
+
+        return () => window.clearTimeout(timeoutId);
+    }, [isOperationalDirty, operationalDrafts, selectedLpj]);
 
     const handleLogout = () => {
         fetch('/app/logout', {
@@ -196,7 +312,52 @@ function KicapApp() {
         };
     }, [lpjs]);
 
+    const activeLpjs = useMemo(() => lpjs.filter((lpj) => lpj.status === 'aktif'), [lpjs]);
+    const finishedLpjs = useMemo(() => lpjs.filter((lpj) => lpj.status === 'finish'), [lpjs]);
     const avatarSource = profilePhotoPreview ?? profile.avatar_url;
+    const showDetail = activeNav === 'input' && selectedLpjId;
+    const pageTitle = activeNav === 'profil' ? 'Profil pengguna' : showDetail ? 'Detail LPJ' : 'Ruang kerja petugas';
+    const visibleLpjs = useMemo(() => {
+        if (activeNav === 'input') {
+            return activeLpjs;
+        }
+
+        if (activeNav === 'selesai') {
+            return finishedLpjs;
+        }
+
+        return lpjs;
+    }, [activeLpjs, activeNav, finishedLpjs, lpjs]);
+
+    const lpjHeading = {
+        beranda: 'Aktif dan selesai',
+        lpj: 'Semua tugas',
+        input: 'Siap diisi',
+        selesai: 'Sudah selesai',
+    }[activeNav] ?? 'Aktif dan selesai';
+
+    const emptyLpjMessage = {
+        input: 'Belum ada LPJ aktif yang bisa diisi.',
+        selesai: 'Belum ada LPJ selesai yang ditugaskan.',
+    }[activeNav] ?? 'Belum ada LPJ aktif atau selesai yang ditugaskan.';
+
+    const openLpjDetail = (lpjId) => {
+        setSelectedLpjId(lpjId);
+        setActiveNav('input');
+    };
+
+    const closeLpjDetail = () => {
+        setSelectedLpjId(null);
+        setSelectedLpj(null);
+        setOperationalDrafts({});
+        setIsOperationalDirty(false);
+        setOperationalSaveMessage('');
+    };
+
+    const handleOperationalChange = (type, content) => {
+        setOperationalDrafts((value) => ({ ...value, [type]: content }));
+        setIsOperationalDirty(true);
+    };
 
     return (
         <main className="mobile-shell">
@@ -206,14 +367,14 @@ function KicapApp() {
                 </div>
                 <div>
                     <p className="section-kicker">Kicap LPJ</p>
-                    <h1>{activeNav === 'profil' ? 'Profil pengguna' : 'Ruang kerja petugas'}</h1>
+                    <h1>{pageTitle}</h1>
                 </div>
                 <button className="logout-button" type="button" onClick={handleLogout} aria-label="Keluar">
                     <LogOut size={18} strokeWidth={2.4} />
                 </button>
             </header>
 
-            {activeNav !== 'profil' && (
+            {activeNav !== 'profil' && !showDetail && (
                 <>
                     <section className="summary-grid" aria-label="Ringkasan LPJ">
                         <article className="summary-tile coral">
@@ -227,7 +388,7 @@ function KicapApp() {
                             <div className="summary-icon">
                                 <CheckCircle2 size={18} strokeWidth={2.5} />
                             </div>
-                            <span>Finish</span>
+                            <span>Selesai</span>
                             <strong>{totals.finished}</strong>
                         </article>
                         <article className="summary-tile amber">
@@ -243,20 +404,25 @@ function KicapApp() {
                         <div className="section-heading">
                             <div>
                                 <p className="section-kicker">LPJ Saya</p>
-                                <h2>Aktif dan finish</h2>
+                                <h2>{lpjHeading}</h2>
                             </div>
                         </div>
 
                         <div className="lpj-list">
                             {isLoading && <div className="empty-state">Memuat LPJ...</div>}
 
-                            {!isLoading && lpjs.length === 0 && (
-                                <div className="empty-state">Belum ada LPJ aktif atau finish yang ditugaskan.</div>
+                            {!isLoading && visibleLpjs.length === 0 && (
+                                <div className="empty-state">{emptyLpjMessage}</div>
                             )}
 
                             {!isLoading &&
-                                lpjs.map((lpj) => (
-                                    <article className="lpj-card" key={lpj.id}>
+                                visibleLpjs.map((lpj) => (
+                                    <button
+                                        className="lpj-card"
+                                        key={lpj.id}
+                                        type="button"
+                                        onClick={() => openLpjDetail(lpj.id)}
+                                    >
                                         <div className="lpj-card-top">
                                             <span className={`status-pill ${lpj.status}`}>{lpj.status_label}</span>
                                             <span className="lpj-code">{lpj.code}</span>
@@ -273,11 +439,92 @@ function KicapApp() {
                                                 {lpj.location ?? '-'}
                                             </span>
                                         </div>
-                                    </article>
+                                        <span className="open-detail-label">
+                                            <FileText size={14} strokeWidth={2.4} />
+                                            Buka detail
+                                        </span>
+                                    </button>
                                 ))}
                         </div>
                     </section>
                 </>
+            )}
+
+            {showDetail && (
+                <section className="detail-panel">
+                    <button className="back-button" type="button" onClick={closeLpjDetail}>
+                        <ArrowLeft size={17} strokeWidth={2.5} />
+                        Kembali
+                    </button>
+
+                    {isDetailLoading && <div className="empty-state">Memuat detail LPJ...</div>}
+
+                    {!isDetailLoading && !selectedLpj && (
+                        <div className="empty-state">{operationalSaveMessage || 'Detail LPJ belum tersedia.'}</div>
+                    )}
+
+                    {!isDetailLoading && selectedLpj && (
+                        <>
+                            <article className="detail-hero">
+                                <div className="lpj-card-top">
+                                    <span className={`status-pill ${selectedLpj.status}`}>
+                                        {selectedLpj.status_label}
+                                    </span>
+                                    <span className="lpj-code">{selectedLpj.code}</span>
+                                </div>
+                                <h2>{selectedLpj.title}</h2>
+                                <p className="lpj-type">{selectedLpj.type ?? '-'}</p>
+                                <div className="meta-list">
+                                    <span>
+                                        <CalendarDays size={15} strokeWidth={2.4} />
+                                        {formatDateRange(selectedLpj)}
+                                    </span>
+                                    <span>
+                                        <MapPin size={15} strokeWidth={2.4} />
+                                        {selectedLpj.location ?? '-'}
+                                    </span>
+                                    <span>
+                                        <UsersRound size={15} strokeWidth={2.4} />
+                                        {selectedLpj.person_in_charge ?? '-'}
+                                    </span>
+                                </div>
+                            </article>
+
+                            <div className="narrative-header">
+                                <div>
+                                    <p className="section-kicker">Input Operasional</p>
+                                    <h2>
+                                        {selectedLpj.can_input_operational_data
+                                            ? 'Catatan petugas'
+                                            : 'Catatan terkunci'}
+                                    </h2>
+                                </div>
+                                <div className="save-state">
+                                    <Save size={14} strokeWidth={2.4} />
+                                    {selectedLpj.can_input_operational_data
+                                        ? operationalSaveMessage || 'Siap diisi'
+                                        : 'Hanya baca'}
+                                </div>
+                            </div>
+
+                            <div className="narrative-list">
+                                {selectedLpj.activity_notes.map((note) => (
+                                    <label className="narrative-card" key={note.type}>
+                                        <span>{note.label}</span>
+                                        <textarea
+                                            disabled={!selectedLpj.can_input_operational_data}
+                                            rows={5}
+                                            value={operationalDrafts[note.type] ?? ''}
+                                            onChange={(event) =>
+                                                handleOperationalChange(note.type, event.target.value)
+                                            }
+                                        />
+                                    </label>
+                                ))}
+                            </div>
+                        </>
+                    )}
+                </section>
             )}
 
             {activeNav === 'profil' && (

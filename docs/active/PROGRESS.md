@@ -61,7 +61,7 @@ Target baru tercatat di `docs/active/SLICE_01_MASTER_LPJ_ROLE.md`.
 
 ## Slice 01 Revisi — Implementasi 2026-06-20
 
-Status: Implementasi + validasi otomatis PASS, menunggu review manual user sebelum commit/push.
+Status: Implementasi + validasi otomatis PASS, disetujui untuk commit/push pada 20 Juni 2026.
 
 Selesai:
 
@@ -87,3 +87,27 @@ Catatan runtime:
 
 - `npm run build` dari bash gagal karena `npm` Windows tidak bisa membaca shim Vite Linux.
 - Build PASS setelah `npm install --ignore-scripts` lewat Windows npm melengkapi optional native dependency Rolldown, lalu build dijalankan via `cmd.exe`.
+
+## Slice 02 — LPJ Detail & Input Mobile
+
+Status: Implementasi + validasi otomatis PASS, menunggu review manual user sebelum commit/push.
+
+Selesai:
+
+- Halaman detail LPJ untuk User di PWA mobile.
+- Endpoint detail LPJ hanya untuk User yang ditugaskan.
+- LPJ `aktif` dapat diisi catatan operasionalnya oleh User yang ditugaskan.
+- LPJ `finish` tampil read-only untuk User yang ditugaskan.
+- Narasi LPJ tidak tampil dan tidak dapat diedit oleh User/Petugas.
+- Autosave ringan untuk catatan operasional mobile.
+- Bottom navigation petugas menjadi 5 item dengan `Input Cepat` sebagai tombol tengah.
+- Label UX PWA yang terlihat user memakai bahasa Indonesia, termasuk `Input Cepat` dan `Selesai`.
+
+Validasi otomatis PASS:
+
+- `php artisan migrate --force`
+- `php artisan test tests/Feature/Slice02LpjDetailMobileInputTest.php` — 5 tests, 27 assertions
+- `php artisan test` — 34 tests, 99 assertions
+- `php artisan migrate:fresh --seed`
+- `php artisan route:list --path=api/app`
+- `cmd.exe /c "cd /d D:\kulino\lpj-kicap && npm.cmd run build"`

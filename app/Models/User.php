@@ -80,4 +80,9 @@ class User extends Authenticatable implements FilamentUser, HasAvatar
     {
         return $this->hasMany(LpjAssignedUser::class);
     }
+
+    public function activityNotes(): HasMany
+    {
+        return $this->hasMany(ActivityNote::class);
+    }
 }

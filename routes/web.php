@@ -1,14 +1,17 @@
 <?php
 
+use App\Models\ActivityNote;
 use App\Models\Lpj;
 use App\Models\LpjType;
 use App\Models\User;
+use App\Services\ActivityNoteService;
 use Filament\Facades\Filament;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Validation\Rule;
 
 Route::get('/', fn () => redirect('/app'));
 
@@ -83,6 +86,93 @@ Route::middleware('auth')->group(function (): void {
             ]);
 
         return response()->json(['data' => $lpjs]);
+    });
+
+    Route::get('/api/app/lpjs/{lpj}', function (Request $request, Lpj $lpj, ActivityNoteService $activityNoteService) {
+        /** @var User $user */
+        $user = $request->user();
+
+        abort_unless($user->isUser(), 403);
+
+        $lpj = Lpj::query()
+            ->visibleToAssignedUser($user)
+            ->with(['type:id,name,slug', 'personInCharge:id,name'])
+            ->findOrFail($lpj->id);
+
+        $assignment = $lpj->assignedUsers()
+            ->where('user_id', $user->id)
+            ->firstOrFail();
+
+        $activityNotes = $activityNoteService->ensureForUser($lpj, $user);
+
+        return response()->json([
+            'data' => [
+                'id' => $lpj->id,
+                'code' => $lpj->code,
+                'title' => $lpj->title,
+                'type' => $lpj->type?->name,
+                'type_slug' => $lpj->type?->slug,
+                'status' => $lpj->status,
+                'status_label' => Lpj::statusLabels()[$lpj->status] ?? $lpj->status,
+                'start_date' => $lpj->start_date?->toDateString(),
+                'end_date' => $lpj->end_date?->toDateString(),
+                'location' => $lpj->location,
+                'funding_source' => $lpj->funding_source,
+                'assignment_letter_number' => $lpj->assignment_letter_number,
+                'period_label' => $lpj->period_label,
+                'external_organizer' => $lpj->external_organizer,
+                'organization_role' => $lpj->organization_role,
+                'person_in_charge' => $lpj->personInCharge?->name,
+                'can_input_operational_data' => $lpj->status === Lpj::STATUS_AKTIF && $assignment->can_edit_activity_data,
+                'activity_notes' => $activityNoteService->payload($activityNotes),
+            ],
+        ]);
+    });
+
+    Route::post('/api/app/lpjs/{lpj}/activity-notes', function (Request $request, Lpj $lpj, ActivityNoteService $activityNoteService) {
+        /** @var User $user */
+        $user = $request->user();
+
+        abort_unless($user->isUser(), 403);
+
+        $lpj = Lpj::query()
+            ->visibleToAssignedUser($user)
+            ->findOrFail($lpj->id);
+
+        $assignment = $lpj->assignedUsers()
+            ->where('user_id', $user->id)
+            ->firstOrFail();
+
+        abort_unless($lpj->status === Lpj::STATUS_AKTIF && $assignment->can_edit_activity_data, 403);
+
+        $validated = $request->validate([
+            'notes' => ['required', 'array', 'min:1'],
+            'notes.*.type' => ['required', 'string', Rule::in(ActivityNote::types())],
+            'notes.*.content' => ['nullable', 'string', 'max:5000'],
+        ]);
+
+        $activityNoteService->ensureForUser($lpj, $user);
+
+        foreach ($validated['notes'] as $item) {
+            $lpj->activityNotes()->updateOrCreate(
+                [
+                    'user_id' => $user->id,
+                    'type' => $item['type'],
+                ],
+                [
+                    'content' => $item['content'] ?? '',
+                    'include_in_report' => false,
+                ]
+            );
+        }
+
+        return response()->json([
+            'data' => [
+                'activity_notes' => $activityNoteService->payload(
+                    $lpj->activityNotes()->where('user_id', $user->id)->get()
+                ),
+            ],
+        ]);
     });
 
     Route::get('/api/app/profile', function (Request $request) {

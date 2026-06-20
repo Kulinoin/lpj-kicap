@@ -85,6 +85,16 @@ class Lpj extends Model
         return $this->hasMany(LpjAssignedUser::class);
     }
 
+    public function narratives(): HasMany
+    {
+        return $this->hasMany(LpjNarrative::class);
+    }
+
+    public function activityNotes(): HasMany
+    {
+        return $this->hasMany(ActivityNote::class);
+    }
+
     public static function statuses(): array
     {
         return [
@@ -98,10 +108,10 @@ class Lpj extends Model
     public static function statusLabels(): array
     {
         return [
-            self::STATUS_DRAFT => 'Draft',
+            self::STATUS_DRAFT => 'Draf',
             self::STATUS_AKTIF => 'Aktif',
-            self::STATUS_FINISH => 'Finish',
-            self::STATUS_ARSIPKAN => 'Arsipkan',
+            self::STATUS_FINISH => 'Selesai',
+            self::STATUS_ARSIPKAN => 'Diarsipkan',
         ];
     }
 

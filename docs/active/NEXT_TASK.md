@@ -1,53 +1,44 @@
 # Next Task
 
-## Slice 01 Revisi — Master LPJ, Role, Login, dan UI Baseline
+## Slice 03 — Operasional Keuangan
 
-Implementasi ulang Slice 01 berdasarkan dokumen revisi 20 Juni 2026 sudah selesai secara otomatis dan menunggu review manual user sebelum commit/push.
+Slice 02 selesai divalidasi dan disetujui untuk commit/push pada 20 Juni 2026.
 
-## Scope
+## Baseline Terkunci dari Slice 02
 
-- Login tunggal Kicap LPJ untuk Admin dan User.
-- Login dengan username/email dan password.
-- Checkbox `Ingat saya` berfungsi.
-- Redirect role:
+- User/Petugas hanya input data operasional lapangan.
+- Narasi LPJ adalah urusan Admin, bukan User/Petugas.
+- PWA User memakai bottom navigation 5 item: `Beranda`, `LPJ`, `Input Cepat`, `Selesai`, `Profil`.
+- Tombol tengah `Input Cepat` dipakai untuk fungsi yang paling sering digunakan petugas.
+- LPJ `finish` tampil sebagai `Selesai` dan read-only.
+- Bahasa UX interface User memakai bahasa Indonesia.
 
-```text
-Admin -> /admin
-User  -> /app
-```
+## Scope Awal Slice 03
 
-- Role MVP Admin/User.
-- Profil lembaga.
-- Tipe LPJ awal.
-- Status LPJ: `draft`, `aktif`, `finish`, `arsipkan`.
-- Admin membuat LPJ.
-- User tidak membuat LPJ.
-- User hanya melihat LPJ `aktif` dan `finish` yang ditugaskan.
-- Admin panel responsive full-width.
-- User PWA responsive HP/tablet dengan bottom navigation mengambang.
-- Tema visual cocok dengan logo Kicap, nyaman, eye-catching, dan memotivasi.
+- Dana masuk kegiatan.
+- Dana pegangan user.
+- Saldo user.
+- Catat pengeluaran per user.
+- Upload bukti transaksi.
+- Transfer saldo antar user tanpa approval Admin.
+- Dana talangan/klaim.
+- Status transaksi dasar.
 
-## Out of Scope
+## Guardrail Slice 03
 
-- Transaksi.
-- Saldo pegangan.
-- Transfer saldo.
-- Dana talangan.
-- Review/finalisasi mendalam.
-- Generate PDF.
-- Offline sync kompleks.
+- Transfer saldo antar user tidak memerlukan approval Admin.
+- Transfer saldo tidak masuk LPJ akhir.
+- Pembayaran klaim dana talangan tidak dihitung ulang sebagai pengeluaran LPJ.
+- User tetap tidak membuat LPJ.
+- User tetap tidak mengurus narasi LPJ.
+- Jangan membuat PDF resmi/final untuk LPJ yang belum `finish`.
 
-## Archive
+## Validasi Rencana Slice 03
 
-Archive hasil validasi slice dibuat di:
-
-```text
-docs/archive/slice-01-revisi-master-lpj-role-login-ui-baseline/2026-06-20-0959/
-```
-
-## Next
-
-- Review manual halaman login tunggal.
-- Review manual `/admin` sebagai Admin.
-- Review manual `/app` sebagai User di HP/tablet.
-- Setelah user setuju, stage file eksplisit, commit, lalu tunggu persetujuan push.
+- Admin memberi dana pegangan.
+- User melihat saldo.
+- User catat pengeluaran.
+- User upload bukti.
+- User transfer saldo ke user lain dan saldo langsung berpindah.
+- User catat dana talangan dan klaim internal terbentuk.
+- Transfer tidak masuk pengeluaran LPJ.

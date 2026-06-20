@@ -220,8 +220,12 @@ h3 {
 }
 
 .lpj-card {
+    display: block;
+    width: 100%;
     padding: 14px;
+    color: inherit;
     cursor: pointer;
+    text-align: left;
 }
 
 .lpj-card-top {
@@ -291,6 +295,20 @@ h3 {
     color: #0f9488;
 }
 
+.open-detail-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    min-height: 30px;
+    margin-top: 12px;
+    padding: 0 10px;
+    border-radius: 999px;
+    background: #fff0ed;
+    color: #df4a3b;
+    font-size: 11px;
+    font-weight: 900;
+}
+
 .empty-state {
     padding: 20px;
     color: #64748b;
@@ -302,6 +320,111 @@ h3 {
 
 .profile-panel {
     margin-top: 4px;
+}
+
+.detail-panel {
+    display: grid;
+    gap: 12px;
+}
+
+.back-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: max-content;
+    gap: 7px;
+    min-height: 38px;
+    padding: 0 12px;
+    border: 1px solid rgba(15, 23, 42, 0.10);
+    border-radius: 8px;
+    background: #ffffff;
+    color: #475569;
+    font-size: 12px;
+    font-weight: 900;
+    box-shadow: 0 10px 22px rgba(15, 23, 42, 0.08);
+    cursor: pointer;
+}
+
+.detail-hero,
+.narrative-card {
+    border: 1px solid rgba(15, 23, 42, 0.08);
+    border-radius: 8px;
+    background: #ffffff;
+    box-shadow: 0 14px 28px rgba(15, 23, 42, 0.08);
+}
+
+.detail-hero {
+    padding: 15px;
+}
+
+.detail-hero h2 {
+    margin-top: 12px;
+    margin-bottom: 5px;
+}
+
+.narrative-header {
+    display: flex;
+    align-items: end;
+    justify-content: space-between;
+    gap: 12px;
+    margin-top: 8px;
+}
+
+.save-state {
+    display: inline-flex;
+    align-items: center;
+    flex: 0 0 auto;
+    gap: 6px;
+    min-height: 31px;
+    max-width: 46%;
+    padding: 0 10px;
+    overflow: hidden;
+    border-radius: 999px;
+    background: #e9f8f5;
+    color: #0f766e;
+    font-size: 10px;
+    font-weight: 900;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.narrative-list {
+    display: grid;
+    gap: 10px;
+}
+
+.narrative-card {
+    display: grid;
+    gap: 8px;
+    padding: 13px;
+}
+
+.narrative-card > span {
+    color: #526176;
+    font-size: 11px;
+    font-weight: 950;
+}
+
+.narrative-card textarea {
+    width: 100%;
+    min-height: 132px;
+    resize: vertical;
+    border: 0;
+    border-radius: 8px;
+    outline: 0;
+    background: #f6f9fb;
+    color: #142033;
+    font-size: 13px;
+    font-weight: 750;
+    line-height: 1.48;
+    padding: 11px 12px;
+}
+
+.narrative-card textarea:disabled {
+    background: #f1f5f9;
+    color: #526176;
+    opacity: 1;
+    resize: none;
 }
 
 .profile-form {
@@ -470,8 +593,8 @@ h3 {
     bottom: 14px;
     left: 14px;
     display: grid;
-    grid-template-columns: repeat(4, minmax(0, 1fr));
-    gap: 4px;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 3px;
     max-width: 520px;
     margin: 0 auto;
     padding: 8px;
@@ -507,7 +630,7 @@ h3 {
     display: block;
     max-width: 100%;
     overflow: hidden;
-    font-size: 9px;
+    font-size: 8px;
     font-weight: 900;
     line-height: 1;
     text-overflow: ellipsis;
@@ -520,8 +643,8 @@ h3 {
 }
 
 .bottom-nav button.is-primary-action .nav-icon {
-    width: 42px;
-    height: 42px;
+    width: 40px;
+    height: 40px;
     margin-top: -20px;
     border-radius: 999px;
     background: linear-gradient(180deg, #ff806f 0%, #ef5b4b 100%);
