@@ -255,3 +255,122 @@ Validasi fokus PASS:
 - `php artisan test tests/Feature/Slice01MasterLpjRoleTest.php` — 7 tests, 24 assertions.
 - `php artisan test tests/Feature/Slice05ReviewFinalizationTest.php` — 4 tests, 20 assertions.
 - `php artisan tinker --execute='...'` form smoke — `forms ok`.
+
+## Slice 06 — Generate Dokumen LPJ
+
+Status: Implementasi + validasi otomatis fokus PASS, menunggu review manual user sebelum commit/push.
+
+Selesai:
+
+- Menambahkan dependency `barryvdh/laravel-dompdf` untuk export PDF server-side.
+- Menambahkan `LpjReportService` untuk menyusun payload LPJ final dari event/kegiatan `finish`.
+- Menambahkan print-ready view formal LPJ dengan cover, halaman pengesahan, footer/nomor halaman, identitas kegiatan, pelaksanaan, keuangan global, transaksi valid, dokumentasi, lampiran, dan penutup.
+- Menambahkan route Admin `admin/reports/lpjs/{lpj}/print` dan `admin/reports/lpjs/{lpj}/pdf`.
+- Menambahkan action Admin `Preview LPJ` dan `PDF LPJ` pada tabel Event, hanya tampil untuk event/kegiatan `finish`.
+- Output final hanya mengambil transaksi berstatus `valid`.
+- Transfer saldo, saldo per user, klaim/reimbursement, transaksi ditolak, catatan internal, serta dokumentasi/lampiran yang tidak ditandai `Masuk LPJ` tidak tampil default di LPJ final.
+- Dana talangan yang sudah valid tetap tampil sebagai biaya kegiatan.
+- User tetap tidak dapat membuat/generate LPJ final.
+
+Validasi otomatis PASS:
+
+- `php -l app/Services/LpjReportService.php`
+- `php -l routes/web.php`
+- `php -l tests/Feature/Slice06ReportGenerationTest.php`
+- `php artisan test tests/Feature/Slice06ReportGenerationTest.php` — 2 tests, 19 assertions
+- `php artisan test tests/Feature/Slice05ReviewFinalizationTest.php` — 4 tests, 20 assertions
+- `php artisan test tests/Feature/Slice04ExecutionDocumentationTest.php` — 5 tests, 29 assertions
+- `php artisan route:list --path=admin`
+- `php artisan route:list --path=api/app`
+- `npm run build`
+- `php artisan migrate:fresh --seed -n`
+- `git diff --check`
+
+Catatan validasi:
+
+- Kombinasi test Slice 04 + Slice 05 dalam satu command melewati timeout runtime lokal, lalu dijalankan terpisah dan keduanya PASS.
+
+Follow-up dana/print 2026-06-20:
+
+- Menambahkan aturan bahwa total dana yang dialokasikan Admin ke user untuk satu event tidak boleh lebih besar dari dana masuk event.
+- `Dana Masuk Event` menampilkan `Alokasi Dana` dan `Sisa Alokasi` untuk membantu Admin memantau plafon dana.
+- Payload keuangan User menampilkan `allocated_fund` dan `remaining_allocation`.
+- User yang ditugaskan dapat membuka print preview LPJ untuk event/kegiatan `finish`.
+- Tombol `Cetak LPJ` tampil pada detail event selesai di PWA User.
+- PDF export Admin tetap tersedia, tetapi jalur ringan utama untuk User adalah print preview HTML.
+
+Validasi follow-up PASS:
+
+- `php artisan test tests/Feature/Slice03OperationalFinanceTest.php` — 7 tests, 38 assertions
+- `php artisan test tests/Feature/Slice06ReportGenerationTest.php` — 2 tests, 26 assertions
+- `php artisan test tests/Feature/Slice01MasterLpjRoleTest.php tests/Feature/Slice01UsernameLoginFormTest.php tests/Feature/Slice01ProfileLoginPatchTest.php tests/Feature/Slice01ProfileAvatarPasswordPatchTest.php tests/Feature/Slice02LpjDetailMobileInputTest.php` — 29 tests, 93 assertions
+- `php artisan test tests/Feature/Slice04ExecutionDocumentationTest.php tests/Feature/Slice05ReviewFinalizationTest.php` — 9 tests, 49 assertions
+- `php artisan route:list --path=app/lpjs`
+- `php artisan route:list --path=api/app`
+- `npm run build`
+- `php artisan migrate:fresh --seed -n`
+- `git diff --check`
+
+Follow-up Dokumen LPJ 2026-06-20:
+
+- Menambahkan tabel snapshot `lpj_report_snapshots`.
+- Menambahkan menu Admin `Dokumen LPJ`.
+- Setiap Admin/User membuka print preview LPJ final atau Admin export PDF, sistem menyimpan snapshot HTML print-ready.
+- Snapshot menyimpan nomor versi, event, user pembuat, sumber generate, total dana masuk, total pengeluaran valid, total sisa dana, waktu generate, dan HTML dokumen.
+- Admin dapat membuka ulang snapshot dari menu `Dokumen LPJ`.
+
+Validasi follow-up PASS:
+
+- `php -l` model/service/route/resource/test terkait snapshot
+- `php artisan migrate:fresh --seed -n`
+- `php artisan test tests/Feature/Slice06ReportGenerationTest.php` — 3 tests, 32 assertions
+- `php artisan test tests/Feature/Slice03OperationalFinanceTest.php` — 7 tests, 38 assertions
+- `php artisan route:list --path=admin`
+- `npm run build`
+- `git diff --check`
+
+Follow-up PWA User 2026-06-20:
+
+- Memisahkan tampilan role User: menu `Operasional` hanya berisi catatan petugas, peserta, panitia/pendamping, dan rundown.
+- Upload dokumentasi, upload lampiran, dan daftar file tersimpan dipindahkan penuh ke menu `Dokumentasi`.
+- Klik event dari `Beranda` sekarang membuka detail event read-only, bukan masuk ke menu `Operasional`.
+- Detail event dari `Beranda` hanya menampilkan informasi event dan akses `Cetak LPJ` jika LPJ sudah tersedia.
+- API/data model tidak berubah; perubahan hanya pada pemisahan halaman PWA.
+
+Validasi follow-up PASS:
+
+- `npm run build`
+- `php artisan test tests/Feature/Slice04ExecutionDocumentationTest.php tests/Feature/Slice02LpjDetailMobileInputTest.php` — 10 tests, 57 assertions
+- `php artisan test tests/Feature/Slice02LpjDetailMobileInputTest.php tests/Feature/Slice06ReportGenerationTest.php` — 8 tests, 60 assertions
+- `php artisan route:list --path=api/app`
+- `git diff --check`
+
+Follow-up Storage, Logo, dan Catatan 2026-06-21:
+
+- Menambahkan pengaturan Admin `Pengaturan Penyimpanan` untuk memilih Local Storage atau Cloudflare R2.
+- Menambahkan dependency S3 adapter agar Cloudflare R2 dapat dipakai lewat driver storage S3-compatible.
+- Dokumentasi kegiatan, lampiran, bukti transaksi, dan avatar profil sekarang menyimpan metadata disk agar URL tetap benar saat pindah provider.
+- Upload gambar dokumentasi/lampiran/proof/avatar disiapkan untuk kompres otomatis ke WebP saat runtime server memiliki GD/WebP.
+- Runtime lokal saat validasi belum memiliki GD/WebP, sehingga sistem fallback aman ke file asli.
+- Menu `Organization Profiles` memakai upload gambar `Logo Lembaga untuk LPJ`, bukan input teks path.
+- Menambahkan panduan aset aplikasi di `docs/active/APP_ASSET_GUIDE.md`.
+- Favicon browser fallback `public/favicon.ico` didaftarkan di halaman PWA dan asset PWA build.
+- Bottom navigation User mengganti `Profil` menjadi `Catatan`.
+- Menu `Catatan` menjadi tempat input catatan petugas.
+- Menu `Operasional` hanya berisi data pelaksanaan: peserta, tim/panitia/pendamping, dan rundown.
+- Tombol `Beranda` selalu kembali ke layar awal ringkasan dan daftar event, bukan mempertahankan detail event terakhir.
+
+Validasi follow-up PASS:
+
+- `php -l` file PHP yang dipatch.
+- `php artisan migrate:fresh --seed -n`
+- `php artisan test tests/Feature/Slice04ExecutionDocumentationTest.php tests/Feature/Slice06ReportGenerationTest.php` — 8 tests, 64 assertions.
+- `php artisan test tests/Feature/Slice01UsernameLoginFormTest.php tests/Feature/Slice01ProfileLoginPatchTest.php tests/Feature/Slice01ProfileAvatarPasswordPatchTest.php tests/Feature/Slice02LpjDetailMobileInputTest.php tests/Feature/Slice03OperationalFinanceTest.php` — 29 tests, 107 assertions.
+- `php artisan route:list --path=admin`
+- `php artisan route:list --path=api/app`
+- `php artisan route:list --path=app/lpjs`
+- `npm run build`
+
+Catatan validasi:
+
+- `composer dump-autoload --no-scripts --no-interaction` timeout pada fase `Generating optimized autoload files`, tetapi autoload sudah dapat membaca S3 adapter dan service aplikasi.

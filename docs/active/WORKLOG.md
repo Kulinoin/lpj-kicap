@@ -1,5 +1,77 @@
 # Worklog Kicap Event
 
+## 2026-06-21 — Slice 06 Follow-up R2, Logo LPJ, dan Catatan User
+
+- Melanjutkan implementasi Cloudflare R2 dengan resource Admin `Pengaturan Penyimpanan`.
+- Menambahkan `AppFileStorageService` untuk memilih disk aktif, membuat URL file, menghapus file lama, dan menyiapkan konversi gambar ke WebP.
+- Menambahkan metadata disk pada dokumentasi kegiatan, lampiran, bukti transaksi, dan avatar profil.
+- Menambahkan fallback aman jika runtime belum memiliki GD/WebP.
+- Mengubah `Organization Profiles` agar `Logo Lembaga untuk LPJ` berupa upload gambar.
+- Menambahkan fallback favicon dan panduan aset aplikasi di `docs/active/APP_ASSET_GUIDE.md`.
+- Mengganti nav User `Profil` menjadi `Catatan`.
+- Memindahkan input catatan petugas ke menu `Catatan`.
+- Memastikan menu `Operasional` hanya berisi peserta, tim/panitia/pendamping, dan rundown.
+- Memastikan klik `Beranda` membersihkan detail dan kembali ke layar awal.
+- Validasi PASS: `php artisan migrate:fresh --seed -n`.
+- Validasi PASS: `php artisan test tests/Feature/Slice04ExecutionDocumentationTest.php tests/Feature/Slice06ReportGenerationTest.php` — 8 tests, 64 assertions.
+- Validasi PASS: `php artisan test tests/Feature/Slice01UsernameLoginFormTest.php tests/Feature/Slice01ProfileLoginPatchTest.php tests/Feature/Slice01ProfileAvatarPasswordPatchTest.php tests/Feature/Slice02LpjDetailMobileInputTest.php tests/Feature/Slice03OperationalFinanceTest.php` — 29 tests, 107 assertions.
+- Validasi PASS: `php artisan route:list --path=admin`, `php artisan route:list --path=api/app`, dan `php artisan route:list --path=app/lpjs`.
+- Validasi PASS: `npm run build`.
+- Validasi PASS: `git diff --check`.
+- Catatan runtime: `composer dump-autoload --no-scripts --no-interaction` timeout, tetapi autoload package S3 dan service aplikasi terverifikasi bisa dibaca.
+- Catatan runtime: GD/WebP lokal belum aktif, sehingga WebP auto-compress akan aktif setelah server menyediakan `imagewebp`.
+
+## 2026-06-20 22:40 WIB — Slice 06 Generate Dokumen LPJ
+
+- Menambahkan generator dokumen LPJ final berbasis `LpjReportService`.
+- Menambahkan print-ready Blade view untuk cover formal, halaman pengesahan dengan kop lengkap, isi LPJ global, keuangan global, rincian transaksi valid, dokumentasi, lampiran, dan penutup.
+- Menambahkan export PDF server-side memakai Dompdf.
+- Menambahkan route Admin untuk preview print-ready dan download PDF LPJ.
+- Menambahkan action `Preview LPJ` dan `PDF LPJ` pada tabel Event, hanya untuk event/kegiatan `finish`.
+- Menjaga guardrail: output final hanya untuk `finish`, hanya transaksi valid yang tampil, transfer saldo tidak tampil, klaim/reimbursement tidak tampil sebagai pengeluaran baru, dan dana talangan valid tampil sebagai biaya kegiatan.
+- Menambahkan coverage test `Slice06ReportGenerationTest`.
+- Validasi PASS: syntax PHP file baru/route/test.
+- Validasi PASS: `php artisan test tests/Feature/Slice06ReportGenerationTest.php`.
+- Validasi PASS: `php artisan test tests/Feature/Slice05ReviewFinalizationTest.php`.
+- Validasi PASS: `php artisan test tests/Feature/Slice04ExecutionDocumentationTest.php`.
+- Validasi PASS: `php artisan route:list --path=admin`.
+- Validasi PASS: `php artisan route:list --path=api/app`.
+- Validasi PASS: `npm run build`.
+- Validasi PASS: `php artisan migrate:fresh --seed -n`.
+- Validasi PASS: `git diff --check`.
+
+## 2026-06-20 — Slice 06 Follow-up Dana & Print User
+
+- Menambahkan batas alokasi dana pegangan user agar total alokasi `fund_in` tidak melewati dana masuk event.
+- Menambahkan informasi `Alokasi Dana` dan `Sisa Alokasi` pada tabel `Dana Masuk Event`.
+- Menambahkan informasi alokasi pada payload keuangan User.
+- Menambahkan route print preview LPJ untuk User yang ditugaskan pada event/kegiatan `finish`.
+- Menambahkan tombol `Cetak LPJ` pada detail event selesai di PWA User.
+- Menjaga PDF export Admin tetap ada, tetapi jalur ringan User memakai print preview HTML.
+- Validasi PASS: `php artisan test tests/Feature/Slice03OperationalFinanceTest.php`.
+- Validasi PASS: `php artisan test tests/Feature/Slice06ReportGenerationTest.php`.
+- Validasi PASS: test login/profile/detail operasional User.
+- Validasi PASS: test pelaksanaan/dokumentasi dan review/finalisasi.
+- Validasi PASS: route app/API, build frontend, migrate fresh seed, dan diff check.
+
+## 2026-06-20 — Slice 06 Follow-up Menu Dokumen LPJ
+
+- Menambahkan model dan migration `LpjReportSnapshot`.
+- Menambahkan menu Admin `Dokumen LPJ` untuk daftar snapshot LPJ yang sudah dihasilkan.
+- Menyimpan snapshot HTML print-ready saat Admin membuka preview, Admin export PDF, atau User membuka cetak LPJ.
+- Snapshot menyimpan versi, nomor snapshot, event, pembuat, sumber generate, total dana masuk, pengeluaran valid, sisa dana, dan waktu generate.
+- Menambahkan route Admin untuk membuka ulang snapshot tersimpan.
+- Validasi PASS: syntax, migrate fresh seed, route admin, build frontend, test Slice 06, test Slice 03, dan diff check.
+
+## 2026-06-20 — Slice 06 Follow-up PWA User Dokumentasi
+
+- Memisahkan tampilan menu `Operasional` dan `Dokumentasi` di PWA User.
+- Menu `Operasional` sekarang fokus pada catatan petugas, data peserta, panitia/pendamping, dan rundown.
+- Menu `Dokumentasi` sekarang menjadi halaman khusus upload dokumentasi, upload lampiran, dan daftar file tersimpan.
+- Klik event dari `Beranda` sekarang membuka detail event read-only, bukan berpindah ke menu `Operasional`.
+- Detail event dari `Beranda` hanya menampilkan data event dan tombol `Cetak LPJ` jika LPJ sudah tersedia.
+- Validasi PASS: build frontend, test Slice 04 + Slice 02, route API, dan diff check.
+
 ## 2026-06-20 21:26 WIB — Slice 05 Review & Finalisasi Event
 
 - Menambahkan `LpjReviewService` untuk submit review, checklist, review transaksi, revisi transaksi, rekonsiliasi sederhana, dan finalisasi event/kegiatan.

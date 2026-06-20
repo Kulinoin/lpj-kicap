@@ -103,6 +103,7 @@ class Slice04ExecutionDocumentationTest extends TestCase
             ]);
 
         $documentation = ActivityDocumentation::query()->where('lpj_id', $lpj->id)->firstOrFail();
+        $this->assertSame('public', $documentation->file_disk);
         Storage::disk('public')->assertExists($documentation->file_path);
 
         $attachmentResponse = $this->actingAs($user)->post("/api/app/lpjs/{$lpj->id}/attachments", [
@@ -121,6 +122,7 @@ class Slice04ExecutionDocumentationTest extends TestCase
             ]);
 
         $attachment = ActivityAttachment::query()->where('lpj_id', $lpj->id)->firstOrFail();
+        $this->assertSame('public', $attachment->file_disk);
         Storage::disk('public')->assertExists($attachment->file_path);
     }
 

@@ -81,6 +81,14 @@ class LpjFundReceiptResource extends Resource
                     ->label('Nominal')
                     ->money('IDR')
                     ->sortable(),
+                TextColumn::make('allocated_fund')
+                    ->label('Alokasi Dana')
+                    ->state(fn (LpjFundReceipt $record): float => $record->lpj?->allocatedUserFundTotal() ?? 0)
+                    ->money('IDR'),
+                TextColumn::make('remaining_allocation')
+                    ->label('Sisa Alokasi')
+                    ->state(fn (LpjFundReceipt $record): float => $record->lpj?->remainingAllocationFund() ?? 0)
+                    ->money('IDR'),
                 TextColumn::make('received_at')
                     ->label('Tanggal')
                     ->date()

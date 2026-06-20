@@ -127,6 +127,20 @@ class LpjsTable
                         'record' => $record->fresh(),
                         'review' => app(LpjReviewService::class)->reviewPayload($record->fresh()),
                     ])),
+                Action::make('report_preview')
+                    ->label('Preview LPJ')
+                    ->icon('heroicon-o-document-magnifying-glass')
+                    ->color('info')
+                    ->hidden(fn (Lpj $record): bool => $record->status !== Lpj::STATUS_FINISH)
+                    ->url(fn (Lpj $record): string => route('admin.lpjs.report.print', $record))
+                    ->openUrlInNewTab(),
+                Action::make('report_pdf')
+                    ->label('PDF LPJ')
+                    ->icon('heroicon-o-arrow-down-tray')
+                    ->color('gray')
+                    ->hidden(fn (Lpj $record): bool => $record->status !== Lpj::STATUS_FINISH)
+                    ->url(fn (Lpj $record): string => route('admin.lpjs.report.pdf', $record))
+                    ->openUrlInNewTab(),
                 EditAction::make(),
             ])
             ->toolbarActions([

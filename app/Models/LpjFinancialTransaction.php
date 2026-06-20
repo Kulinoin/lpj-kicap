@@ -47,6 +47,7 @@ class LpjFinancialTransaction extends Model
         'amount',
         'spent_at',
         'proof_path',
+        'proof_disk',
         'no_proof_reason',
         'admin_note',
         'reviewed_at',

@@ -7,7 +7,6 @@ use App\Models\LpjFinancialTransaction;
 use App\Models\User;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\ValidationException;
 
 class LpjReviewService
@@ -100,10 +99,13 @@ class LpjReviewService
 
             if ($proof) {
                 if ($transaction->proof_path) {
-                    Storage::disk('public')->delete($transaction->proof_path);
+                    app(AppFileStorageService::class)->delete($transaction->proof_path, $transaction->proof_disk);
                 }
 
-                $payload['proof_path'] = $proof->store('transaction-proofs', 'public');
+                $stored = app(AppFileStorageService::class)->store($proof, 'transaction-proofs');
+
+                $payload['proof_path'] = $stored['path'];
+                $payload['proof_disk'] = $stored['disk'];
             }
 
             $transaction->forceFill($payload)->save();

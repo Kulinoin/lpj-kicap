@@ -15,7 +15,7 @@
                     @if ($photo)
                         <img src="{{ $photo->temporaryUrl() }}" alt="Preview foto profil" class="h-24 w-24 rounded-full object-cover">
                     @elseif ($profile_photo_path)
-                        <img src="{{ \Illuminate\Support\Facades\Storage::url($profile_photo_path) }}" alt="Foto profil" class="h-24 w-24 rounded-full object-cover">
+                        <img src="{{ app(\App\Services\AppFileStorageService::class)->url($profile_photo_path, auth()->user()?->profile_photo_disk) }}" alt="Foto profil" class="h-24 w-24 rounded-full object-cover">
                     @else
                         <div class="flex h-24 w-24 items-center justify-center rounded-full bg-gray-200 text-2xl font-semibold text-gray-700 dark:bg-gray-800 dark:text-gray-200">
                             {{ strtoupper(substr((string) $name, 0, 1)) }}

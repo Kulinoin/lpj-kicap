@@ -24,6 +24,7 @@ class User extends Authenticatable implements FilamentUser, HasAvatar
         'email',
         'whatsapp',
         'profile_photo_path',
+        'profile_photo_disk',
         'password',
         'role',
         'is_active',
@@ -58,7 +59,10 @@ class User extends Authenticatable implements FilamentUser, HasAvatar
             return null;
         }
 
-        return asset('storage/'.$this->profile_photo_path);
+        return app(\App\Services\AppFileStorageService::class)->url(
+            $this->profile_photo_path,
+            $this->profile_photo_disk ?: 'public'
+        );
     }
 
     public function isAdmin(): bool

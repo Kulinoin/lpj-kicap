@@ -1,65 +1,60 @@
 # Checklist Manual Aktif
 
-## Slice 05 — Review & Finalisasi Event
+## Slice 06 — Generate Dokumen LPJ
 
-- [ ] Login sebagai User.
-- [ ] Buka event/kegiatan aktif yang ditugaskan.
-- [ ] Pastikan detail menampilkan status kelengkapan.
-- [ ] Klik `Ajukan Review`.
-- [ ] Pastikan status kelengkapan menjadi `Siap Review`.
 - [ ] Login sebagai Admin.
 - [ ] Buka menu `Semua Event`.
-- [ ] Klik action `Checklist` pada event/kegiatan yang sama.
-- [ ] Pastikan checklist menampilkan data dasar, pelaksanaan, catatan masuk LPJ, dokumentasi/lampiran, review transaksi, alasan tanpa bukti, dan rekonsiliasi saldo.
-- [ ] Buka menu `Transaksi Event`.
-- [ ] Tandai transaksi dengan bukti/alasan sebagai `Valid`.
-- [ ] Tandai transaksi bermasalah sebagai `Revisi` atau `Minta Bukti`.
-- [ ] Login lagi sebagai User.
-- [ ] Buka tab `Keuangan`.
-- [ ] Pastikan transaksi yang diminta revisi menampilkan catatan Admin.
-- [ ] Kirim revisi transaksi dengan bukti atau alasan tanpa bukti.
-- [ ] Login sebagai Admin.
-- [ ] Validasi transaksi revisi.
-- [ ] Buka `Checklist` sampai semua item PASS.
-- [ ] Klik `Finalisasi`.
-- [ ] Pastikan status event/kegiatan menjadi `Selesai`.
+- [ ] Pastikan event/kegiatan yang belum `finish` tidak menampilkan action `Preview LPJ` dan `PDF LPJ`.
+- [ ] Buka menu `Dana Masuk Event`.
+- [ ] Pastikan tabel menampilkan `Alokasi Dana` dan `Sisa Alokasi`.
+- [ ] Tambahkan dana pegangan user dari menu `Mutasi Saldo`.
+- [ ] Pastikan sistem menolak alokasi jika total dana pegangan user melebihi dana masuk event.
+- [ ] Buka event/kegiatan yang sudah `finish`.
+- [ ] Klik `Preview LPJ`.
+- [ ] Pastikan halaman print-ready menampilkan cover formal.
+- [ ] Kembali ke Admin dan buka menu `Dokumen LPJ`.
+- [ ] Pastikan snapshot LPJ yang baru dihasilkan muncul di daftar.
+- [ ] Klik `Buka Snapshot`.
+- [ ] Pastikan dokumen snapshot bisa dibuka ulang.
+- [ ] Pastikan halaman pengesahan memakai kop lengkap lembaga.
+- [ ] Pastikan footer dan nomor halaman tampil.
+- [ ] Pastikan identitas kegiatan tampil: judul, tipe, tanggal/periode, lokasi, PJ, sumber dana, nomor surat/tugas.
+- [ ] Pastikan data peserta, panitia/pendamping, dan rundown tampil rapi.
+- [ ] Pastikan catatan yang ditandai `Masuk LPJ` tampil pada hasil/evaluasi/kendala/saran.
+- [ ] Pastikan catatan internal yang tidak ditandai `Masuk LPJ` tidak tampil.
+- [ ] Pastikan keuangan global menampilkan dana diterima, pengeluaran valid, dan sisa dana.
+- [ ] Pastikan rincian transaksi hanya menampilkan transaksi berstatus `Valid`.
+- [ ] Pastikan transaksi `Ditolak`, `Perlu Revisi`, `Menunggu Bukti`, dan `Perlu Review` tidak tampil.
+- [ ] Pastikan transfer saldo tidak tampil di LPJ akhir.
+- [ ] Pastikan klaim/reimbursement dana talangan tidak tampil default.
+- [ ] Pastikan dana talangan yang transaksinya `Valid` tampil sebagai biaya kegiatan.
+- [ ] Pastikan dokumentasi dan lampiran yang ditandai `Masuk LPJ` tampil.
+- [ ] Pastikan dokumentasi/lampiran internal yang tidak ditandai `Masuk LPJ` tidak tampil.
+- [ ] Klik `Unduh PDF` atau action `PDF LPJ`.
+- [ ] Pastikan file PDF berhasil diunduh dan bisa dibuka.
+- [ ] Pastikan export PDF juga menambah baris snapshot pada menu `Dokumen LPJ`.
 - [ ] Login sebagai User.
-- [ ] Pastikan event/kegiatan `finish` tampil read-only.
-- [ ] Pastikan User tidak bisa input operasional, keuangan, pelaksanaan, dokumentasi, atau revisi transaksi setelah `finish`.
-- [ ] Pastikan tidak ada tombol/endpoint PDF resmi untuk event/kegiatan yang belum `finish`.
-
-## Product Concept Rename — Kicap Event
-
-- [ ] Pastikan brand aplikasi tampil sebagai `Kicap Event`.
-- [ ] Pastikan daftar pekerjaan User memakai istilah `Event Saya` / `Kegiatan Saya`, bukan `LPJ Saya`.
-- [ ] Pastikan detail kerja memakai istilah `Detail Event` atau `Detail Kegiatan`.
-- [ ] Pastikan dana/transaksi operasional memakai istilah event/kegiatan.
-- [ ] Pastikan kata `LPJ` tetap ada hanya untuk konteks `Masuk LPJ`, preview/export/generate dokumen, template dokumen, dan output final.
-- [ ] Pastikan tidak ada perubahan alur login, role, transfer saldo, dana talangan, atau finalisasi.
-- [ ] Pastikan schema/model/route internal `lpj` tidak direname agresif pada task ini.
-
-## Slice 04 — Pelaksanaan & Dokumentasi
-
-- [ ] Login sebagai User.
-- [ ] Buka `/app` dari viewport HP.
-- [ ] Pastikan bottom navigation tetap 5 item: `Beranda`, `Operasional`, `Keuangan`, `Selesai`, `Profil`.
-- [ ] Buka tab `Operasional`.
-- [ ] Buka event/kegiatan aktif yang ditugaskan.
-- [ ] Pastikan catatan petugas berisi `Hasil di Lapangan`, `Evaluasi`, `Kendala`, dan `Saran Tindak Lanjut`.
-- [ ] Isi catatan evaluasi/kendala/saran.
-- [ ] Tandai catatan yang perlu masuk LPJ.
-- [ ] Isi data peserta: nama, asal, nomor peserta, kehadiran, hasil, dan keterangan.
-- [ ] Isi data panitia/pendamping: nama, jabatan/peran, tugas, dan kontak.
-- [ ] Isi rundown: waktu mulai, waktu selesai, nama aktivitas, penanggung jawab, dan catatan.
-- [ ] Simpan data kegiatan.
-- [ ] Upload dokumentasi kegiatan berupa gambar/PDF.
-- [ ] Tandai dokumentasi yang perlu masuk LPJ.
-- [ ] Upload lampiran pendukung.
-- [ ] Tandai lampiran yang perlu masuk LPJ.
-- [ ] Pastikan file tersimpan tampil pada daftar `File tersimpan`.
-- [ ] Kembali ke tab `Keuangan`.
-- [ ] Pastikan aturan transfer saldo Slice 03 tetap langsung tanpa approval.
-- [ ] Pastikan input pelaksanaan tidak membuat transaksi pengeluaran LPJ.
-- [ ] Buka event/kegiatan `finish` sebagai User.
-- [ ] Pastikan data pelaksanaan dan upload dokumentasi/lampiran read-only.
-- [ ] Pastikan tidak ada tombol/endpoint PDF resmi untuk LPJ yang belum `finish`.
+- [ ] Buka `Beranda`.
+- [ ] Klik salah satu event.
+- [ ] Pastikan yang tampil hanya detail event read-only.
+- [ ] Pastikan form operasional, form keuangan, dan upload dokumentasi tidak tampil di detail dari `Beranda`.
+- [ ] Jika event sudah `Selesai`, pastikan tombol `Cetak LPJ` tampil dari detail `Beranda`.
+- [ ] Buka menu `Operasional`.
+- [ ] Pastikan halaman hanya berisi peserta, panitia/pendamping, dan rundown.
+- [ ] Buka menu `Catatan`.
+- [ ] Pastikan halaman berisi input operasional catatan petugas.
+- [ ] Pastikan upload dokumentasi/lampiran tidak tampil di menu `Operasional`.
+- [ ] Buka menu `Dokumentasi`.
+- [ ] Pastikan upload dokumentasi, upload lampiran, dan daftar file tersimpan tampil di menu `Dokumentasi`.
+- [ ] Buka event/kegiatan `finish` yang ditugaskan.
+- [ ] Pastikan tombol `Cetak LPJ` tampil.
+- [ ] Klik `Cetak LPJ` dan pastikan print preview LPJ terbuka.
+- [ ] Login kembali sebagai Admin dan pastikan cetak dari User juga masuk menu `Dokumen LPJ`.
+- [ ] Pastikan User tetap tidak melihat menu/action generate PDF final.
+- [ ] Pastikan alur input User untuk event/kegiatan `finish` tetap read-only.
+- [ ] Buka Admin menu `Organization Profiles`.
+- [ ] Upload `Logo Lembaga untuk LPJ`.
+- [ ] Cetak/preview LPJ dan pastikan logo tampil pada cover/kop.
+- [ ] Buka Admin menu `Pengaturan Penyimpanan`.
+- [ ] Pastikan provider Local/R2, root folder, WebP quality, dan max width bisa dikonfigurasi.
+- [ ] Jika server sudah memiliki GD/WebP, upload foto dokumentasi dan pastikan tersimpan sebagai WebP.

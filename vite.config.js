@@ -21,7 +21,7 @@ export default defineConfig(({ mode }) => {
             react(),
             VitePWA({
                 registerType: 'autoUpdate',
-                includeAssets: ['icons/kicap-lpj.svg'],
+                includeAssets: ['favicon.ico', 'icons/kicap-lpj.svg'],
                 manifest: {
                     name: 'Kicap Event',
                     short_name: 'Kicap Event',

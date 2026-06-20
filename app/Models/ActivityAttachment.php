@@ -12,6 +12,7 @@ class ActivityAttachment extends Model
         'uploaded_by',
         'title',
         'file_path',
+        'file_disk',
         'original_name',
         'mime_type',
         'file_size',

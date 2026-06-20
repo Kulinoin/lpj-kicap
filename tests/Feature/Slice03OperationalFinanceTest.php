@@ -62,6 +62,39 @@ class Slice03OperationalFinanceTest extends TestCase
         $lpj->refresh();
         $this->assertSame('1000000.00', $lpj->total_funds_received);
         $this->assertSame('1000000.00', $lpj->total_remaining_fund);
+        $this->assertSame(600000.0, $lpj->allocatedUserFundTotal());
+        $this->assertSame(400000.0, $lpj->remainingAllocationFund());
+
+        $this->actingAs($user)->getJson("/api/app/lpjs/{$lpj->id}")
+            ->assertOk()
+            ->assertJsonPath('data.finance.allocated_fund', 600000)
+            ->assertJsonPath('data.finance.remaining_allocation', 400000);
+    }
+
+    public function test_admin_cannot_allocate_user_funds_above_event_fund_receipts(): void
+    {
+        [$admin, $user, $recipient] = $this->seedSliceData();
+        $lpj = $this->makeAssignedLpj('LPJ-S03-ALLOC-LIMIT', Lpj::STATUS_AKTIF, $admin, $user, $recipient);
+
+        $service = app(LpjFinanceService::class);
+
+        $service->recordFundReceipt($lpj, $admin, [
+            'source_name' => 'Lembaga',
+            'amount' => 500000,
+            'received_at' => '2026-06-20',
+        ]);
+
+        $service->grantUserFund($lpj->fresh(), $user, $admin, [
+            'amount' => 350000,
+            'note' => 'Dana pegangan awal',
+        ]);
+
+        $this->expectException(\Illuminate\Validation\ValidationException::class);
+
+        $service->grantUserFund($lpj->fresh(), $recipient, $admin, [
+            'amount' => 200000,
+            'note' => 'Melewati plafon dana masuk',
+        ]);
     }
 
     public function test_user_can_see_balance_and_record_expense_with_proof(): void

@@ -6,7 +6,6 @@ use Filament\Notifications\Notification;
 use Filament\Pages\Page;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Storage;
 use Livewire\WithFileUploads;
 
 class MyProfile extends Page
@@ -71,19 +70,24 @@ class MyProfile extends Page
 
         $user = Auth::user();
         $profilePhotoPath = $user->profile_photo_path;
+        $profilePhotoDisk = $user->profile_photo_disk;
 
         if ($this->photo) {
             if ($profilePhotoPath) {
-                Storage::disk('public')->delete($profilePhotoPath);
+                app(\App\Services\AppFileStorageService::class)->delete($profilePhotoPath, $profilePhotoDisk);
             }
 
-            $profilePhotoPath = $this->photo->store('profile-photos', 'public');
+            $stored = app(\App\Services\AppFileStorageService::class)->store($this->photo, 'profile-photos');
+
+            $profilePhotoPath = $stored['path'];
+            $profilePhotoDisk = $stored['disk'];
         }
 
         $payload = [
             'name' => $this->name,
             'whatsapp' => $this->whatsapp,
             'profile_photo_path' => $profilePhotoPath,
+            'profile_photo_disk' => $profilePhotoDisk,
         ];
 
         if ($this->password) {

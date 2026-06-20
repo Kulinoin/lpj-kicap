@@ -5,6 +5,7 @@ namespace App\Filament\Resources\OrganizationProfiles\Tables;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
+use Filament\Tables\Columns\ImageColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 
@@ -29,8 +30,10 @@ class OrganizationProfilesTable
                     ->searchable(),
                 TextColumn::make('website')
                     ->searchable(),
-                TextColumn::make('logo_path')
-                    ->searchable(),
+                ImageColumn::make('logo_path')
+                    ->label('Logo')
+                    ->disk('public')
+                    ->height(44),
                 TextColumn::make('footer_text')
                     ->searchable(),
                 TextColumn::make('default_city')

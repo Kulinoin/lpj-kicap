@@ -44,6 +44,18 @@ class LpjFinanceService
         return DB::transaction(function () use ($lpj, $user, $admin, $data): LpjBalanceMutation {
             $balance = $this->lockedBalance($lpj, $user);
             $amount = $this->normalizeAmount($data['amount']);
+            $lockedLpj = Lpj::query()->lockForUpdate()->findOrFail($lpj->id);
+            $allocated = (float) $lockedLpj->balanceMutations()
+                ->where('type', LpjBalanceMutation::TYPE_FUND_IN)
+                ->sum('amount');
+            $nextAllocated = $allocated + (float) $amount;
+
+            if ($this->compare($nextAllocated, $lockedLpj->total_funds_received) > 0) {
+                throw ValidationException::withMessages([
+                    'amount' => 'Total dana pegangan user tidak boleh lebih besar dari dana masuk event.',
+                ]);
+            }
+
             $balance->balance = $this->add($balance->balance, $amount);
             $balance->save();
 
@@ -85,7 +97,7 @@ class LpjFinanceService
                 'description' => $data['description'],
                 'amount' => $amount,
                 'spent_at' => $data['spent_at'],
-                'proof_path' => $this->storeProof($proof),
+                ...$this->proofPayload($proof),
                 'no_proof_reason' => $data['no_proof_reason'] ?? null,
             ]);
 
@@ -126,7 +138,7 @@ class LpjFinanceService
                 'description' => $data['description'],
                 'amount' => $amount,
                 'spent_at' => $data['spent_at'],
-                'proof_path' => $this->storeProof($proof),
+                ...$this->proofPayload($proof),
                 'no_proof_reason' => $data['no_proof_reason'] ?? null,
             ]);
 
@@ -268,6 +280,8 @@ class LpjFinanceService
 
         return [
             'balance' => (float) $balance->balance,
+            'allocated_fund' => $lpj->allocatedUserFundTotal(),
+            'remaining_allocation' => $lpj->remainingAllocationFund(),
             'can_input_finance' => $lpj->status === Lpj::STATUS_AKTIF && (bool) $assignment?->can_input_transaction,
             'can_transfer_balance' => (bool) $user->can_transfer_balance,
             'transfer_targets' => $transferTargets,
@@ -329,8 +343,20 @@ class LpjFinanceService
         return ((float) $left) <=> ((float) $right);
     }
 
-    private function storeProof(?UploadedFile $proof): ?string
+    private function proofPayload(?UploadedFile $proof): array
     {
-        return $proof?->store('transaction-proofs', 'public');
+        if (! $proof) {
+            return [
+                'proof_path' => null,
+                'proof_disk' => null,
+            ];
+        }
+
+        $stored = app(AppFileStorageService::class)->store($proof, 'transaction-proofs');
+
+        return [
+            'proof_path' => $stored['path'],
+            'proof_disk' => $stored['disk'],
+        ];
     }
 }

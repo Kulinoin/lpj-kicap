@@ -404,7 +404,7 @@ h3 {
 
 .review-strip {
     display: grid;
-    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-columns: minmax(0, 1fr) auto auto;
     align-items: center;
     gap: 10px;
     margin-top: 13px;
@@ -432,7 +432,8 @@ h3 {
     font-weight: 720;
 }
 
-.review-strip button {
+.review-strip button,
+.review-strip a {
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -445,7 +446,12 @@ h3 {
     color: #ffffff;
     font-size: 11px;
     font-weight: 700;
+    text-decoration: none;
     cursor: pointer;
+}
+
+.review-strip a {
+    background: #0f766e;
 }
 
 .review-strip button:disabled {
@@ -482,6 +488,53 @@ h3 {
 .narrative-list {
     display: grid;
     gap: 10px;
+}
+
+.event-detail-card {
+    display: grid;
+    gap: 11px;
+    padding: 13px;
+    border: 1px solid rgba(15, 23, 42, 0.08);
+    border-radius: 8px;
+    background: #ffffff;
+    box-shadow: 0 12px 24px rgba(15, 23, 42, 0.07);
+}
+
+.event-detail-list {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+}
+
+.event-detail-list div {
+    min-height: 58px;
+    padding: 10px;
+    border-radius: 8px;
+    background: #f8fafc;
+}
+
+.event-detail-list div.wide {
+    grid-column: 1 / -1;
+}
+
+.event-detail-list span,
+.event-detail-list strong {
+    display: block;
+    line-height: 1.32;
+}
+
+.event-detail-list span {
+    color: #64748b;
+    font-size: 10px;
+    font-weight: 680;
+}
+
+.event-detail-list strong {
+    margin-top: 4px;
+    color: #142033;
+    font-size: 12px;
+    font-weight: 720;
+    overflow-wrap: anywhere;
 }
 
 .narrative-card {
@@ -687,19 +740,23 @@ h3 {
     gap: 8px;
 }
 
-.file-list a {
+.file-list a,
+.file-list button {
     display: grid;
     grid-template-columns: 18px minmax(0, 1fr) auto;
     align-items: center;
     gap: 8px;
     min-height: 40px;
     padding: 0 10px;
+    border: 0;
     border-radius: 8px;
     background: #f6f9fb;
     color: #42526a;
     font-size: 12px;
     font-weight: 620;
     text-decoration: none;
+    cursor: pointer;
+    text-align: left;
 }
 
 .file-list svg {
@@ -720,6 +777,74 @@ h3 {
     color: #df4a3b;
     font-size: 9px;
     font-weight: 700;
+}
+
+.gallery-preview {
+    position: fixed;
+    inset: 0;
+    z-index: 80;
+    display: grid;
+    place-items: center;
+    padding: 18px;
+}
+
+.gallery-backdrop {
+    position: absolute;
+    inset: 0;
+    border: 0;
+    background: rgba(15, 23, 42, 0.72);
+    cursor: pointer;
+}
+
+.gallery-frame {
+    position: relative;
+    z-index: 1;
+    display: grid;
+    gap: 10px;
+    width: min(100%, 520px);
+    max-height: 88vh;
+    padding: 10px;
+    border-radius: 8px;
+    background: #ffffff;
+    box-shadow: 0 28px 70px rgba(15, 23, 42, 0.34);
+}
+
+.gallery-topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+}
+
+.gallery-topbar strong {
+    min-width: 0;
+    overflow: hidden;
+    color: #142033;
+    font-size: 13px;
+    font-weight: 720;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.gallery-topbar button {
+    min-height: 32px;
+    padding: 0 10px;
+    border: 0;
+    border-radius: 8px;
+    background: #eef2f6;
+    color: #475569;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.gallery-frame img {
+    display: block;
+    width: 100%;
+    max-height: calc(88vh - 74px);
+    border-radius: 8px;
+    object-fit: contain;
+    background: #0f172a;
 }
 
 .finance-form textarea {

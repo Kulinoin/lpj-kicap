@@ -4,18 +4,23 @@ use App\Models\ActivityNote;
 use App\Models\ActivityDocumentation;
 use App\Models\Lpj;
 use App\Models\LpjFinancialTransaction;
+use App\Models\LpjReportSnapshot;
 use App\Models\LpjType;
 use App\Models\User;
 use App\Services\ActivityExecutionService;
 use App\Services\ActivityNoteService;
+use App\Services\AppFileStorageService;
 use App\Services\LpjFinanceService;
+use App\Services\LpjReportService;
 use App\Services\LpjReviewService;
+use Dompdf\Dompdf;
+use Dompdf\Options;
 use Filament\Facades\Filament;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Route;
-use Illuminate\Support\Facades\Storage;
+use Illuminate\Validation\ValidationException;
 use Illuminate\Validation\Rule;
 
 Route::get('/', fn () => redirect('/app'));
@@ -45,6 +50,105 @@ Route::get('/health', function () {
 });
 
 Route::middleware('auth')->group(function (): void {
+    Route::get('/admin/reports/lpjs/{lpj}/print', function (Request $request, Lpj $lpj, LpjReportService $reportService) {
+        /** @var User $user */
+        $user = $request->user();
+
+        abort_unless($user->isAdmin(), 403);
+
+        try {
+            $report = $reportService->reportData($lpj);
+        } catch (ValidationException $exception) {
+            abort(403, $exception->validator->errors()->first());
+        }
+
+        $html = view('reports.lpj-final', [
+            'report' => $report,
+            'forPdf' => false,
+        ])->render();
+
+        $reportService->createSnapshot($lpj, $user, LpjReportSnapshot::SOURCE_ADMIN_PRINT, $html);
+
+        return response($html);
+    })->name('admin.lpjs.report.print');
+
+    Route::get('/admin/report-snapshots/{snapshot}/print', function (Request $request, LpjReportSnapshot $snapshot) {
+        /** @var User $user */
+        $user = $request->user();
+
+        abort_unless($user->isAdmin(), 403);
+
+        return response($snapshot->snapshot_html);
+    })->name('admin.lpj-report-snapshots.print');
+
+    Route::get('/admin/reports/lpjs/{lpj}/pdf', function (Request $request, Lpj $lpj, LpjReportService $reportService) {
+        /** @var User $user */
+        $user = $request->user();
+
+        abort_unless($user->isAdmin(), 403);
+
+        try {
+            $report = $reportService->reportData($lpj);
+        } catch (ValidationException $exception) {
+            abort(403, $exception->validator->errors()->first());
+        }
+
+        $html = view('reports.lpj-final', [
+            'report' => $report,
+            'forPdf' => true,
+        ])->render();
+
+        $snapshotHtml = view('reports.lpj-final', [
+            'report' => $report,
+            'forPdf' => false,
+        ])->render();
+
+        $reportService->createSnapshot($lpj, $user, LpjReportSnapshot::SOURCE_ADMIN_PDF, $snapshotHtml);
+
+        $options = new Options();
+        $options->set('chroot', base_path());
+        $options->set('defaultFont', 'Arial');
+        $options->set('isHtml5ParserEnabled', true);
+
+        $dompdf = new Dompdf($options);
+        $dompdf->loadHtml($html);
+        $dompdf->setPaper('A4');
+        $dompdf->render();
+
+        $filename = 'LPJ-'.$lpj->code.'.pdf';
+
+        return response($dompdf->output(), 200, [
+            'Content-Type' => 'application/pdf',
+            'Content-Disposition' => 'attachment; filename="'.$filename.'"',
+        ]);
+    })->name('admin.lpjs.report.pdf');
+
+    Route::get('/app/lpjs/{lpj}/print', function (Request $request, Lpj $lpj, LpjReportService $reportService) {
+        /** @var User $user */
+        $user = $request->user();
+
+        abort_unless($user->isUser(), 403);
+
+        $lpj = Lpj::query()
+            ->visibleToAssignedUser($user)
+            ->findOrFail($lpj->id);
+
+        try {
+            $report = $reportService->reportData($lpj);
+        } catch (ValidationException $exception) {
+            abort(403, $exception->validator->errors()->first());
+        }
+
+        $html = view('reports.lpj-final', [
+            'report' => $report,
+            'forPdf' => false,
+        ])->render();
+
+        $reportService->createSnapshot($lpj, $user, LpjReportSnapshot::SOURCE_USER_PRINT, $html);
+
+        return response($html);
+    })->name('app.lpjs.report.print');
+
     Route::get('/app/{any?}', function () {
         $user = auth()->user();
 
@@ -133,6 +237,8 @@ Route::middleware('auth')->group(function (): void {
                 'person_in_charge' => $lpj->personInCharge?->name,
                 'can_input_operational_data' => $lpj->status === Lpj::STATUS_AKTIF && $assignment->can_edit_activity_data,
                 'can_submit_review' => $lpj->status === Lpj::STATUS_AKTIF,
+                'can_print_report' => $lpj->status === Lpj::STATUS_FINISH,
+                'report_print_url' => $lpj->status === Lpj::STATUS_FINISH ? route('app.lpjs.report.print', $lpj) : null,
                 'review' => $reviewService->reviewPayload($lpj),
                 'activity_notes' => $activityNoteService->payload($activityNotes),
                 'execution' => $executionService->payload($lpj, $user),
@@ -428,7 +534,7 @@ Route::middleware('auth')->group(function (): void {
                 'username' => $user->username,
                 'email' => $user->email,
                 'whatsapp' => $user->whatsapp,
-                'avatar_url' => $user->profile_photo_path ? asset('storage/'.$user->profile_photo_path) : null,
+                'avatar_url' => app(AppFileStorageService::class)->url($user->profile_photo_path, $user->profile_photo_disk),
             ],
         ]);
     });
@@ -453,10 +559,13 @@ Route::middleware('auth')->group(function (): void {
 
         if ($request->hasFile('profile_photo')) {
             if ($user->profile_photo_path) {
-                Storage::disk('public')->delete($user->profile_photo_path);
+                app(AppFileStorageService::class)->delete($user->profile_photo_path, $user->profile_photo_disk);
             }
 
-            $payload['profile_photo_path'] = $request->file('profile_photo')->store('profile-photos', 'public');
+            $stored = app(AppFileStorageService::class)->store($request->file('profile_photo'), 'profile-photos');
+
+            $payload['profile_photo_path'] = $stored['path'];
+            $payload['profile_photo_disk'] = $stored['disk'];
         }
 
         if (filled($validated['password'] ?? null)) {
@@ -471,7 +580,7 @@ Route::middleware('auth')->group(function (): void {
                 'username' => $user->username,
                 'email' => $user->email,
                 'whatsapp' => $user->whatsapp,
-                'avatar_url' => $user->profile_photo_path ? asset('storage/'.$user->profile_photo_path) : null,
+                'avatar_url' => app(AppFileStorageService::class)->url($user->profile_photo_path, $user->profile_photo_disk),
             ],
         ]);
     });

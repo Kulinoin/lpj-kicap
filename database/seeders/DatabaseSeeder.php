@@ -11,6 +11,7 @@ class DatabaseSeeder extends Seeder
         $this->call([
             KicapUserSeeder::class,
             OrganizationProfileSeeder::class,
+            StorageSettingSeeder::class,
             LpjTypeSeeder::class,
             NarrativeTemplateSeeder::class,
             LpjDemoSeeder::class,

@@ -145,6 +145,11 @@ class Lpj extends Model
         return $this->hasMany(LpjAdvanceClaim::class);
     }
 
+    public function reportSnapshots(): HasMany
+    {
+        return $this->hasMany(LpjReportSnapshot::class);
+    }
+
     public static function statuses(): array
     {
         return [
@@ -187,5 +192,17 @@ class Lpj extends Model
         return $query
             ->whereIn('status', self::userVisibleStatuses())
             ->whereHas('assignedUsers', fn (Builder $query): Builder => $query->where('user_id', $user->id));
+    }
+
+    public function allocatedUserFundTotal(): float
+    {
+        return (float) $this->balanceMutations()
+            ->where('type', LpjBalanceMutation::TYPE_FUND_IN)
+            ->sum('amount');
+    }
+
+    public function remainingAllocationFund(): float
+    {
+        return max(0, (float) $this->total_funds_received - $this->allocatedUserFundTotal());
     }
 }

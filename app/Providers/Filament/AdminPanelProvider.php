@@ -7,10 +7,12 @@ use App\Filament\Resources\LpjAdvanceClaims\LpjAdvanceClaimResource;
 use App\Filament\Resources\LpjBalanceMutations\LpjBalanceMutationResource;
 use App\Filament\Resources\LpjFinancialTransactions\LpjFinancialTransactionResource;
 use App\Filament\Resources\LpjFundReceipts\LpjFundReceiptResource;
+use App\Filament\Resources\LpjReportSnapshots\LpjReportSnapshotResource;
 use App\Filament\Resources\Lpjs\LpjResource;
 use App\Filament\Resources\LpjTypes\LpjTypeResource;
 use App\Filament\Resources\LpjUserBalances\LpjUserBalanceResource;
 use App\Filament\Resources\OrganizationProfiles\OrganizationProfileResource;
+use App\Filament\Resources\StorageSettings\StorageSettingResource;
 use App\Filament\Resources\Users\UserResource;
 use Filament\Actions\Action;
 use Filament\Forms\Components\FileUpload;
@@ -163,10 +165,12 @@ class AdminPanelProvider extends PanelProvider
                 LpjBalanceMutationResource::class,
                 LpjFinancialTransactionResource::class,
                 LpjFundReceiptResource::class,
+                LpjReportSnapshotResource::class,
                 LpjResource::class,
                 LpjTypeResource::class,
                 LpjUserBalanceResource::class,
                 OrganizationProfileResource::class,
+                StorageSettingResource::class,
                 UserResource::class,
             ])
             ->pages([

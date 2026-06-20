@@ -65,10 +65,8 @@ class ActivityExecutionService
         return $lpj->documentations()->create([
             'uploaded_by' => $user->id,
             'category' => $data['category'],
-            'file_path' => $file->store('activity-documentations', 'public'),
+            ...$this->filePayload($file, 'activity-documentations'),
             'original_name' => $file->getClientOriginalName(),
-            'mime_type' => $file->getClientMimeType(),
-            'file_size' => $file->getSize(),
             'caption' => $data['caption'] ?? null,
             'include_in_report' => (bool) ($data['include_in_report'] ?? false),
             'sort_order' => $data['sort_order'] ?? 0,
@@ -82,10 +80,8 @@ class ActivityExecutionService
         return $lpj->attachments()->create([
             'uploaded_by' => $user->id,
             'title' => $data['title'],
-            'file_path' => $file->store('activity-attachments', 'public'),
+            ...$this->filePayload($file, 'activity-attachments'),
             'original_name' => $file->getClientOriginalName(),
-            'mime_type' => $file->getClientMimeType(),
-            'file_size' => $file->getSize(),
             'description' => $data['description'] ?? null,
             'include_in_report' => (bool) ($data['include_in_report'] ?? false),
         ]);
@@ -152,7 +148,9 @@ class ActivityExecutionService
                     'caption' => $documentation->caption,
                     'include_in_report' => $documentation->include_in_report,
                     'original_name' => $documentation->original_name,
-                    'url' => asset('storage/'.$documentation->file_path),
+                    'mime_type' => $documentation->mime_type,
+                    'is_image' => str_starts_with((string) $documentation->mime_type, 'image/'),
+                    'url' => app(AppFileStorageService::class)->url($documentation->file_path, $documentation->file_disk),
                 ])
                 ->values(),
             'attachments' => $lpj->attachments()
@@ -164,7 +162,9 @@ class ActivityExecutionService
                     'description' => $attachment->description,
                     'include_in_report' => $attachment->include_in_report,
                     'original_name' => $attachment->original_name,
-                    'url' => asset('storage/'.$attachment->file_path),
+                    'mime_type' => $attachment->mime_type,
+                    'is_image' => str_starts_with((string) $attachment->mime_type, 'image/'),
+                    'url' => app(AppFileStorageService::class)->url($attachment->file_path, $attachment->file_disk),
                 ])
                 ->values(),
         ];
@@ -195,5 +195,17 @@ class ActivityExecutionService
     private function filledRows(array $rows, string $requiredKey): array
     {
         return array_values(array_filter($rows, fn (array $row): bool => filled($row[$requiredKey] ?? null)));
+    }
+
+    private function filePayload(UploadedFile $file, string $directory): array
+    {
+        $stored = app(AppFileStorageService::class)->store($file, $directory);
+
+        return [
+            'file_path' => $stored['path'],
+            'file_disk' => $stored['disk'],
+            'mime_type' => $stored['mime_type'],
+            'file_size' => $stored['size'],
+        ];
     }
 }

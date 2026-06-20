@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\OrganizationProfiles\Schemas;
 
+use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Textarea;
 use Filament\Schemas\Schema;
@@ -26,7 +27,15 @@ class OrganizationProfileForm
                     ->email(),
                 TextInput::make('website')
                     ->url(),
-                TextInput::make('logo_path'),
+                FileUpload::make('logo_path')
+                    ->label('Logo Lembaga untuk LPJ')
+                    ->disk('public')
+                    ->directory('organization-logos')
+                    ->image()
+                    ->imageEditor()
+                    ->openable()
+                    ->downloadable()
+                    ->helperText('Dipakai pada cover dan kop LPJ. Logo aplikasi tetap hardcode di public/icons/kicap-lpj.svg, public/favicon.ico, dan konfigurasi PWA vite.config.js.'),
                 TextInput::make('footer_text'),
                 TextInput::make('default_city'),
                 TextInput::make('leader_name'),

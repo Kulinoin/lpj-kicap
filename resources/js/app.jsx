@@ -16,6 +16,7 @@ import {
     Paperclip,
     Phone,
     PlusCircle,
+    Printer,
     ReceiptText,
     Save,
     Send,
@@ -31,10 +32,10 @@ registerSW({ immediate: true });
 
 const navItems = [
     { key: 'beranda', label: 'Beranda', icon: Home },
-    { key: 'operasional', label: 'Operasional', icon: PlusCircle },
+    { key: 'catatan', label: 'Catatan', icon: FileText },
     { key: 'keuangan', label: 'Keuangan', icon: Wallet, isPrimary: true },
     { key: 'dokumentasi', label: 'Dokumentasi', icon: Camera },
-    { key: 'profil', label: 'Profil', icon: UserRound },
+    { key: 'operasional', label: 'Operasional', icon: PlusCircle },
 ];
 
 const emptyProfile = {
@@ -180,6 +181,7 @@ function KicapApp() {
     const [executionMessage, setExecutionMessage] = useState('');
     const [operationalSaveMessage, setOperationalSaveMessage] = useState('');
     const [activeNav, setActiveNav] = useState('beranda');
+    const [galleryPreview, setGalleryPreview] = useState(null);
 
     useEffect(() => {
         let isMounted = true;
@@ -605,11 +607,21 @@ function KicapApp() {
     const activeLpjs = useMemo(() => lpjs.filter((lpj) => lpj.status === 'aktif'), [lpjs]);
     const finishedLpjs = useMemo(() => lpjs.filter((lpj) => lpj.status === 'finish'), [lpjs]);
     const avatarSource = profilePhotoPreview ?? profile.avatar_url;
+    const isHomeNav = activeNav === 'beranda';
+    const isNotesNav = activeNav === 'catatan';
     const isOperationalNav = activeNav === 'operasional';
     const isFinanceNav = activeNav === 'keuangan';
     const isDocumentationNav = activeNav === 'dokumentasi';
-    const showDetail = (isOperationalNav || isFinanceNav || isDocumentationNav) && selectedLpjId;
-    const pageTitle = activeNav === 'profil' ? 'Profil pengguna' : showDetail ? 'Detail Event' : 'Ruang kerja petugas';
+    const showDetail = (isHomeNav || isNotesNav || isOperationalNav || isFinanceNav || isDocumentationNav) && selectedLpjId;
+    const pageTitle = showDetail
+        ? {
+            beranda: 'Detail Event',
+            catatan: 'Catatan petugas',
+            operasional: 'Pelaksanaan event',
+            keuangan: 'Dana kegiatan',
+            dokumentasi: 'Dokumentasi event',
+        }[activeNav] ?? 'Detail Event'
+        : 'Ruang kerja petugas';
     const visibleLpjs = useMemo(() => {
         const sortByWorkPriority = (items) => [...items].sort((left, right) => {
             const leftActive = left.status === 'aktif' ? 0 : 1;
@@ -622,7 +634,7 @@ function KicapApp() {
             return right.id - left.id;
         });
 
-        if (activeNav === 'operasional' || activeNav === 'keuangan') {
+        if (activeNav === 'catatan' || activeNav === 'operasional' || activeNav === 'keuangan') {
             return sortByWorkPriority(activeLpjs);
         }
 
@@ -635,26 +647,24 @@ function KicapApp() {
 
     const lpjHeading = {
         beranda: 'Event terbaru',
-        operasional: 'Operasional event',
+        catatan: 'Catatan petugas',
+        operasional: 'Pelaksanaan event',
         keuangan: 'Dana kegiatan',
         dokumentasi: 'Dokumentasi event',
     }[activeNav] ?? 'Aktif dan selesai';
 
     const emptyLpjMessage = {
-        operasional: 'Belum ada event aktif untuk input operasional.',
+        catatan: 'Belum ada event aktif untuk catatan petugas.',
+        operasional: 'Belum ada event aktif untuk data pelaksanaan.',
         keuangan: 'Belum ada event aktif untuk dana kegiatan.',
         dokumentasi: 'Belum ada event aktif untuk dokumentasi.',
     }[activeNav] ?? 'Belum ada event aktif atau selesai yang ditugaskan.';
 
     const openLpjDetail = (lpjId) => {
         setSelectedLpjId(lpjId);
-
-        if (!isOperationalNav && !isFinanceNav && !isDocumentationNav) {
-            setActiveNav('operasional');
-        }
     };
 
-    const closeLpjDetail = () => {
+    const clearSelectedLpj = () => {
         setSelectedLpjId(null);
         setSelectedLpj(null);
         setOperationalDrafts({});
@@ -665,6 +675,16 @@ function KicapApp() {
         setOperationalSaveMessage('');
         setFinanceMessage('');
         setExecutionMessage('');
+        setGalleryPreview(null);
+    };
+
+    const closeLpjDetail = () => {
+        clearSelectedLpj();
+    };
+
+    const handleNavChange = (navKey) => {
+        setActiveNav(navKey);
+        clearSelectedLpj();
     };
 
     const handleOperationalChange = (type, content) => {
@@ -898,6 +918,10 @@ function KicapApp() {
                                                 <Wallet size={14} strokeWidth={2.4} />
                                             ) : isDocumentationNav ? (
                                                 <Camera size={14} strokeWidth={2.4} />
+                                            ) : isNotesNav ? (
+                                                <FileText size={14} strokeWidth={2.4} />
+                                            ) : isOperationalNav ? (
+                                                <UsersRound size={14} strokeWidth={2.4} />
                                             ) : (
                                                 <ClipboardList size={14} strokeWidth={2.4} />
                                             )}
@@ -905,7 +929,11 @@ function KicapApp() {
                                                 ? 'Buka keuangan'
                                                 : isDocumentationNav
                                                     ? 'Buka dokumentasi'
-                                                    : 'Buka detail'}
+                                                    : isNotesNav
+                                                        ? 'Buka catatan'
+                                                        : isOperationalNav
+                                                            ? 'Buka pelaksanaan'
+                                                            : 'Buka detail'}
                                         </span>
                                     </button>
                                 ))}
@@ -954,25 +982,98 @@ function KicapApp() {
                                 </div>
                                 <div className="review-strip">
                                     <div>
-                                        <span>Kelengkapan</span>
-                                        <strong>{selectedLpj.completeness_label ?? 'Belum Lengkap'}</strong>
+                                        <span>{isHomeNav ? 'LPJ' : 'Kelengkapan'}</span>
+                                        <strong>
+                                            {isHomeNav
+                                                ? selectedLpj.can_print_report
+                                                    ? 'LPJ tersedia'
+                                                    : 'Belum tersedia'
+                                                : selectedLpj.completeness_label ?? 'Belum Lengkap'}
+                                        </strong>
                                     </div>
-                                    <button
-                                        type="button"
-                                        disabled={!selectedLpj.can_submit_review}
-                                        onClick={handleSubmitReview}
-                                    >
-                                        <ClipboardList size={15} strokeWidth={2.4} />
-                                        Ajukan Review
-                                    </button>
+                                    {!isHomeNav && !selectedLpj.can_print_report && (
+                                        <button
+                                            type="button"
+                                            disabled={!selectedLpj.can_submit_review}
+                                            onClick={handleSubmitReview}
+                                        >
+                                            <ClipboardList size={15} strokeWidth={2.4} />
+                                            Ajukan Review
+                                        </button>
+                                    )}
+                                    {selectedLpj.can_print_report && selectedLpj.report_print_url && (
+                                        <a href={selectedLpj.report_print_url} target="_blank" rel="noreferrer">
+                                            <Printer size={15} strokeWidth={2.4} />
+                                            Cetak LPJ
+                                        </a>
+                                    )}
                                 </div>
                             </article>
 
-                            {(isOperationalNav || isDocumentationNav) && (
+                            {isHomeNav && (
+                                <section className="event-detail-card">
+                                    <div className="finance-form-title">
+                                        <ClipboardList size={16} strokeWidth={2.4} />
+                                        <span>Detail event</span>
+                                    </div>
+                                    <div className="event-detail-list">
+                                        <div>
+                                            <span>Kode Event</span>
+                                            <strong>{selectedLpj.code}</strong>
+                                        </div>
+                                        <div>
+                                            <span>Tipe Event</span>
+                                            <strong>{selectedLpj.type ?? '-'}</strong>
+                                        </div>
+                                        <div>
+                                            <span>Status</span>
+                                            <strong>{selectedLpj.status_label ?? '-'}</strong>
+                                        </div>
+                                        <div>
+                                            <span>Kelengkapan</span>
+                                            <strong>{selectedLpj.completeness_label ?? '-'}</strong>
+                                        </div>
+                                        <div>
+                                            <span>Tanggal</span>
+                                            <strong>{formatDateRange(selectedLpj)}</strong>
+                                        </div>
+                                        <div>
+                                            <span>Lokasi</span>
+                                            <strong>{selectedLpj.location ?? '-'}</strong>
+                                        </div>
+                                        <div>
+                                            <span>Penanggung Jawab</span>
+                                            <strong>{selectedLpj.person_in_charge ?? '-'}</strong>
+                                        </div>
+                                        <div>
+                                            <span>Sumber Dana</span>
+                                            <strong>{selectedLpj.funding_source ?? '-'}</strong>
+                                        </div>
+                                        <div>
+                                            <span>Nomor Surat/Tugas</span>
+                                            <strong>{selectedLpj.assignment_letter_number ?? '-'}</strong>
+                                        </div>
+                                        <div>
+                                            <span>Periode LPJ</span>
+                                            <strong>{selectedLpj.period_label ?? '-'}</strong>
+                                        </div>
+                                        <div>
+                                            <span>Penyelenggara Eksternal</span>
+                                            <strong>{selectedLpj.external_organizer ?? '-'}</strong>
+                                        </div>
+                                        <div className="wide">
+                                            <span>Peran Lembaga</span>
+                                            <strong>{selectedLpj.organization_role ?? '-'}</strong>
+                                        </div>
+                                    </div>
+                                </section>
+                            )}
+
+                            {isNotesNav && (
                                 <>
                                     <div className="narrative-header">
                                         <div>
-                                            <p className="section-kicker">Input Operasional</p>
+                                            <p className="section-kicker">Catatan Petugas</p>
                                             <h2>
                                                 {selectedLpj.can_input_operational_data
                                                     ? 'Catatan petugas'
@@ -1002,7 +1103,10 @@ function KicapApp() {
                                             </label>
                                         ))}
                                     </div>
+                                </>
+                            )}
 
+                            {isOperationalNav && (
                                     <form className="execution-form" onSubmit={handleExecutionSubmit}>
                                         <div className="narrative-header">
                                             <div>
@@ -1238,6 +1342,26 @@ function KicapApp() {
                                             Simpan Data Kegiatan
                                         </button>
                                     </form>
+                            )}
+
+                            {isDocumentationNav && (
+                                <>
+                                    <div className="narrative-header">
+                                        <div>
+                                            <p className="section-kicker">Dokumentasi</p>
+                                            <h2>
+                                                {selectedLpj.execution?.can_upload_documentation
+                                                    ? 'Dokumentasi dan lampiran'
+                                                    : 'Dokumentasi terkunci'}
+                                            </h2>
+                                        </div>
+                                        <div className="save-state">
+                                            <Camera size={14} strokeWidth={2.4} />
+                                            {selectedLpj.execution?.can_upload_documentation ? 'Bisa upload' : 'Hanya baca'}
+                                        </div>
+                                    </div>
+
+                                    {executionMessage && <div className="profile-message">{executionMessage}</div>}
 
                                     <div className="upload-grid">
                                         <form
@@ -1396,18 +1520,48 @@ function KicapApp() {
                                         </div>
                                         <div className="file-list">
                                             {(selectedLpj.execution?.documentations ?? []).map((item) => (
-                                                <a href={item.url} key={`documentation-${item.id}`} target="_blank">
-                                                    <Camera size={15} strokeWidth={2.4} />
-                                                    <span>{item.caption || item.original_name || item.category_label}</span>
-                                                    {item.include_in_report && <b>LPJ</b>}
-                                                </a>
+                                                item.is_image ? (
+                                                    <button
+                                                        key={`documentation-${item.id}`}
+                                                        type="button"
+                                                        onClick={() => setGalleryPreview({
+                                                            title: item.caption || item.original_name || item.category_label,
+                                                            url: item.url,
+                                                        })}
+                                                    >
+                                                        <Camera size={15} strokeWidth={2.4} />
+                                                        <span>{item.caption || item.original_name || item.category_label}</span>
+                                                        {item.include_in_report && <b>LPJ</b>}
+                                                    </button>
+                                                ) : (
+                                                    <a href={item.url} key={`documentation-${item.id}`} target="_blank" rel="noreferrer">
+                                                        <Camera size={15} strokeWidth={2.4} />
+                                                        <span>{item.caption || item.original_name || item.category_label}</span>
+                                                        {item.include_in_report && <b>LPJ</b>}
+                                                    </a>
+                                                )
                                             ))}
                                             {(selectedLpj.execution?.attachments ?? []).map((item) => (
-                                                <a href={item.url} key={`attachment-${item.id}`} target="_blank">
-                                                    <Paperclip size={15} strokeWidth={2.4} />
-                                                    <span>{item.title}</span>
-                                                    {item.include_in_report && <b>LPJ</b>}
-                                                </a>
+                                                item.is_image ? (
+                                                    <button
+                                                        key={`attachment-${item.id}`}
+                                                        type="button"
+                                                        onClick={() => setGalleryPreview({
+                                                            title: item.title,
+                                                            url: item.url,
+                                                        })}
+                                                    >
+                                                        <Paperclip size={15} strokeWidth={2.4} />
+                                                        <span>{item.title}</span>
+                                                        {item.include_in_report && <b>LPJ</b>}
+                                                    </button>
+                                                ) : (
+                                                    <a href={item.url} key={`attachment-${item.id}`} target="_blank" rel="noreferrer">
+                                                        <Paperclip size={15} strokeWidth={2.4} />
+                                                        <span>{item.title}</span>
+                                                        {item.include_in_report && <b>LPJ</b>}
+                                                    </a>
+                                                )
                                             ))}
                                             {(selectedLpj.execution?.documentations ?? []).length === 0 &&
                                                 (selectedLpj.execution?.attachments ?? []).length === 0 && (
@@ -1866,6 +2020,26 @@ function KicapApp() {
                 </section>
             )}
 
+            {galleryPreview && (
+                <div className="gallery-preview" role="dialog" aria-modal="true" aria-label="Preview gambar">
+                    <button
+                        className="gallery-backdrop"
+                        type="button"
+                        aria-label="Tutup preview"
+                        onClick={() => setGalleryPreview(null)}
+                    />
+                    <div className="gallery-frame">
+                        <div className="gallery-topbar">
+                            <strong>{galleryPreview.title}</strong>
+                            <button type="button" onClick={() => setGalleryPreview(null)}>
+                                Tutup
+                            </button>
+                        </div>
+                        <img src={galleryPreview.url} alt={galleryPreview.title} />
+                    </div>
+                </div>
+            )}
+
             <nav className="bottom-nav" aria-label="Navigasi aplikasi">
                 {navItems.map((item) => {
                     const Icon = item.icon;
@@ -1878,7 +2052,7 @@ function KicapApp() {
                             ].join(' ')}
                             key={item.key}
                             type="button"
-                            onClick={() => setActiveNav(item.key)}
+                            onClick={() => handleNavChange(item.key)}
                         >
                             <span className="nav-icon" aria-hidden="true">
                                 <Icon size={22} strokeWidth={2.3} />
