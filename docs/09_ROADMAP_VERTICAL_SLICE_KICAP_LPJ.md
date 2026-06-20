@@ -1,6 +1,19 @@
-# Roadmap Vertical Slice Kicap LPJ v1.0
+# Roadmap Vertical Slice Kicap Event v1.0
 
 **Prinsip:** Jangan terlalu banyak slice. Slice harus praktis, padat, bisa divalidasi, dan menghasilkan increment yang bisa dicoba.
+
+---
+
+## 0.0 Decision — Kicap Event sebagai Konsep Utama
+
+Keputusan 20 Juni 2026:
+
+```text
+Event / Kegiatan = objek utama
+LPJ = output dokumen akhir
+```
+
+Roadmap berikut tetap berlaku secara alur. Nama slice lama tidak perlu diganti, tetapi pengembangan berikutnya harus memakai istilah Event/Kegiatan untuk objek utama dan LPJ hanya untuk output dokumen final/preview/export/template.
 
 ---
 
@@ -9,10 +22,10 @@
 Roadmap ini mengikuti revisi:
 
 1. Slice 01 di-reset dan dikerjakan ulang dari awal.
-2. LPJ hanya dibuat oleh Admin.
+2. Event/Kegiatan hanya dibuat oleh Admin.
 3. User hanya input operasional.
-4. Status LPJ MVP: `draft`, `aktif`, `finish`, `arsipkan`.
-5. User hanya melihat LPJ `aktif` dan `finish`.
+4. Status event/kegiatan MVP: `draft`, `aktif`, `finish`, `arsipkan`.
+5. User hanya melihat event/kegiatan `aktif` dan `finish`.
 6. Login tunggal berbasis role dengan remember-me aktif.
 7. User PWA memakai bottom navigation mengambang.
 8. Admin panel dibuat full-width.
@@ -34,7 +47,7 @@ Roadmap ini mengikuti revisi:
 10. Hindari asumsi.
 11. Cek versi dan signature package yang digunakan.
 12. Gunakan data real/seed, bukan hardcoded palsu untuk flow utama.
-13. Belum menggunakan Codex sampai user konfirmasi eksplisit.
+13. Codex boleh digunakan setelah user memberi instruksi eksplisit pada chat.
 
 ---
 
@@ -70,7 +83,7 @@ Validasi:
 
 ---
 
-## 3. Slice 01 — Master LPJ & Role
+## 3. Slice 01 — Master Event & Role
 
 Target:
 
@@ -78,20 +91,20 @@ Target:
 - Login tunggal berbasis role.
 - Remember-me aktif.
 - Profil lembaga.
-- Tipe LPJ.
-- Status LPJ sederhana: draft/aktif/finish/arsipkan.
+- Tipe Event.
+- Status event/kegiatan sederhana: draft/aktif/finish/arsipkan.
 - Struktur awal data kegiatan.
 - Data user seed.
 - Admin membuat LPJ.
-- User hanya melihat LPJ aktif/finish yang ditugaskan.
+- User hanya melihat event/kegiatan aktif/finish yang ditugaskan.
 - Admin panel full-width.
 
 Hasil:
 
 - Admin bisa mengelola master dasar.
-- Admin bisa membuat LPJ/kegiatan secara awal.
+- Admin bisa membuat event/kegiatan secara awal.
 - Role MVP aktif.
-- User tidak bisa membuat LPJ.
+- User tidak bisa membuat event/kegiatan.
 - User PWA punya pondasi menu bawah mengambang.
 
 Validasi:
@@ -101,8 +114,8 @@ Validasi:
 - Login remember-me tersedia.
 - Admin melihat menu master.
 - User tidak melihat menu Admin.
-- Tipe LPJ tersedia.
-- User hanya melihat LPJ aktif/finish yang ditugaskan.
+- Tipe Event tersedia.
+- User hanya melihat event/kegiatan aktif/finish yang ditugaskan.
 
 ---
 
@@ -110,30 +123,30 @@ Validasi:
 
 Target:
 
-- Halaman detail LPJ aktif untuk User.
+- Halaman detail event/kegiatan aktif untuk User.
 - Input/lengkapi data kegiatan sesuai penugasan.
 - Template narasi otomatis.
 - Narasi editable.
 - Draft/autosave ringan.
-- Tipe LPJ memengaruhi template.
+- Tipe Event memengaruhi template.
 
 Hasil:
 
-- User bisa melengkapi LPJ aktif dari HP.
+- User bisa melengkapi event/kegiatan aktif dari HP.
 - Narasi awal otomatis terbentuk.
 
 Validasi:
 
 - Admin membuat LPJ tipe Event dan mengaktifkannya.
 - Admin membuat LPJ tipe Pendampingan dan mengaktifkannya.
-- User melihat LPJ aktif yang ditugaskan.
+- User melihat event/kegiatan aktif yang ditugaskan.
 - Narasi berbeda sesuai tipe.
 - Narasi bisa diedit.
 - Draft tersimpan.
 
 ---
 
-## 5. Slice 03 — Operasional Keuangan
+## 5. Slice 03 — Dana Kegiatan
 
 Target:
 
@@ -197,7 +210,7 @@ Target:
 - Validasi transaksi.
 - Transaksi tanpa bukti dengan alasan.
 - Revisi transaksi.
-- Status LPJ.
+- Status event/kegiatan.
 - Rekonsiliasi saldo sederhana.
 - Lock final.
 

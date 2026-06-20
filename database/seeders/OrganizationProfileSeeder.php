@@ -21,7 +21,7 @@ class OrganizationProfileSeeder extends Seeder
                 'email' => '[Diisi kemudian]',
                 'website' => '[Diisi kemudian]',
                 'logo_path' => null,
-                'footer_text' => 'Kicap LPJ - PT. Kazoku Indonesia Center',
+                'footer_text' => 'Kicap Event - PT. Kazoku Indonesia Center',
                 'default_city' => '[Diisi kemudian]',
                 'leader_name' => '[Diisi kemudian]',
                 'leader_position' => '[Diisi kemudian]',

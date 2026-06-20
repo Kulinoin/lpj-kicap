@@ -1,7 +1,20 @@
-# Role & Permission Kicap LPJ v1.0
+# Role & Permission Kicap Event v1.0
 
-**Role MVP:** Admin dan User  
+**Role MVP:** Admin dan User
 **Catatan:** Super Admin tidak dimunculkan untuk MVP umum.
+
+---
+
+## 0.0 Decision — Kicap Event sebagai Konsep Utama
+
+Keputusan 20 Juni 2026:
+
+```text
+Event / Kegiatan = objek utama
+LPJ = output dokumen akhir
+```
+
+Permission untuk membuat, melihat, mengisi, mereview, dan memfinalisasi objek kerja disebut permission event/kegiatan. LPJ tetap dipakai untuk export/preview/dokumen akhir. Kolom internal seperti `can_create_lpj` boleh tetap dipertahankan sementara sebagai legacy code.
 
 ---
 
@@ -9,11 +22,11 @@
 
 Jika ada konflik dengan bagian lama, gunakan aturan berikut:
 
-1. LPJ hanya dibuat oleh Admin.
-2. User tidak memiliki permission membuat LPJ.
-3. User hanya input operasional pada LPJ `aktif` yang ditugaskan.
-4. User dapat melihat LPJ `finish` yang ditugaskan secara read-only sesuai izin.
-5. Status LPJ MVP: `draft`, `aktif`, `finish`, `arsipkan`.
+1. Event/Kegiatan hanya dibuat oleh Admin.
+2. User tidak memiliki permission membuat event/kegiatan.
+3. User hanya input operasional pada event/kegiatan `aktif` yang ditugaskan.
+4. User dapat melihat event/kegiatan `finish` yang ditugaskan secara read-only sesuai izin.
+5. Status event/kegiatan MVP: `draft`, `aktif`, `finish`, `arsipkan`.
 6. Login satu halaman untuk Admin dan User, redirect berdasarkan role.
 
 ---
@@ -21,7 +34,7 @@ Jika ada konflik dengan bagian lama, gunakan aturan berikut:
 ## 1. Prinsip Permission
 
 1. Permission dibuat sederhana berbasis role.
-2. Status LPJ lebih penting daripada menambah role.
+2. Status event/kegiatan lebih penting daripada menambah role.
 3. Admin mengelola dan mereview semua data.
 4. User fokus input data lapangan.
 5. User hanya melihat data yang menjadi tugasnya.
@@ -39,10 +52,10 @@ Hak Admin:
 |---|---|
 | Profil lembaga | Kelola |
 | User | Kelola |
-| Tipe LPJ | Kelola |
+| Tipe Event | Kelola |
 | Template narasi | Kelola |
 | Template dokumen | Kelola |
-| LPJ | Buat, lihat semua, edit sesuai status, review, finalisasi |
+| Event/Kegiatan | Buat, lihat semua, edit sesuai status, review, finalisasi |
 | Dana kegiatan | Kelola |
 | Dana pegangan user | Tambah dan koreksi |
 | Saldo user | Lihat semua |
@@ -67,8 +80,8 @@ Hak User:
 | Fitur | Hak User |
 |---|---|
 | Dashboard saya | Lihat |
-| LPJ saya | Lihat |
-| Buat LPJ | Tidak |
+| Event/Kegiatan saya | Lihat |
+| Buat Event/Kegiatan | Tidak |
 | Data kegiatan | Isi/edit sesuai status |
 | Narasi | Isi/edit sebelum final |
 | Transaksi | Buat/edit sesuai status |
@@ -95,15 +108,15 @@ Hak User:
 | Kelola user | Ya | Tidak |
 | Kelola tipe LPJ | Ya | Tidak |
 | Kelola template narasi | Ya | Tidak |
-| Buat LPJ | Ya | Tidak |
+| Buat Event/Kegiatan | Ya | Tidak |
 | Lihat semua LPJ | Ya | Tidak |
 | Lihat LPJ sendiri/ditugaskan | Ya | Ya |
 | Edit LPJ draft | Ya | Ya, miliknya/ditugaskan |
 | Ajukan LPJ | Ya | Ya |
-| Review LPJ | Ya | Tidak |
+| Review Event/Kegiatan | Ya | Tidak |
 | Minta revisi | Ya | Tidak |
 | Setujui LPJ | Ya | Tidak |
-| Finalisasi LPJ | Ya | Tidak |
+| Finalisasi Event/Kegiatan | Ya | Tidak |
 | Export PDF | Ya | Ya, jika LPJ final dan diizinkan |
 | Tambah dana kegiatan | Ya | Tidak |
 | Tambah dana pegangan user | Ya | Tidak |
@@ -125,7 +138,7 @@ Hak User:
 
 ---
 
-## 5. Permission Berdasarkan Status LPJ
+## 5. Permission Berdasarkan Status Event/Kegiatan
 
 ### draft
 

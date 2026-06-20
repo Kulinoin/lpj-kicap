@@ -24,7 +24,7 @@ class LpjAdvanceClaimResource extends Resource
 
     protected static ?string $pluralModelLabel = 'Klaim Talangan';
 
-    protected static \UnitEnum|string|null $navigationGroup = 'Operasional Keuangan';
+    protected static \UnitEnum|string|null $navigationGroup = 'Dana Kegiatan';
 
     public static function form(Schema $schema): Schema
     {
@@ -36,7 +36,7 @@ class LpjAdvanceClaimResource extends Resource
         return $table
             ->columns([
                 TextColumn::make('lpj.code')
-                    ->label('Kode LPJ')
+                    ->label('Kode Event')
                     ->searchable(),
                 TextColumn::make('user.name')
                     ->label('User')

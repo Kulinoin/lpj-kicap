@@ -1,7 +1,20 @@
-# Workflow Penggunaan Kicap LPJ v1.0
+# Workflow Penggunaan Kicap Event v1.0
 
-**Status:** Draft MVP  
+**Status:** Draft MVP
 **Catatan utama:** Transfer saldo antar user langsung tercatat tanpa approval Admin.
+
+---
+
+## 0.0 Decision — Kicap Event sebagai Konsep Utama
+
+Keputusan 20 Juni 2026:
+
+```text
+Event / Kegiatan = objek utama yang dikelola aplikasi
+LPJ = output akhir/dokumen hasil dari event/kegiatan
+```
+
+Workflow mesin tidak berubah. Setiap kalimat lama seperti "Admin membuat LPJ" berarti "Admin membuat event/kegiatan". Kata LPJ tetap digunakan untuk output dokumen akhir, preview, export, dan template dokumen.
 
 ---
 
@@ -9,10 +22,10 @@
 
 Keputusan ini menggantikan workflow lama yang bertentangan:
 
-1. LPJ hanya dibuat oleh Admin.
-2. User hanya input kebutuhan operasional pada LPJ yang ditugaskan.
-3. Status LPJ MVP: `draft`, `aktif`, `finish`, `arsipkan`.
-4. User hanya melihat LPJ `aktif` dan `finish`.
+1. Event/Kegiatan hanya dibuat oleh Admin.
+2. User hanya input kebutuhan operasional pada event/kegiatan yang ditugaskan.
+3. Status event/kegiatan MVP: `draft`, `aktif`, `finish`, `arsipkan`.
+4. User hanya melihat event/kegiatan `aktif` dan `finish`.
 5. Login satu halaman, lalu redirect berdasarkan role.
 6. `Ingat saya` harus membuat sesi login lebih tahan lama terutama di HP.
 
@@ -21,16 +34,16 @@ Keputusan ini menggantikan workflow lama yang bertentangan:
 ## 1. Workflow Besar
 
 ```text
-Admin membuat LPJ draft
+Admin membuat event/kegiatan draft
 → Admin mengatur user bertugas
-→ Admin mengaktifkan LPJ
+→ Admin mengaktifkan event/kegiatan
 → Admin memberi dana pegangan
 → User mencatat transaksi/dokumentasi/catatan lapangan
 → User bisa transfer saldo antar user jika perlu
 → User bisa mencatat dana talangan pribadi
 → Admin review transaksi dan kelengkapan
 → Admin melakukan rekonsiliasi/closing
-→ Admin menyelesaikan LPJ
+→ Admin menyelesaikan event/kegiatan
 → Sistem generate dokumen LPJ global
 ```
 
@@ -40,17 +53,17 @@ Admin membuat LPJ draft
 
 1. Login.
 2. Mengatur profil lembaga.
-3. Membuat LPJ/kegiatan baru sebagai draft.
-4. Memilih tipe LPJ.
+3. Membuat event/kegiatan baru sebagai draft.
+4. Memilih tipe event/kegiatan.
 5. Mengatur user yang bertugas.
-6. Mengubah status LPJ menjadi aktif saat siap diisi User.
+6. Mengubah status event/kegiatan menjadi aktif saat siap diisi User.
 7. Memberikan dana pegangan ke user.
 8. Memantau transaksi dan saldo.
 9. Melihat riwayat transfer saldo antar user.
 10. Review transaksi.
-11. Review kelengkapan LPJ.
+11. Review kelengkapan event/kegiatan.
 12. Melakukan rekonsiliasi/closing.
-13. Mengubah status LPJ menjadi finish.
+13. Mengubah status event/kegiatan menjadi finish.
 14. Export PDF.
 
 ---
@@ -67,27 +80,27 @@ Admin membuat LPJ draft
 8. Upload dokumentasi.
 9. Catat kejadian/kendala.
 10. Lengkapi bagian kegiatan.
-11. Melihat LPJ finish secara read-only sesuai izin.
+11. Melihat event/kegiatan finish secara read-only sesuai izin.
 
 ---
 
-## 4. Workflow Pembuatan LPJ
+## 4. Workflow Pembuatan Event/Kegiatan
 
-### 4.1 Buat LPJ
+### 4.1 Buat Event/Kegiatan
 
 ```text
-Admin memilih Buat LPJ
-Pilih tipe LPJ
+Admin memilih Buat Event / Buat Kegiatan
+Pilih tipe event/kegiatan
 Isi data dasar kegiatan
-Sistem membuat LPJ Draft
+Sistem membuat event/kegiatan Draft
 Admin menugaskan User
-Admin mengubah status ke Aktif saat LPJ siap diisi User
+Admin mengubah status ke Aktif saat event/kegiatan siap diisi User
 ```
 
 Data dasar:
 
 - Nama kegiatan.
-- Tipe LPJ.
+- Tipe event/kegiatan.
 - Tanggal mulai.
 - Tanggal selesai.
 - Lokasi.
@@ -99,10 +112,10 @@ Data dasar:
 ### 4.2 Generate Narasi Awal
 
 ```text
-Sistem membaca tipe LPJ
+Sistem membaca tipe event/kegiatan
 Sistem mengambil template narasi
 Sistem mengganti placeholder
-Narasi disimpan ke LPJ
+Narasi disimpan ke event/kegiatan
 User dapat mengedit
 ```
 
@@ -164,10 +177,10 @@ Status transaksi awal = Draft / Perlu Review / Menunggu Bukti
 
 Sumber dana:
 
-1. **Saldo Pegangan**  
+1. **Saldo Pegangan**
    Saldo user berkurang.
 
-2. **Dana Talangan Pribadi**  
+2. **Dana Talangan Pribadi**
    Saldo user tidak berkurang, sistem membuat klaim internal.
 
 ---
@@ -371,13 +384,13 @@ Rekonsiliasi membantu memastikan saldo user beres sebelum finalisasi LPJ.
 
 ---
 
-## 16. Workflow Finalisasi LPJ
+## 16. Workflow Finalisasi Event/Kegiatan
 
 ```text
-LPJ Aktif
+Event Aktif
 Admin review semua bagian
 Admin melakukan rekonsiliasi/closing
-Admin menyelesaikan LPJ
+Admin menyelesaikan event/kegiatan
 Status = finish
 Dokumen dikunci
 PDF dapat dibuat

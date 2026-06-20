@@ -1,4 +1,15 @@
-# Progress Kicap LPJ
+# Progress Kicap Event
+
+## Decision 2026-06-20 — Kicap Event
+
+Konsep terbaru:
+
+```text
+Event / Kegiatan = objek utama yang dikelola aplikasi
+LPJ = output akhir/dokumen hasil dari event/kegiatan
+```
+
+Catatan progres lama yang menyebut LPJ sebagai objek kerja dibaca sebagai legacy wording untuk Event/Kegiatan, kecuali konteksnya dokumen final/export/template LPJ.
 
 ## Slice 00 — Project Foundation
 
@@ -35,14 +46,14 @@ Status: Implementasi + patch cache + patch timezone + patch PHPUnit tests + vali
 - Commit.
 - Push.
 - Role Admin/User detail.
-- Master LPJ.
+- Master Event.
 - Data model LPJ.
 
 ### Next Slice Revisi
 
-Slice 01 — Master LPJ, Role, Login, dan UI Baseline.
+Slice 01 — Master Event, Role, Login, dan UI Baseline.
 
-## Slice 01 — Master LPJ & Role
+## Slice 01 — Master Event & Role
 
 Status: Reset dan akan dikerjakan ulang dari awal.
 
@@ -50,7 +61,7 @@ Alasan reset:
 
 - LPJ hanya dibuat oleh Admin.
 - User hanya input operasional.
-- Status LPJ disederhanakan menjadi `draft`, `aktif`, `finish`, `arsipkan`.
+- Status event/kegiatan disederhanakan menjadi `draft`, `aktif`, `finish`, `arsipkan`.
 - User hanya melihat LPJ `aktif` dan `finish`.
 - Login menjadi satu halaman berbasis role.
 - `Ingat saya` wajib berjalan.
@@ -69,7 +80,7 @@ Selesai:
 - Redirect role setelah login: Admin ke `/admin`, User ke `/app`.
 - Checkbox `Ingat saya` dipertahankan dan teruji menghasilkan remember token.
 - User role ditolak dari panel Admin.
-- Status LPJ dikunci ke `draft`, `aktif`, `finish`, `arsipkan`.
+- Status event/kegiatan dikunci ke `draft`, `aktif`, `finish`, `arsipkan`.
 - Seed user MVP: Admin dapat membuat LPJ, User/Pendamping tidak dapat membuat LPJ.
 - Endpoint PWA `/api/app/lpjs` hanya menampilkan LPJ assigned berstatus `aktif` dan `finish`.
 - Admin resource LPJ memakai pilihan status terkunci dan assignment user.
@@ -142,3 +153,55 @@ Validasi otomatis PASS:
 - `php artisan test` — 40 tests, 130 assertions
 - `php artisan migrate:fresh --seed -n`
 - `cmd.exe /c "cd /d D:\kulino\lpj-kicap && npm.cmd run build"`
+
+## Slice 04 — Pelaksanaan & Dokumentasi
+
+Status: Implementasi + validasi otomatis PASS, menunggu review manual user sebelum commit/push.
+
+Selesai:
+
+- Menambahkan data model peserta kegiatan, panitia/pendamping, rundown, dokumentasi kegiatan, dan lampiran pendukung.
+- Menambahkan `ActivityExecutionService` untuk menyimpan data pelaksanaan dan upload dokumentasi/lampiran.
+- Endpoint detail LPJ User menampilkan payload pelaksanaan/dokumentasi untuk LPJ yang ditugaskan.
+- User PWA dapat input peserta, panitia/pendamping, dan rundown pada tab `Operasional`.
+- User PWA dapat upload dokumentasi kegiatan dan lampiran pendukung.
+- Catatan operasional menambahkan `Evaluasi` dan bisa dipilih `Masuk LPJ`.
+- LPJ `finish` tetap read-only untuk input pelaksanaan dan upload dokumentasi.
+- Guardrail Slice 03 tetap: transfer saldo tidak diubah dan tidak menjadi pengeluaran LPJ.
+- Tidak membuat endpoint PDF resmi/final pada Slice 04.
+
+Validasi otomatis PASS:
+
+- `php artisan migrate --force`
+- `php artisan test tests/Feature/Slice04ExecutionDocumentationTest.php` — 5 tests, 29 assertions
+- `php artisan route:list --path=api/app`
+- `php artisan test tests/Feature/Slice02LpjDetailMobileInputTest.php` — 5 tests, 28 assertions
+- `php artisan test tests/Feature/Slice03OperationalFinanceTest.php` — 6 tests, 32 assertions
+- `php artisan test` — 45 tests, 161 assertions
+- `php artisan migrate:fresh --seed -n`
+- `npm run build`
+
+## Product Concept Rename — Kicap Event
+
+Status: Dokumentasi konsep + label UI aman diperbarui + validasi otomatis PASS, menunggu review manual user sebelum commit/push.
+
+Selesai:
+
+- Membuat decision doc `docs/decisions/DECISION_2026-06-20_KICAP_EVENT_RENAME.md`.
+- Mengunci vocabulary: Event/Kegiatan sebagai objek utama, LPJ sebagai output dokumen akhir.
+- Memperbarui README, AGENTS, PRD, workflow, role-permission, data model, roadmap, dan dokumen aktif agar keputusan terbaru menjadi panduan berikutnya.
+- Mengubah label user-facing yang aman dari LPJ-as-object menjadi Event/Kegiatan.
+- Tidak melakukan rename schema/model/route/service internal.
+
+Validasi PASS:
+
+- `rg` sisa istilah LPJ untuk review konteks.
+- `php artisan route:list`
+- `php artisan config:clear`
+- `php artisan view:clear`
+- `npm run build`
+- `php artisan test tests/Feature/HealthCheckTest.php`
+
+Archive:
+
+- `archives/2026-06-20_210040_kicap-event-concept-rename.zip`

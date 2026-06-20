@@ -504,6 +504,133 @@ h3 {
     padding: 0 12px;
 }
 
+.execution-form,
+.upload-grid {
+    display: grid;
+    gap: 12px;
+}
+
+.execution-card {
+    display: grid;
+    gap: 10px;
+    padding: 13px;
+    border: 1px solid rgba(15, 23, 42, 0.08);
+    border-radius: 8px;
+    background: #ffffff;
+    box-shadow: 0 12px 24px rgba(15, 23, 42, 0.07);
+}
+
+.execution-row {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+    padding: 10px;
+    border-radius: 8px;
+    background: #f8fafc;
+}
+
+.execution-row.two {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.execution-row input,
+.execution-row select {
+    width: 100%;
+    min-height: 40px;
+    border: 0;
+    border-radius: 8px;
+    outline: 0;
+    background: #ffffff;
+    color: #142033;
+    font-size: 12px;
+    font-weight: 800;
+    padding: 0 10px;
+}
+
+.execution-row input:disabled,
+.execution-row select:disabled {
+    background: #eef2f6;
+    color: #64748b;
+    opacity: 1;
+}
+
+.add-row-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    min-height: 40px;
+    gap: 7px;
+    border: 0;
+    border-radius: 8px;
+    background: #e9f8f5;
+    color: #0f766e;
+    font-size: 12px;
+    font-weight: 950;
+    cursor: pointer;
+}
+
+.add-row-button:disabled {
+    color: #94a3b8;
+    cursor: not-allowed;
+}
+
+.check-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-height: 36px;
+    color: #526176;
+    font-size: 12px;
+    font-weight: 900;
+}
+
+.check-row input {
+    width: 16px;
+    min-height: 16px;
+    accent-color: #ef5b4b;
+}
+
+.file-list {
+    display: grid;
+    gap: 8px;
+}
+
+.file-list a {
+    display: grid;
+    grid-template-columns: 18px minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 8px;
+    min-height: 40px;
+    padding: 0 10px;
+    border-radius: 8px;
+    background: #f6f9fb;
+    color: #42526a;
+    font-size: 12px;
+    font-weight: 900;
+    text-decoration: none;
+}
+
+.file-list svg {
+    color: #0f9488;
+}
+
+.file-list span {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.file-list b {
+    padding: 4px 7px;
+    border-radius: 999px;
+    background: #fff0ed;
+    color: #df4a3b;
+    font-size: 9px;
+    font-weight: 950;
+}
+
 .finance-form textarea {
     min-height: 94px;
     padding-top: 11px;

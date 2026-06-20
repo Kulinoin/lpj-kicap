@@ -1,10 +1,12 @@
 <?php
 
 use App\Models\ActivityNote;
+use App\Models\ActivityDocumentation;
 use App\Models\Lpj;
 use App\Models\LpjFinancialTransaction;
 use App\Models\LpjType;
 use App\Models\User;
+use App\Services\ActivityExecutionService;
 use App\Services\ActivityNoteService;
 use App\Services\LpjFinanceService;
 use Filament\Facades\Filament;
@@ -25,7 +27,7 @@ Route::get('/health', function () {
 
         return response()->json([
             'ok' => true,
-            'app' => 'Kicap LPJ',
+            'app' => 'Kicap Event',
             'slice' => '00',
             'database' => 'ok',
             'timezone' => config('app.timezone'),
@@ -33,7 +35,7 @@ Route::get('/health', function () {
     } catch (Throwable $exception) {
         return response()->json([
             'ok' => false,
-            'app' => 'Kicap LPJ',
+            'app' => 'Kicap Event',
             'slice' => '00',
             'database' => 'error',
             'message' => $exception->getMessage(),
@@ -90,7 +92,7 @@ Route::middleware('auth')->group(function (): void {
         return response()->json(['data' => $lpjs]);
     });
 
-    Route::get('/api/app/lpjs/{lpj}', function (Request $request, Lpj $lpj, ActivityNoteService $activityNoteService, LpjFinanceService $financeService) {
+    Route::get('/api/app/lpjs/{lpj}', function (Request $request, Lpj $lpj, ActivityNoteService $activityNoteService, ActivityExecutionService $executionService, LpjFinanceService $financeService) {
         /** @var User $user */
         $user = $request->user();
 
@@ -127,6 +129,7 @@ Route::middleware('auth')->group(function (): void {
                 'person_in_charge' => $lpj->personInCharge?->name,
                 'can_input_operational_data' => $lpj->status === Lpj::STATUS_AKTIF && $assignment->can_edit_activity_data,
                 'activity_notes' => $activityNoteService->payload($activityNotes),
+                'execution' => $executionService->payload($lpj, $user),
                 'finance_category_options' => array_values(LpjFinancialTransaction::categoryOptions()),
                 'finance' => $financeService->financePayload($lpj, $user),
             ],
@@ -153,6 +156,7 @@ Route::middleware('auth')->group(function (): void {
             'notes' => ['required', 'array', 'min:1'],
             'notes.*.type' => ['required', 'string', Rule::in(ActivityNote::types())],
             'notes.*.content' => ['nullable', 'string', 'max:5000'],
+            'notes.*.include_in_report' => ['sometimes', 'boolean'],
         ]);
 
         $activityNoteService->ensureForUser($lpj, $user);
@@ -165,7 +169,7 @@ Route::middleware('auth')->group(function (): void {
                 ],
                 [
                     'content' => $item['content'] ?? '',
-                    'include_in_report' => false,
+                    'include_in_report' => (bool) ($item['include_in_report'] ?? false),
                 ]
             );
         }
@@ -177,6 +181,99 @@ Route::middleware('auth')->group(function (): void {
                 ),
             ],
         ]);
+    });
+
+    Route::post('/api/app/lpjs/{lpj}/execution-data', function (Request $request, Lpj $lpj, ActivityExecutionService $executionService) {
+        /** @var User $user */
+        $user = $request->user();
+
+        abort_unless($user->isUser(), 403);
+
+        $lpj = Lpj::query()
+            ->visibleToAssignedUser($user)
+            ->findOrFail($lpj->id);
+
+        $validated = $request->validate([
+            'participants' => ['sometimes', 'array'],
+            'participants.*.name' => ['nullable', 'string', 'max:255'],
+            'participants.*.origin' => ['nullable', 'string', 'max:255'],
+            'participants.*.participant_number' => ['nullable', 'string', 'max:100'],
+            'participants.*.attendance_status' => ['nullable', 'string', Rule::in(array_keys(\App\Models\ActivityParticipant::attendanceOptions()))],
+            'participants.*.result_status' => ['nullable', 'string', 'max:255'],
+            'participants.*.note' => ['nullable', 'string', 'max:1000'],
+            'committees' => ['sometimes', 'array'],
+            'committees.*.name' => ['nullable', 'string', 'max:255'],
+            'committees.*.role' => ['nullable', 'string', 'max:255'],
+            'committees.*.task' => ['nullable', 'string', 'max:1000'],
+            'committees.*.contact' => ['nullable', 'string', 'max:100'],
+            'schedules' => ['sometimes', 'array'],
+            'schedules.*.start_time' => ['nullable', 'date'],
+            'schedules.*.end_time' => ['nullable', 'date'],
+            'schedules.*.activity_name' => ['nullable', 'string', 'max:255'],
+            'schedules.*.responsible_person' => ['nullable', 'string', 'max:255'],
+            'schedules.*.note' => ['nullable', 'string', 'max:1000'],
+        ]);
+
+        $executionService->replaceExecutionData($lpj, $user, $validated);
+
+        return response()->json([
+            'data' => [
+                'execution' => $executionService->payload($lpj->fresh(), $user),
+            ],
+        ]);
+    });
+
+    Route::post('/api/app/lpjs/{lpj}/documentations', function (Request $request, Lpj $lpj, ActivityExecutionService $executionService) {
+        /** @var User $user */
+        $user = $request->user();
+
+        abort_unless($user->isUser(), 403);
+
+        $lpj = Lpj::query()
+            ->visibleToAssignedUser($user)
+            ->findOrFail($lpj->id);
+
+        $validated = $request->validate([
+            'category' => ['required', 'string', Rule::in(array_keys(ActivityDocumentation::categoryOptions()))],
+            'caption' => ['nullable', 'string', 'max:1000'],
+            'include_in_report' => ['sometimes', 'boolean'],
+            'sort_order' => ['nullable', 'integer', 'min:0'],
+            'file' => ['required', 'file', 'mimes:jpg,jpeg,png,webp,pdf', 'max:5120'],
+        ]);
+
+        $executionService->storeDocumentation($lpj, $user, $validated, $request->file('file'));
+
+        return response()->json([
+            'data' => [
+                'execution' => $executionService->payload($lpj->fresh(), $user),
+            ],
+        ], 201);
+    });
+
+    Route::post('/api/app/lpjs/{lpj}/attachments', function (Request $request, Lpj $lpj, ActivityExecutionService $executionService) {
+        /** @var User $user */
+        $user = $request->user();
+
+        abort_unless($user->isUser(), 403);
+
+        $lpj = Lpj::query()
+            ->visibleToAssignedUser($user)
+            ->findOrFail($lpj->id);
+
+        $validated = $request->validate([
+            'title' => ['required', 'string', 'max:255'],
+            'description' => ['nullable', 'string', 'max:1000'],
+            'include_in_report' => ['sometimes', 'boolean'],
+            'file' => ['required', 'file', 'mimes:jpg,jpeg,png,webp,pdf,doc,docx,xls,xlsx', 'max:5120'],
+        ]);
+
+        $executionService->storeAttachment($lpj, $user, $validated, $request->file('file'));
+
+        return response()->json([
+            'data' => [
+                'execution' => $executionService->payload($lpj->fresh(), $user),
+            ],
+        ], 201);
     });
 
     Route::post('/api/app/lpjs/{lpj}/expenses', function (Request $request, Lpj $lpj, LpjFinanceService $financeService) {

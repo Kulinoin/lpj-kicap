@@ -1,15 +1,28 @@
-# Tech Stack & Arsitektur Kicap LPJ v1.0
+# Tech Stack & Arsitektur Kicap Event v1.0
 
-**Status:** Draft teknis awal  
-**Repo lokal:** `D:\kulino\lpj-kicap`  
-**WSL path:** `/mnt/d/kulino/lpj-kicap`  
+**Status:** Draft teknis awal
+**Repo lokal:** `D:\kulino\lpj-kicap`
+**WSL path:** `/mnt/d/kulino/lpj-kicap`
 **GitHub SSH:** `git@github.com:Kulinoin/lpj-kicap.git`
+
+---
+
+## 0.0 Decision — Kicap Event sebagai Konsep Utama
+
+Keputusan 20 Juni 2026:
+
+```text
+Event / Kegiatan = objek utama
+LPJ = output dokumen akhir
+```
+
+Arsitektur aplikasi tidak berubah. Laravel, Filament, React PWA, storage, queue, dan document generator tetap sama. Perubahan ini hanya mengarahkan label produk/UI/dokumen agar Event/Kegiatan menjadi objek utama dan LPJ menjadi output.
 
 ---
 
 ## 0. Keputusan Revisi 20 Juni 2026
 
-1. Login aplikasi memakai satu halaman branded Kicap LPJ untuk Admin dan User.
+1. Login aplikasi memakai satu halaman branded Kicap Event untuk Admin dan User.
 2. Login menerima username/email dan password.
 3. Checkbox `Ingat saya` wajib terhubung ke mekanisme remember-me Laravel.
 4. Setelah login, redirect berdasarkan role:
@@ -39,7 +52,7 @@ User  -> /app
 | Database awal | MySQL |
 | File storage | Laravel Storage |
 | Job berat | Queue/Job |
-| Dokumen LPJ | Server-side document generator |
+| Generate LPJ | Server-side document generator |
 | Output | PDF dan print-ready view |
 
 Catatan:
@@ -72,7 +85,7 @@ Filament digunakan untuk Admin/backoffice:
 - Profil lembaga.
 - User management.
 - Master data.
-- Semua LPJ.
+- Semua Event/Kegiatan.
 - Dana kegiatan.
 - Saldo user.
 - Transaksi global.
@@ -212,7 +225,7 @@ Fitur PWA MVP:
 Konsep login:
 
 ```text
-Satu halaman login Kicap LPJ
+Satu halaman login Kicap Event
 Logo di atas
 Field Username / Email
 Field Password
@@ -293,8 +306,8 @@ Audit minimal untuk:
 - Transfer saldo.
 - Koreksi saldo.
 - Klaim dana talangan.
-- Review LPJ.
-- Finalisasi LPJ.
+- Review event/kegiatan.
+- Finalisasi event/kegiatan.
 - Export dokumen.
 
 Audit menyimpan:

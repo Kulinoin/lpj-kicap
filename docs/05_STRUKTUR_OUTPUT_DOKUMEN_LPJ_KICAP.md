@@ -1,16 +1,29 @@
 # Struktur Output Dokumen LPJ Kicap v1.0
 
-**Status:** Draft layout dokumen  
+**Status:** Draft layout dokumen
 **Prinsip:** Output LPJ global, formal, dan mudah dibaca. Detail internal tetap tersimpan di sistem.
+
+---
+
+## 0.0 Decision — Kicap Event sebagai Konsep Utama
+
+Keputusan 20 Juni 2026:
+
+```text
+Event / Kegiatan = objek utama
+LPJ = output dokumen akhir
+```
+
+Dokumen ini memang membahas konteks LPJ, sehingga kata LPJ tetap dipakai. Sumber data dokumen berasal dari event/kegiatan yang sudah direview dan difinalisasi.
 
 ---
 
 ## 0. Keputusan Revisi 20 Juni 2026
 
-1. Dokumen resmi/PDF hanya dibuat dari LPJ status `finish`.
-2. Istilah "LPJ final" pada dokumen ini berarti output resmi dari LPJ yang sudah `finish`.
-3. LPJ `draft` dan `aktif` hanya boleh memiliki preview kerja, bukan PDF resmi.
-4. LPJ `arsipkan` dapat diexport ulang oleh Admin jika diperlukan.
+1. Dokumen resmi/PDF hanya dibuat dari event/kegiatan status `finish`.
+2. Istilah "LPJ final" pada dokumen ini berarti output resmi dari event/kegiatan yang sudah `finish`.
+3. Event/kegiatan `draft` dan `aktif` hanya boleh memiliki preview kerja, bukan PDF resmi.
+4. Event/kegiatan `arsipkan` dapat diexport ulang oleh Admin jika diperlukan.
 
 ---
 
@@ -161,7 +174,7 @@ Contoh:
 HALAMAN PENGESAHAN
 
 Nama Kegiatan : [Nama kegiatan]
-Tipe LPJ      : [Tipe LPJ]
+Tipe Kegiatan : [Tipe Kegiatan]
 Periode       : [Periode]
 Lokasi        : [Lokasi]
 Dibuat oleh   : [Nama]
@@ -185,7 +198,7 @@ Elemen halaman isi:
 Footer contoh:
 
 ```text
-Kicap LPJ - PT. Kazoku Indonesia Center | Halaman X
+Kicap Event - PT. Kazoku Indonesia Center | Halaman X
 ```
 
 ---
@@ -197,7 +210,7 @@ Field yang ditampilkan:
 | Field | Keterangan |
 |---|---|
 | Nama kegiatan | Judul kegiatan |
-| Tipe LPJ | Tipe kegiatan |
+| Tipe kegiatan | Tipe event/kegiatan |
 | Tanggal | Tanggal mulai/selesai |
 | Lokasi | Lokasi kegiatan |
 | Penanggung jawab | Nama PJ |

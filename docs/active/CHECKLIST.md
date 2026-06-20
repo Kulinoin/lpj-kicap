@@ -1,41 +1,37 @@
 # Checklist Manual Aktif
 
-## Slice 03 — Operasional Keuangan
+## Product Concept Rename — Kicap Event
 
-- [ ] Login sebagai Admin.
-- [ ] Buka `/admin`.
-- [ ] Pastikan menu `Operasional Keuangan` tersedia.
-- [ ] Pastikan menu berisi `Dana Masuk LPJ`, `Mutasi Saldo`, `Saldo User`, `Transaksi Operasional`, dan `Klaim Talangan`.
-- [ ] Catat `Dana Masuk LPJ` untuk LPJ aktif.
-- [ ] Pastikan `Sumber Dana` hanya pilihan `Lembaga`, `Sponsor`, dan `Dinas`.
-- [ ] Pastikan total dana LPJ bertambah di data LPJ.
-- [ ] Buka `Mutasi Saldo`.
-- [ ] Klik `Beri Dana Pegangan`.
-- [ ] Pilih LPJ aktif dan User yang ditugaskan.
-- [ ] Simpan nominal dana pegangan.
-- [ ] Pastikan `Saldo User` bertambah.
-- [ ] Pastikan kolom `User Terkait Transfer` menampilkan nama user lawan transfer untuk transfer, dan `-` untuk mutasi non-transfer.
+- [ ] Pastikan brand aplikasi tampil sebagai `Kicap Event`.
+- [ ] Pastikan daftar pekerjaan User memakai istilah `Event Saya` / `Kegiatan Saya`, bukan `LPJ Saya`.
+- [ ] Pastikan detail kerja memakai istilah `Detail Event` atau `Detail Kegiatan`.
+- [ ] Pastikan dana/transaksi operasional memakai istilah event/kegiatan.
+- [ ] Pastikan kata `LPJ` tetap ada hanya untuk konteks `Masuk LPJ`, preview/export/generate dokumen, template dokumen, dan output final.
+- [ ] Pastikan tidak ada perubahan alur login, role, transfer saldo, dana talangan, atau finalisasi.
+- [ ] Pastikan schema/model/route internal `lpj` tidak direname agresif pada task ini.
+
+## Slice 04 — Pelaksanaan & Dokumentasi
+
 - [ ] Login sebagai User.
 - [ ] Buka `/app` dari viewport HP.
 - [ ] Pastikan bottom navigation tetap 5 item: `Beranda`, `Operasional`, `Keuangan`, `Selesai`, `Profil`.
-- [ ] Buka `Operasional`.
-- [ ] Buka LPJ aktif yang ditugaskan.
-- [ ] Pastikan detail hanya menampilkan input operasional/catatan petugas.
-- [ ] Kembali, buka `Keuangan`.
-- [ ] Buka LPJ aktif yang ditugaskan.
-- [ ] Pastikan detail menampilkan panel `Operasional Keuangan`.
-- [ ] Pastikan saldo pegangan tampil.
-- [ ] Pastikan kategori pengeluaran berupa pilihan tetap.
-- [ ] Catat pengeluaran dengan upload bukti PDF/gambar.
-- [ ] Pastikan saldo berkurang dan transaksi muncul dengan status `Perlu Review`.
-- [ ] Catat pengeluaran tanpa bukti dengan mengisi alasan.
-- [ ] Pastikan transaksi tersimpan.
-- [ ] Transfer saldo ke user lain yang ditugaskan.
-- [ ] Pastikan saldo pengirim langsung berkurang.
-- [ ] Pastikan transfer tidak muncul sebagai pengeluaran LPJ.
-- [ ] Catat dana talangan.
-- [ ] Pastikan kategori dana talangan berupa pilihan tetap.
-- [ ] Pastikan saldo pegangan tidak berkurang.
-- [ ] Login Admin dan pastikan klaim muncul di `Klaim Talangan`.
-- [ ] Buka LPJ `finish` sebagai User.
-- [ ] Pastikan form keuangan read-only/tidak bisa dipakai.
+- [ ] Buka tab `Operasional`.
+- [ ] Buka event/kegiatan aktif yang ditugaskan.
+- [ ] Pastikan catatan petugas berisi `Hasil di Lapangan`, `Evaluasi`, `Kendala`, dan `Saran Tindak Lanjut`.
+- [ ] Isi catatan evaluasi/kendala/saran.
+- [ ] Tandai catatan yang perlu masuk LPJ.
+- [ ] Isi data peserta: nama, asal, nomor peserta, kehadiran, hasil, dan keterangan.
+- [ ] Isi data panitia/pendamping: nama, jabatan/peran, tugas, dan kontak.
+- [ ] Isi rundown: waktu mulai, waktu selesai, nama aktivitas, penanggung jawab, dan catatan.
+- [ ] Simpan data kegiatan.
+- [ ] Upload dokumentasi kegiatan berupa gambar/PDF.
+- [ ] Tandai dokumentasi yang perlu masuk LPJ.
+- [ ] Upload lampiran pendukung.
+- [ ] Tandai lampiran yang perlu masuk LPJ.
+- [ ] Pastikan file tersimpan tampil pada daftar `File tersimpan`.
+- [ ] Kembali ke tab `Keuangan`.
+- [ ] Pastikan aturan transfer saldo Slice 03 tetap langsung tanpa approval.
+- [ ] Pastikan input pelaksanaan tidak membuat transaksi pengeluaran LPJ.
+- [ ] Buka event/kegiatan `finish` sebagai User.
+- [ ] Pastikan data pelaksanaan dan upload dokumentasi/lampiran read-only.
+- [ ] Pastikan tidak ada tombol/endpoint PDF resmi untuk LPJ yang belum `finish`.

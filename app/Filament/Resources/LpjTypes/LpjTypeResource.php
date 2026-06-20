@@ -20,6 +20,12 @@ class LpjTypeResource extends Resource
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
 
+    protected static ?string $navigationLabel = 'Tipe Event';
+
+    protected static ?string $modelLabel = 'Tipe Event';
+
+    protected static ?string $pluralModelLabel = 'Tipe Event';
+
     public static function form(Schema $schema): Schema
     {
         return LpjTypeForm::configure($schema);

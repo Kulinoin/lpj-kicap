@@ -1,4 +1,19 @@
-# Worklog Kicap LPJ
+# Worklog Kicap Event
+
+## 2026-06-20 — Product Concept Rename
+
+- Mengunci pemahaman baru: `Event/Kegiatan` adalah objek utama aplikasi, sedangkan `LPJ` adalah output akhir/dokumen hasil event/kegiatan.
+- Menambahkan decision doc `docs/decisions/DECISION_2026-06-20_KICAP_EVENT_RENAME.md`.
+- Memperbarui panduan aktif agar istilah lama yang menyebut LPJ sebagai objek kerja dibaca sebagai legacy wording.
+- Menjaga alur kerja mesin tetap sama: Admin membuat event/kegiatan, User mengisi operasional, Admin review/finalisasi, sistem generate LPJ.
+- Tidak melakukan rename schema/model/route/service internal.
+- Mengubah label brand dan label UI aman menjadi `Kicap Event`, `Event Saya`, `Detail Event`, `Dana Kegiatan`, `Dana Masuk Event`, dan `Transaksi Event`.
+- Validasi PASS: `php artisan route:list > /tmp/kicap_event_routes.txt`.
+- Validasi PASS: `php artisan config:clear`.
+- Validasi PASS: `php artisan view:clear`.
+- Validasi PASS: `npm run build`.
+- Validasi PASS: `php artisan test tests/Feature/HealthCheckTest.php`.
+- Archive dibuat: `archives/2026-06-20_210040_kicap-event-concept-rename.zip`.
 
 ## 2026-06-19 20:23:44 +07 — Slice 00
 
@@ -72,12 +87,12 @@
 - Menambahkan `ActivityNoteService` untuk catatan operasional User.
 - Menyiapkan `LpjNarrativeService` untuk fondasi narasi Admin berikutnya.
 - Menambahkan seed template narasi untuk lima tipe LPJ awal.
-- Menambahkan endpoint detail LPJ User dan simpan catatan operasional.
+- Menambahkan endpoint detail event User dan simpan catatan operasional.
 - Mengunci akses detail hanya untuk User yang ditugaskan.
 - Mengunci input operasional hanya untuk LPJ `aktif`.
 - Mengunci LPJ `finish` sebagai read-only di PWA User.
 - Menghapus editor narasi dari PWA User karena narasi adalah urusan Admin.
-- Menambahkan detail LPJ dan autosave catatan operasional di React PWA.
+- Menambahkan detail event dan autosave catatan operasional di React PWA.
 - Mengubah bottom navigation petugas menjadi 5 item dengan `Input Cepat` sebagai tombol tengah.
 - Mengganti label UX yang terlihat user ke bahasa Indonesia, termasuk `Input Cepat` dan `Selesai`.
 - Validasi PASS: `php artisan test tests/Feature/Slice02LpjDetailMobileInputTest.php`.
@@ -85,15 +100,15 @@
 - Validasi PASS: `php artisan migrate:fresh --seed`.
 - Validasi PASS: `cmd.exe /c "cd /d D:\kulino\lpj-kicap && npm.cmd run build"`.
 
-## 2026-06-20 18:53 +07 — Slice 03 Operasional Keuangan
+## 2026-06-20 18:53 +07 — Slice 03 Dana Kegiatan
 
 - Menambahkan tabel dana masuk LPJ, saldo user per LPJ, mutasi saldo, transaksi operasional, dan klaim dana talangan.
 - Menambahkan model `LpjFundReceipt`, `LpjUserBalance`, `LpjBalanceMutation`, `LpjFinancialTransaction`, dan `LpjAdvanceClaim`.
 - Menambahkan `LpjFinanceService` untuk dana masuk, dana pegangan, pengeluaran, transfer saldo, dan dana talangan.
 - Menambahkan endpoint PWA untuk pengeluaran, transfer saldo, dan dana talangan.
-- Menambahkan payload finance pada detail LPJ User.
-- Menambahkan panel Operasional Keuangan pada detail LPJ PWA.
-- Menambahkan resource Filament untuk `Dana Masuk LPJ`, `Mutasi Saldo`, `Saldo User`, `Transaksi Operasional`, dan `Klaim Talangan`.
+- Menambahkan payload finance pada detail event User.
+- Menambahkan panel Dana Kegiatan pada detail event PWA.
+- Menambahkan resource Filament untuk `Dana Masuk Event`, `Mutasi Saldo`, `Saldo User`, `Transaksi Operasional`, dan `Klaim Talangan`.
 - Menambahkan seed saldo demo dan penugasan user kedua untuk simulasi transfer.
 - Menambahkan coverage test `Slice03OperationalFinanceTest`.
 - Validasi PASS: `php artisan test tests/Feature/Slice03OperationalFinanceTest.php`.
@@ -106,7 +121,27 @@
 
 ## 2026-06-20 — Slice 03 Follow-up Review Manual
 
-- Mengubah sumber dana pada `Dana Masuk LPJ` menjadi pilihan `Lembaga`, `Sponsor`, dan `Dinas`.
+- Mengubah sumber dana pada `Dana Masuk Event` menjadi pilihan `Lembaga`, `Sponsor`, dan `Dinas`.
 - Mengubah kategori transaksi User pada PWA menjadi pilihan tetap: `Konsumsi`, `Akomodasi`, `Operasional`, `Transportasi`, `Dokumentasi`, dan `Lainnya`.
 - Memisahkan menu bawah PWA menjadi `Operasional` untuk catatan petugas dan `Keuangan` untuk transaksi/saldo.
 - Mengganti label kolom mutasi menjadi `User Terkait Transfer` dan menampilkan `-` untuk mutasi non-transfer.
+
+## 2026-06-20 20:42 +07 — Slice 04 Pelaksanaan & Dokumentasi
+
+- Menambahkan tabel peserta kegiatan, panitia/pendamping, rundown, dokumentasi kegiatan, dan lampiran pendukung.
+- Menambahkan model `ActivityParticipant`, `ActivityCommittee`, `ActivitySchedule`, `ActivityDocumentation`, dan `ActivityAttachment`.
+- Menambahkan `ActivityExecutionService` untuk menyimpan data pelaksanaan serta upload dokumentasi/lampiran.
+- Menambahkan endpoint PWA `execution-data`, `documentations`, dan `attachments`.
+- Menambahkan payload pelaksanaan/dokumentasi pada detail event User.
+- Menambahkan input peserta, panitia/pendamping, rundown, upload dokumentasi, upload lampiran, dan daftar file tersimpan di tab `Operasional`.
+- Menambahkan tipe catatan `Evaluasi` dan opsi `include_in_report` untuk memilih catatan masuk LPJ.
+- Mengunci LPJ `finish` tetap read-only untuk input pelaksanaan dan upload.
+- Menambahkan coverage test `Slice04ExecutionDocumentationTest`.
+- Validasi PASS: `php artisan migrate --force`.
+- Validasi PASS: `php artisan test tests/Feature/Slice04ExecutionDocumentationTest.php`.
+- Validasi PASS: `php artisan route:list --path=api/app`.
+- Validasi PASS: `php artisan test tests/Feature/Slice02LpjDetailMobileInputTest.php`.
+- Validasi PASS: `php artisan test tests/Feature/Slice03OperationalFinanceTest.php`.
+- Validasi PASS: `php artisan test`.
+- Validasi PASS: `php artisan migrate:fresh --seed -n`.
+- Validasi PASS: `npm run build`.

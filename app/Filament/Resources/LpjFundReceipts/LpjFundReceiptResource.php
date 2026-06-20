@@ -23,19 +23,19 @@ class LpjFundReceiptResource extends Resource
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedBanknotes;
 
-    protected static ?string $navigationLabel = 'Dana Masuk LPJ';
+    protected static ?string $navigationLabel = 'Dana Masuk Event';
 
-    protected static ?string $modelLabel = 'Dana Masuk LPJ';
+    protected static ?string $modelLabel = 'Dana Masuk Event';
 
-    protected static ?string $pluralModelLabel = 'Dana Masuk LPJ';
+    protected static ?string $pluralModelLabel = 'Dana Masuk Event';
 
-    protected static \UnitEnum|string|null $navigationGroup = 'Operasional Keuangan';
+    protected static \UnitEnum|string|null $navigationGroup = 'Dana Kegiatan';
 
     public static function form(Schema $schema): Schema
     {
         return $schema->components([
             Select::make('lpj_id')
-                ->label('LPJ')
+                ->label('Event')
                 ->relationship('lpj', 'title')
                 ->searchable()
                 ->preload()
@@ -64,10 +64,10 @@ class LpjFundReceiptResource extends Resource
         return $table
             ->columns([
                 TextColumn::make('lpj.code')
-                    ->label('Kode LPJ')
+                    ->label('Kode Event')
                     ->searchable(),
                 TextColumn::make('lpj.title')
-                    ->label('LPJ')
+                    ->label('Event')
                     ->searchable(),
                 TextColumn::make('source_name')
                     ->label('Sumber')

@@ -1,7 +1,20 @@
-# Data Model Awal Kicap LPJ v1.0
+# Data Model Awal Kicap Event v1.0
 
-**Status:** Draft awal data model MVP  
+**Status:** Draft awal data model MVP
 **Catatan utama:** Transfer saldo antar user tidak memakai approval Admin.
+
+---
+
+## 0.0 Decision — Kicap Event sebagai Konsep Utama
+
+Keputusan 20 Juni 2026:
+
+```text
+Event / Kegiatan = objek utama
+LPJ = output dokumen akhir
+```
+
+Data model konseptual memakai Event/Kegiatan sebagai objek utama. Nama tabel, kolom, model, dan route internal yang sudah memakai `lpj` boleh tetap dipertahankan sebagai legacy code sampai ada slice teknis rename yang aman.
 
 ---
 
@@ -9,10 +22,10 @@
 
 Data model MVP mengikuti keputusan terbaru:
 
-1. LPJ hanya dibuat oleh Admin.
-2. Kolom izin `can_create_lpj` tidak digunakan untuk User pada MVP baru, atau bernilai `false` untuk User.
-3. Status LPJ disederhanakan menjadi `draft`, `aktif`, `finish`, `arsipkan`.
-4. Query LPJ untuk PWA User hanya mengambil LPJ yang ditugaskan dengan status `aktif` atau `finish`.
+1. Event/Kegiatan hanya dibuat oleh Admin.
+2. Kolom izin `can_create_lpj` adalah legacy/internal untuk izin membuat event/kegiatan; User bernilai `false`.
+3. Status event/kegiatan disederhanakan menjadi `draft`, `aktif`, `finish`, `arsipkan`.
+4. Query event/kegiatan untuk PWA User hanya mengambil data yang ditugaskan dengan status `aktif` atau `finish`.
 5. Auth memakai satu halaman login dan redirect berdasarkan role.
 6. Remember-me harus didukung oleh session/auth layer.
 
@@ -23,7 +36,7 @@ Data model MVP mengikuti keputusan terbaru:
 Data model harus mendukung:
 
 1. Admin dan User.
-2. Tipe LPJ.
+2. Tipe event/kegiatan.
 3. Template narasi.
 4. Data kegiatan lengkap.
 5. Saldo pegangan user.
@@ -115,9 +128,9 @@ Tipe awal:
 | Field | Keterangan |
 |---|---|
 | id | Primary key |
-| code | Kode LPJ |
-| title | Judul LPJ |
-| lpj_type_id | Tipe LPJ |
+| code | Kode event/kegiatan |
+| title | Judul event/kegiatan |
+| lpj_type_id | Tipe event/kegiatan, nama kolom legacy |
 | created_by | Pembuat |
 | person_in_charge_id | Penanggung jawab |
 | status | draft/aktif/finish/arsipkan |
@@ -164,7 +177,7 @@ Tipe awal:
 | Field | Keterangan |
 |---|---|
 | id | Primary key |
-| lpj_type_id | Tipe LPJ |
+| lpj_type_id | Tipe event/kegiatan, nama kolom legacy |
 | section | Bagian narasi |
 | title | Nama template |
 | content | Isi template |

@@ -44,7 +44,7 @@ class AdminPanelProvider extends PanelProvider
             ->default()
             ->id('admin')
             ->path('admin')
-            ->brandName('Kicap LPJ')
+            ->brandName('Kicap Event')
             ->favicon('/icons/kicap-lpj.svg')
             ->maxContentWidth(Width::Full)
             ->simplePageMaxContentWidth(Width::Large)

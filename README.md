@@ -1,6 +1,15 @@
-# Kicap LPJ
+# Kicap Event
 
-Kicap LPJ adalah aplikasi PWA mobile-first untuk pencatatan kegiatan, transaksi, saldo user, dokumentasi, review Admin, finalisasi, dan export dokumen LPJ.
+Kicap Event adalah aplikasi PWA mobile-first untuk mengelola event/kegiatan, transaksi, saldo user, dokumentasi, review Admin, finalisasi, dan export dokumen LPJ.
+
+## Konsep Produk Terkini
+
+Mulai 20 Juni 2026, konsep produk dikunci sebagai **Kicap Event**:
+
+- **Event/Kegiatan** adalah objek utama yang dibuat Admin dan diisi oleh User/petugas.
+- **LPJ** adalah output akhir berupa dokumen pertanggungjawaban yang digenerate setelah event/kegiatan direview dan difinalisasi.
+- Perubahan ini meluruskan istilah produk, bukan mengubah alur kerja mesin.
+- Internal code legacy seperti `lpj`, `lpjs`, `lpj_id`, route, model, atau service boleh tetap dipertahankan sementara jika rename berisiko.
 
 ## Slice 00 — Project Foundation
 
@@ -26,7 +35,7 @@ Status: pondasi awal.
 
 ### Login
 
-Kicap LPJ memakai satu halaman login berbasis role.
+Kicap Event memakai satu halaman login berbasis role.
 
 - Admin diarahkan ke `/admin`.
 - User diarahkan ke `/app`.
@@ -38,7 +47,7 @@ Seed awal:
 - Admin: admin@kicap.id / password
 - User: user@kicap.id / password
 
-Catatan: Slice 01 direvisi dan akan dikerjakan ulang untuk mengunci login tunggal, role, status LPJ sederhana, dan UI baseline.
+Catatan: Slice 01 direvisi untuk mengunci login tunggal, role, status event/kegiatan sederhana, dan UI baseline.
 
 ### Menjalankan aplikasi
 
@@ -75,7 +84,7 @@ git remote -v
 
 ### Catatan UI
 
-Frontend Kicap LPJ diarahkan menjadi mobile-first seperti aplikasi HP. User PWA memakai bottom navigation mengambang, responsive untuk HP/tablet, dan tema visual yang cocok dengan logo Kicap.
+Frontend Kicap Event diarahkan menjadi mobile-first seperti aplikasi HP. User PWA memakai bottom navigation mengambang, responsive untuk HP/tablet, dan tema visual yang cocok dengan logo Kicap.
 
 Admin panel dibuat responsive full-width agar halaman table/resource tidak terasa sempit atau menyisakan ruang kosong berlebihan.
 

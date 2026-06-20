@@ -55,8 +55,8 @@ class UserForm
                     ->label('Aktif')
                     ->required(),
                 Toggle::make('can_create_lpj')
-                    ->label('Bisa Membuat LPJ')
-                    ->helperText('Hanya Admin yang boleh membuat LPJ pada MVP.')
+                    ->label('Bisa Membuat Event')
+                    ->helperText('Hanya Admin yang boleh membuat event/kegiatan pada MVP.')
                     ->disabled(fn ($get): bool => $get('role') !== User::ROLE_ADMIN)
                     ->dehydrated()
                     ->default(false),

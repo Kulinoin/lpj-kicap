@@ -21,15 +21,15 @@ class LpjForm
         return $schema
             ->components([
                 TextInput::make('code')
-                    ->label('Kode LPJ')
+                    ->label('Kode Event')
                     ->required()
                     ->maxLength(255),
                 TextInput::make('title')
-                    ->label('Judul LPJ')
+                    ->label('Judul Event')
                     ->required()
                     ->maxLength(255),
                 Select::make('lpj_type_id')
-                    ->label('Tipe LPJ')
+                    ->label('Tipe Event')
                     ->relationship('type', 'name')
                     ->searchable()
                     ->preload()
@@ -45,7 +45,7 @@ class LpjForm
                     ->searchable()
                     ->preload(),
                 Select::make('status')
-                    ->label('Status')
+                    ->label('Status Event')
                     ->options(Lpj::statusLabels())
                     ->required()
                     ->default('draft'),

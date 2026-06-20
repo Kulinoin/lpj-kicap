@@ -1,4 +1,4 @@
-# Slice 01 — Master LPJ, Role, Login, dan UI Baseline
+# Slice 01 — Master Event, Role, Login, dan UI Baseline
 
 ## Status
 
@@ -8,7 +8,7 @@ Implementasi Slice 01 lama dianggap tidak menjadi acuan final karena ada perubah
 
 - LPJ hanya dibuat oleh Admin.
 - User tidak membuat LPJ.
-- Status LPJ disederhanakan menjadi `draft`, `aktif`, `finish`, `arsipkan`.
+- Status event/kegiatan disederhanakan menjadi `draft`, `aktif`, `finish`, `arsipkan`.
 - User hanya melihat LPJ `aktif` dan `finish` yang ditugaskan.
 - Login menjadi satu halaman untuk Admin dan User.
 - `Ingat saya` wajib berfungsi.
@@ -18,7 +18,7 @@ Implementasi Slice 01 lama dianggap tidak menjadi acuan final karena ada perubah
 ## Target Baru
 
 - Role MVP Admin/User.
-- Login tunggal branded Kicap LPJ.
+- Login tunggal branded Kicap Event.
 - Login menerima username/email dan password.
 - Checkbox `Ingat saya` berjalan secara fungsional.
 - Redirect setelah login:
@@ -29,7 +29,7 @@ User  -> /app
 ```
 
 - Profil lembaga awal.
-- Tipe LPJ awal.
+- Tipe Event awal.
 - Struktur LPJ awal dengan status:
 
 ```text
@@ -55,7 +55,7 @@ Struktur mengikuti referensi screenshot user:
 - Background lembut.
 - Kartu login putih di tengah.
 - Logo Kicap di atas.
-- Judul `Kicap LPJ`.
+- Judul `Kicap Event`.
 - Field `Username / Email`.
 - Field `Password`.
 - Checkbox `Ingat saya`.
@@ -84,7 +84,7 @@ Text: slate/abu gelap
 - Test User ditolak dari `/admin`.
 - Test status LPJ hanya `draft`, `aktif`, `finish`, `arsipkan`.
 - Test User tidak bisa membuat LPJ.
-- Test User hanya menerima LPJ aktif/finish yang ditugaskan.
+- Test User hanya menerima event/kegiatan aktif/finish yang ditugaskan.
 - `npm run build`
 
 ## Validasi Manual Rencana
@@ -97,7 +97,7 @@ Text: slate/abu gelap
 - Cek bottom navigation user di HP/tablet.
 - Cek Admin panel tidak menyisakan ruang kosong lebar kiri-kanan.
 - Cek LPJ draft tidak tampil di user.
-- Cek LPJ aktif dan finish tampil di user jika ditugaskan.
+- Cek event/kegiatan aktif dan finish tampil di user jika ditugaskan.
 
 ## Di Luar Scope Slice 01
 

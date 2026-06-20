@@ -1,8 +1,21 @@
-# Struktur Modul & Menu Kicap LPJ v1.0
+# Struktur Modul & Menu Kicap Event v1.0
 
-**Status:** Draft MVP  
-**Role:** Admin dan User  
+**Status:** Draft MVP
+**Role:** Admin dan User
 **Catatan utama:** Transfer saldo antar user tidak perlu approval Admin; Admin tetap dapat melihat riwayat transfer.
+
+---
+
+## 0.0 Decision — Kicap Event sebagai Konsep Utama
+
+Keputusan 20 Juni 2026 mengunci vocabulary berikut:
+
+```text
+Event / Kegiatan = objek utama
+LPJ = output dokumen akhir
+```
+
+Menu dan label UI memakai Event/Kegiatan untuk objek utama. LPJ hanya dipakai untuk preview/export/template/dokumen final. Nama file dan internal code legacy boleh tetap memakai `lpj` sampai ada slice teknis rename yang aman.
 
 ---
 
@@ -10,10 +23,10 @@
 
 Jika ada konflik dengan struktur lama, gunakan keputusan berikut:
 
-1. LPJ hanya dibuat oleh Admin.
-2. User tidak memiliki menu `Buat LPJ`.
-3. Status LPJ MVP: `draft`, `aktif`, `finish`, `arsipkan`.
-4. Halaman user hanya menampilkan LPJ `aktif` dan `finish`.
+1. Event/Kegiatan hanya dibuat oleh Admin.
+2. User tidak memiliki menu `Buat Event` / `Buat Kegiatan`.
+3. Status event/kegiatan MVP: `draft`, `aktif`, `finish`, `arsipkan`.
+4. Halaman user hanya menampilkan event/kegiatan `aktif` dan `finish`.
 5. Login hanya satu halaman untuk semua role.
 6. User PWA memakai bottom navigation mengambang, responsive untuk HP dan tablet.
 7. Admin panel dibuat responsive full-width agar tabel/resource tidak terasa sempit.
@@ -38,14 +51,14 @@ Jika ada konflik dengan struktur lama, gunakan keputusan berikut:
 
 Fungsi:
 
-- Ringkasan LPJ aktif.
-- LPJ menunggu review.
+- Ringkasan event aktif.
+- Event menunggu review.
 - Transaksi perlu review.
 - Klaim dana talangan menunggu verifikasi.
 - Total dana kegiatan.
 - Ringkasan saldo user.
 - Transfer saldo terbaru.
-- Checklist LPJ siap finalisasi.
+- Checklist event siap finalisasi.
 
 Menu:
 
@@ -85,9 +98,9 @@ Fungsi:
 - Kelola Admin.
 - Kelola User.
 - Status aktif/nonaktif.
-- Izin user membuat LPJ.
+- Izin user membuat event/kegiatan.
 - Izin user transfer saldo.
-- Penugasan user ke LPJ.
+- Penugasan user ke event/kegiatan.
 
 Menu:
 
@@ -97,11 +110,11 @@ User Management
 
 ---
 
-### 2.4 Master LPJ
+### 2.4 Master Event
 
 Fungsi:
 
-- Tipe LPJ.
+- Tipe Event.
 - Template narasi.
 - Template dokumen.
 - Kategori transaksi.
@@ -112,8 +125,8 @@ Fungsi:
 Menu group:
 
 ```text
-Master LPJ
-  - Tipe LPJ
+Master Event
+  - Tipe Event
   - Template Narasi
   - Template Dokumen
   - Kategori Transaksi
@@ -123,33 +136,33 @@ Master LPJ
 
 ---
 
-### 2.5 Data LPJ
+### 2.5 Data Event
 
 Fungsi:
 
-- Melihat semua LPJ.
-- Membuat LPJ.
+- Melihat semua event/kegiatan.
+- Membuat event/kegiatan.
 - Review data kegiatan.
 - Review transaksi.
 - Review dokumentasi.
-- Finalisasi LPJ.
+- Finalisasi event/kegiatan.
 - Export dokumen.
 
 Menu group:
 
 ```text
-Data LPJ
-  - Semua LPJ
-  - LPJ Draft
-  - LPJ Aktif
-  - LPJ Finish
-  - Arsip LPJ
+Data Event
+  - Semua Event
+  - Event Draft
+  - Event Aktif
+  - Event Finish
+  - Arsip Event
 ```
 
 Catatan:
 
-- Untuk implementasi UI, status boleh berupa filter di halaman Semua LPJ.
-- Jika sidebar terlalu ramai, cukup gunakan `Semua LPJ` dan `Review LPJ`.
+- Untuk implementasi UI, status boleh berupa filter di halaman Semua Event.
+- Jika sidebar terlalu ramai, cukup gunakan `Semua Event` dan `Review Event`.
 
 ---
 
@@ -290,8 +303,8 @@ Menu group:
 
 ```text
 Review & Finalisasi
-  - Checklist LPJ
-  - Review LPJ
+  - Checklist Event
+  - Review Event
   - Rekonsiliasi
   - Finalisasi
 ```
@@ -320,7 +333,7 @@ Export Dokumen
 
 Isi:
 
-- LPJ aktif.
+- Event aktif.
 - Saldo pegangan saya.
 - Klaim dana talangan saya.
 - Transaksi perlu dilengkapi.
@@ -335,19 +348,19 @@ Dashboard Saya
 
 ---
 
-### 3.2 LPJ Saya
+### 3.2 Event Saya
 
 Fungsi:
 
-- Melihat LPJ yang ditugaskan.
+- Melihat event/kegiatan yang ditugaskan.
 - Melengkapi data kegiatan.
 - Mengajukan review.
-- Membuka LPJ finish secara read-only sesuai izin.
+- Membuka event/kegiatan finish secara read-only sesuai izin.
 
 Menu group:
 
 ```text
-LPJ Saya
+Event Saya
   - Aktif
   - Finish
 ```
@@ -355,7 +368,7 @@ LPJ Saya
 Catatan:
 
 - Status dibuat sebagai tab/filter agar menu PWA tetap ringkas.
-- LPJ draft dan arsip tidak tampil di PWA user.
+- Event/kegiatan draft dan arsip tidak tampil di PWA user.
 
 ### 3.2.1 Bottom Navigation User
 
@@ -363,7 +376,7 @@ Menu utama user ditampilkan sebagai bottom navigation mengambang:
 
 ```text
 Beranda
-LPJ
+Event
 Catat
 Saldo
 Akun
@@ -523,7 +536,7 @@ Fungsi:
 
 - Preview bagian LPJ.
 - Cek kelengkapan.
-- Melihat rangkuman LPJ aktif/finish sesuai izin.
+- Melihat rangkuman event/kegiatan aktif/finish sesuai izin.
 
 Menu:
 
@@ -539,17 +552,17 @@ Preview LPJ
 Dashboard
 Profil Lembaga
 User Management
-Master LPJ
-  - Tipe LPJ
+Master Event
+  - Tipe Event
   - Template Narasi
   - Template Dokumen
   - Kategori Transaksi
   - Metode Pembayaran
   - Checklist Kelengkapan
-Data LPJ
-  - Semua LPJ
-  - Review LPJ
-  - Arsip LPJ
+Data Event
+  - Semua Event
+  - Review Event
+  - Arsip Event
 Dana Kegiatan
   - Dana Masuk
   - Dana Pegangan User
@@ -581,7 +594,7 @@ Export Dokumen
 
 ```text
 Beranda
-LPJ
+Event
 Catat
 Saldo
 Akun
@@ -590,8 +603,8 @@ Akun
 Subfitur user tetap tersedia dari halaman terkait:
 
 ```text
-LPJ Aktif
-LPJ Finish
+Event Aktif
+Event Finish
 Catat Pengeluaran
 Transfer Saldo
 Dana Talangan

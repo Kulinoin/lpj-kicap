@@ -95,6 +95,31 @@ class Lpj extends Model
         return $this->hasMany(ActivityNote::class);
     }
 
+    public function participants(): HasMany
+    {
+        return $this->hasMany(ActivityParticipant::class);
+    }
+
+    public function committees(): HasMany
+    {
+        return $this->hasMany(ActivityCommittee::class);
+    }
+
+    public function schedules(): HasMany
+    {
+        return $this->hasMany(ActivitySchedule::class);
+    }
+
+    public function documentations(): HasMany
+    {
+        return $this->hasMany(ActivityDocumentation::class);
+    }
+
+    public function attachments(): HasMany
+    {
+        return $this->hasMany(ActivityAttachment::class);
+    }
+
     public function fundReceipts(): HasMany
     {
         return $this->hasMany(LpjFundReceipt::class);

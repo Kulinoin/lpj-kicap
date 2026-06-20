@@ -1,7 +1,20 @@
-# Template Narasi Otomatis Kicap LPJ v1.0
+# Template Narasi Otomatis Kicap Event v1.0
 
-**Status:** Draft template awal  
+**Status:** Draft template awal
 **Prinsip:** Template otomatis, editable, bisa di-reset ke template awal.
+
+---
+
+## 0. Decision — Kicap Event sebagai Konsep Utama
+
+Keputusan 20 Juni 2026:
+
+```text
+Event / Kegiatan = objek utama
+LPJ = output dokumen akhir
+```
+
+Template narasi mengambil data dari event/kegiatan dan menghasilkan narasi untuk dokumen LPJ. Istilah LPJ tetap dipakai ketika membahas output dokumen, bukan objek kerja awal.
 
 ---
 
@@ -10,10 +23,10 @@
 Template narasi harus:
 
 1. Menggunakan placeholder dari data kegiatan.
-2. Dibuat berdasarkan tipe LPJ.
+2. Dibuat berdasarkan tipe event/kegiatan.
 3. Bisa diedit manual oleh user.
 4. Bisa di-reset ke template awal.
-5. Tidak mengubah template master ketika diedit di LPJ.
+5. Tidak mengubah template master ketika diedit di event/kegiatan.
 6. Aman secara konteks, terutama untuk pendampingan kegiatan pihak luar.
 
 ---
@@ -211,4 +224,3 @@ Dana yang diterima untuk kegiatan ini digunakan untuk mendukung kebutuhan pelaks
 
 Rincian penggunaan dana disajikan pada bagian laporan keuangan, sedangkan bukti transaksi valid dilampirkan sebagai bagian dari dokumen pendukung LPJ.
 ```
-

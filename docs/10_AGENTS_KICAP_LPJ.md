@@ -1,12 +1,12 @@
-# AGENTS.md — Kicap LPJ
+# AGENTS.md — Kicap Event
 
-Dokumen ini berisi aturan kerja untuk AI assistant/agent yang membantu pengembangan Kicap LPJ.
+Dokumen ini berisi aturan kerja untuk AI assistant/agent yang membantu pengembangan Kicap Event.
 
-**Project:** Kicap LPJ  
-**Lembaga awal:** PT. Kazoku Indonesia Center  
-**Jenis lembaga:** Lembaga Pelatihan Kerja  
-**Repo lokal:** `D:\kulino\lpj-kicap`  
-**WSL path:** `/mnt/d/kulino/lpj-kicap`  
+**Project:** Kicap Event
+**Lembaga awal:** PT. Kazoku Indonesia Center
+**Jenis lembaga:** Lembaga Pelatihan Kerja
+**Repo lokal:** `D:\kulino\lpj-kicap`
+**WSL path:** `/mnt/d/kulino/lpj-kicap`
 **GitHub SSH:** `git@github.com:Kulinoin/lpj-kicap.git`
 
 ---
@@ -21,6 +21,23 @@ Tetap ikuti workflow slice:
 - Jangan implementasi di luar scope.
 - Jangan commit sebelum validasi pass.
 - Jangan push sebelum user setuju.
+
+---
+
+## 1.1 Vocabulary Lock Terbaru
+
+Keputusan 20 Juni 2026:
+
+```text
+Event / Kegiatan = objek utama yang dikelola aplikasi
+LPJ = output akhir/dokumen hasil dari event/kegiatan
+```
+
+Gunakan **Kicap Event** sebagai nama aplikasi dan **Event/Kegiatan** untuk objek kerja yang dibuat Admin, dibuka User, diisi operasionalnya, direview, dan difinalisasi.
+
+Gunakan **LPJ** hanya untuk konteks dokumen akhir, preview dokumen, export/generate PDF, template dokumen, halaman pengesahan, rincian transaksi valid yang masuk dokumen, dan lampiran yang masuk dokumen final.
+
+Jangan rename database/table/model/service secara agresif dalam slice biasa. Internal legacy seperti `lpj`, `lpjs`, `lpj_id`, `LpjResource`, dan route yang sudah berjalan boleh tetap dipertahankan sampai ada slice teknis khusus.
 
 ---
 
@@ -63,7 +80,7 @@ Server-side document generator
 ### 4.1 Nama dan Domain
 
 ```text
-Nama aplikasi: Kicap LPJ
+Nama aplikasi: Kicap Event
 Domain: lpj.kicap.id
 ```
 
@@ -76,14 +93,15 @@ Admin
 User
 ```
 
-### 4.3 Pembuat LPJ
+### 4.3 Pembuat Event/Kegiatan
 
 ```text
-LPJ hanya dibuat oleh Admin.
-User/petugas hanya input kebutuhan operasional pada LPJ yang ditugaskan.
+Event/Kegiatan hanya dibuat oleh Admin.
+User/petugas hanya input kebutuhan operasional pada event/kegiatan yang ditugaskan.
+LPJ adalah output akhir dari event/kegiatan.
 ```
 
-### 4.4 Tipe LPJ
+### 4.4 Tipe Event/Kegiatan
 
 Tipe awal:
 
@@ -95,7 +113,7 @@ Bantuan Dana / Sponsorship
 Kegiatan Internal
 ```
 
-### 4.5 Status LPJ
+### 4.5 Status Event/Kegiatan
 
 Status MVP:
 
@@ -109,7 +127,7 @@ arsipkan
 Aturan:
 
 ```text
-User hanya melihat LPJ aktif dan finish yang ditugaskan.
+User hanya melihat event/kegiatan aktif dan finish yang ditugaskan.
 Draft dan arsipkan adalah area kerja Admin.
 Finish terkunci dari input operasional User.
 ```

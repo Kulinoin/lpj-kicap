@@ -19,7 +19,7 @@ class HealthCheckTest extends TestCase
             ->assertOk()
             ->assertJson([
                 'ok' => true,
-                'app' => 'Kicap LPJ',
+                'app' => 'Kicap Event',
                 'slice' => '00',
                 'database' => 'ok',
                 'timezone' => 'Asia/Jakarta',

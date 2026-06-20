@@ -19,13 +19,13 @@ class LpjFinancialTransactionResource extends Resource
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedReceiptRefund;
 
-    protected static ?string $navigationLabel = 'Transaksi Operasional';
+    protected static ?string $navigationLabel = 'Transaksi Event';
 
-    protected static ?string $modelLabel = 'Transaksi Operasional';
+    protected static ?string $modelLabel = 'Transaksi Event';
 
-    protected static ?string $pluralModelLabel = 'Transaksi Operasional';
+    protected static ?string $pluralModelLabel = 'Transaksi Event';
 
-    protected static \UnitEnum|string|null $navigationGroup = 'Operasional Keuangan';
+    protected static \UnitEnum|string|null $navigationGroup = 'Dana Kegiatan';
 
     public static function form(Schema $schema): Schema
     {
@@ -37,7 +37,7 @@ class LpjFinancialTransactionResource extends Resource
         return $table
             ->columns([
                 TextColumn::make('lpj.code')
-                    ->label('Kode LPJ')
+                    ->label('Kode Event')
                     ->searchable(),
                 TextColumn::make('user.name')
                     ->label('User')

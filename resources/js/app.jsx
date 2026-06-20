@@ -7,10 +7,13 @@ import {
     Camera,
     CheckCircle2,
     ClipboardList,
+    Clock3,
+    FileText,
     Home,
     LockKeyhole,
     LogOut,
     MapPin,
+    Paperclip,
     Phone,
     PlusCircle,
     ReceiptText,
@@ -66,6 +69,48 @@ const emptyFinanceForms = {
     },
 };
 
+const emptyParticipant = {
+    name: '',
+    origin: '',
+    participant_number: '',
+    attendance_status: 'hadir',
+    result_status: '',
+    note: '',
+};
+
+const emptyCommittee = {
+    name: '',
+    role: '',
+    task: '',
+    contact: '',
+};
+
+const emptySchedule = {
+    start_time: '',
+    end_time: '',
+    activity_name: '',
+    responsible_person: '',
+    note: '',
+};
+
+const emptyExecutionForms = {
+    participants: [{ ...emptyParticipant }],
+    committees: [{ ...emptyCommittee }],
+    schedules: [{ ...emptySchedule }],
+    documentation: {
+        category: 'pelaksanaan',
+        caption: '',
+        include_in_report: true,
+        file: null,
+    },
+    attachment: {
+        title: '',
+        description: '',
+        include_in_report: true,
+        file: null,
+    },
+};
+
 function formatDateRange(lpj) {
     if (!lpj.start_date && !lpj.end_date) {
         return 'Tanggal belum diisi';
@@ -90,6 +135,10 @@ function formatCurrency(value) {
     }).format(value ?? 0);
 }
 
+function rowsOrEmpty(rows, emptyRow) {
+    return rows?.length ? rows.map((row) => ({ ...emptyRow, ...row })) : [{ ...emptyRow }];
+}
+
 function KicapApp() {
     const [lpjs, setLpjs] = useState([]);
     const [selectedLpjId, setSelectedLpjId] = useState(null);
@@ -103,6 +152,7 @@ function KicapApp() {
         password_confirmation: '',
     });
     const [financeForms, setFinanceForms] = useState(emptyFinanceForms);
+    const [executionForms, setExecutionForms] = useState(emptyExecutionForms);
     const [profilePhoto, setProfilePhoto] = useState(null);
     const [profilePhotoPreview, setProfilePhotoPreview] = useState(null);
     const [isLoading, setIsLoading] = useState(true);
@@ -111,6 +161,7 @@ function KicapApp() {
     const [isOperationalDirty, setIsOperationalDirty] = useState(false);
     const [profileMessage, setProfileMessage] = useState('');
     const [financeMessage, setFinanceMessage] = useState('');
+    const [executionMessage, setExecutionMessage] = useState('');
     const [operationalSaveMessage, setOperationalSaveMessage] = useState('');
     const [activeNav, setActiveNav] = useState('beranda');
 
@@ -172,6 +223,7 @@ function KicapApp() {
         setIsDetailLoading(true);
         setOperationalSaveMessage('');
         setFinanceMessage('');
+        setExecutionMessage('');
 
         fetch(`/api/app/lpjs/${selectedLpjId}`, {
             headers: {
@@ -180,7 +232,7 @@ function KicapApp() {
         })
             .then((response) => {
                 if (!response.ok) {
-                    throw new Error('Detail LPJ tidak tersedia');
+                    throw new Error('Detail event tidak tersedia');
                 }
 
                 return response.json();
@@ -200,13 +252,21 @@ function KicapApp() {
                 setSelectedLpj(detail);
                 setOperationalDrafts(drafts);
                 setFinanceForms(emptyFinanceForms);
+                setExecutionForms({
+                    participants: rowsOrEmpty(detail.execution?.participants, emptyParticipant),
+                    committees: rowsOrEmpty(detail.execution?.committees, emptyCommittee),
+                    schedules: rowsOrEmpty(detail.execution?.schedules, emptySchedule),
+                    documentation: { ...emptyExecutionForms.documentation },
+                    attachment: { ...emptyExecutionForms.attachment },
+                });
                 setIsOperationalDirty(false);
             })
             .catch(() => {
                 if (isMounted) {
                     setSelectedLpj(null);
                     setOperationalDrafts({});
-                    setOperationalSaveMessage('Detail LPJ belum bisa dibuka');
+                    setExecutionForms(emptyExecutionForms);
+                    setOperationalSaveMessage('Detail event belum bisa dibuka');
                 }
             })
             .finally(() => {
@@ -424,7 +484,7 @@ function KicapApp() {
     const isOperationalNav = activeNav === 'operasional';
     const isFinanceNav = activeNav === 'keuangan';
     const showDetail = (isOperationalNav || isFinanceNav) && selectedLpjId;
-    const pageTitle = activeNav === 'profil' ? 'Profil pengguna' : showDetail ? 'Detail LPJ' : 'Ruang kerja petugas';
+    const pageTitle = activeNav === 'profil' ? 'Profil pengguna' : showDetail ? 'Detail Event' : 'Ruang kerja petugas';
     const visibleLpjs = useMemo(() => {
         if (activeNav === 'operasional' || activeNav === 'keuangan') {
             return activeLpjs;
@@ -438,17 +498,17 @@ function KicapApp() {
     }, [activeLpjs, activeNav, finishedLpjs, lpjs]);
 
     const lpjHeading = {
-        beranda: 'Aktif dan selesai',
-        operasional: 'Input operasional',
-        keuangan: 'Operasional keuangan',
-        selesai: 'Sudah selesai',
+        beranda: 'Event aktif dan selesai',
+        operasional: 'Operasional event',
+        keuangan: 'Dana kegiatan',
+        selesai: 'Event selesai',
     }[activeNav] ?? 'Aktif dan selesai';
 
     const emptyLpjMessage = {
-        operasional: 'Belum ada LPJ aktif untuk input operasional.',
-        keuangan: 'Belum ada LPJ aktif untuk operasional keuangan.',
-        selesai: 'Belum ada LPJ selesai yang ditugaskan.',
-    }[activeNav] ?? 'Belum ada LPJ aktif atau selesai yang ditugaskan.';
+        operasional: 'Belum ada event aktif untuk input operasional.',
+        keuangan: 'Belum ada event aktif untuk dana kegiatan.',
+        selesai: 'Belum ada event selesai yang ditugaskan.',
+    }[activeNav] ?? 'Belum ada event aktif atau selesai yang ditugaskan.';
 
     const openLpjDetail = (lpjId) => {
         setSelectedLpjId(lpjId);
@@ -463,14 +523,157 @@ function KicapApp() {
         setSelectedLpj(null);
         setOperationalDrafts({});
         setFinanceForms(emptyFinanceForms);
+        setExecutionForms(emptyExecutionForms);
         setIsOperationalDirty(false);
         setOperationalSaveMessage('');
         setFinanceMessage('');
+        setExecutionMessage('');
     };
 
     const handleOperationalChange = (type, content) => {
         setOperationalDrafts((value) => ({ ...value, [type]: content }));
         setIsOperationalDirty(true);
+    };
+
+    const updateExecutionRow = (section, index, field, value) => {
+        setExecutionForms((current) => ({
+            ...current,
+            [section]: current[section].map((row, rowIndex) =>
+                rowIndex === index ? { ...row, [field]: value } : row
+            ),
+        }));
+    };
+
+    const addExecutionRow = (section, emptyRow) => {
+        setExecutionForms((current) => ({
+            ...current,
+            [section]: [...current[section], { ...emptyRow }],
+        }));
+    };
+
+    const updateExecutionUploadForm = (section, field, value) => {
+        setExecutionForms((current) => ({
+            ...current,
+            [section]: {
+                ...current[section],
+                [field]: value,
+            },
+        }));
+    };
+
+    const handleExecutionSubmit = (event) => {
+        event.preventDefault();
+
+        if (!selectedLpj?.execution?.can_edit_activity_data) {
+            return;
+        }
+
+        setExecutionMessage('Menyimpan data kegiatan...');
+
+        fetch(`/api/app/lpjs/${selectedLpj.id}/execution-data`, {
+            method: 'POST',
+            headers: {
+                Accept: 'application/json',
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': getCsrfToken(),
+            },
+            body: JSON.stringify({
+                participants: executionForms.participants,
+                committees: executionForms.committees,
+                schedules: executionForms.schedules,
+            }),
+        })
+            .then(async (response) => {
+                if (!response.ok) {
+                    throw await response.json();
+                }
+
+                return response.json();
+            })
+            .then((payload) => {
+                setSelectedLpj((current) => {
+                    if (!current) {
+                        return current;
+                    }
+
+                    return {
+                        ...current,
+                        execution: payload.data.execution,
+                    };
+                });
+                setExecutionForms((current) => ({
+                    ...current,
+                    participants: rowsOrEmpty(payload.data.execution.participants, emptyParticipant),
+                    committees: rowsOrEmpty(payload.data.execution.committees, emptyCommittee),
+                    schedules: rowsOrEmpty(payload.data.execution.schedules, emptySchedule),
+                }));
+                setExecutionMessage('Data kegiatan tersimpan');
+            })
+            .catch((error) => {
+                const firstMessage = Object.values(error?.errors ?? {})?.[0]?.[0];
+                setExecutionMessage(firstMessage ?? 'Data kegiatan belum tersimpan');
+            });
+    };
+
+    const handleExecutionUpload = (event, formKey, endpoint) => {
+        event.preventDefault();
+
+        if (!selectedLpj?.execution?.can_upload_documentation) {
+            return;
+        }
+
+        const form = executionForms[formKey];
+
+        if (!form.file) {
+            setExecutionMessage('Pilih file terlebih dahulu');
+            return;
+        }
+
+        setExecutionMessage('Mengupload file...');
+
+        const formData = new FormData();
+        Object.entries(form).forEach(([key, value]) => {
+            if (value !== null && value !== '') {
+                formData.append(key, value);
+            }
+        });
+
+        fetch(`/api/app/lpjs/${selectedLpj.id}/${endpoint}`, {
+            method: 'POST',
+            headers: {
+                Accept: 'application/json',
+                'X-CSRF-TOKEN': getCsrfToken(),
+            },
+            body: formData,
+        })
+            .then(async (response) => {
+                if (!response.ok) {
+                    throw await response.json();
+                }
+
+                return response.json();
+            })
+            .then((payload) => {
+                setSelectedLpj((current) => {
+                    if (!current) {
+                        return current;
+                    }
+
+                    return {
+                        ...current,
+                        execution: payload.data.execution,
+                    };
+                });
+                setExecutionForms((current) => ({
+                    ...current,
+                    [formKey]: { ...emptyExecutionForms[formKey] },
+                }));
+                setExecutionMessage('File tersimpan');
+            })
+            .catch((error) => {
+                const firstMessage = Object.values(error?.errors ?? {})?.[0]?.[0];
+                setExecutionMessage(firstMessage ?? 'File belum tersimpan');
+            });
     };
 
     return (
@@ -480,7 +683,7 @@ function KicapApp() {
                     <img src="/icons/kicap-lpj.svg" alt="" />
                 </div>
                 <div>
-                    <p className="section-kicker">Kicap LPJ</p>
+                    <p className="section-kicker">Kicap Event</p>
                     <h1>{pageTitle}</h1>
                 </div>
                 <button className="logout-button" type="button" onClick={handleLogout} aria-label="Keluar">
@@ -490,7 +693,7 @@ function KicapApp() {
 
             {activeNav !== 'profil' && !showDetail && (
                 <>
-                    <section className="summary-grid" aria-label="Ringkasan LPJ">
+                    <section className="summary-grid" aria-label="Ringkasan event">
                         <article className="summary-tile coral">
                             <div className="summary-icon">
                                 <ClipboardList size={18} strokeWidth={2.5} />
@@ -517,13 +720,13 @@ function KicapApp() {
                     <section className="lpj-section">
                         <div className="section-heading">
                             <div>
-                                <p className="section-kicker">LPJ Saya</p>
+                                <p className="section-kicker">Event Saya</p>
                                 <h2>{lpjHeading}</h2>
                             </div>
                         </div>
 
                         <div className="lpj-list">
-                            {isLoading && <div className="empty-state">Memuat LPJ...</div>}
+                            {isLoading && <div className="empty-state">Memuat event...</div>}
 
                             {!isLoading && visibleLpjs.length === 0 && (
                                 <div className="empty-state">{emptyLpjMessage}</div>
@@ -575,10 +778,10 @@ function KicapApp() {
                         Kembali
                     </button>
 
-                    {isDetailLoading && <div className="empty-state">Memuat detail LPJ...</div>}
+                    {isDetailLoading && <div className="empty-state">Memuat detail event...</div>}
 
                     {!isDetailLoading && !selectedLpj && (
-                        <div className="empty-state">{operationalSaveMessage || 'Detail LPJ belum tersedia.'}</div>
+                        <div className="empty-state">{operationalSaveMessage || 'Detail event belum tersedia.'}</div>
                     )}
 
                     {!isDetailLoading && selectedLpj && (
@@ -642,13 +845,426 @@ function KicapApp() {
                                             </label>
                                         ))}
                                     </div>
+
+                                    <form className="execution-form" onSubmit={handleExecutionSubmit}>
+                                        <div className="narrative-header">
+                                            <div>
+                                                <p className="section-kicker">Pelaksanaan</p>
+                                                <h2>Peserta, tim, dan rundown</h2>
+                                            </div>
+                                            <div className="save-state">
+                                                <UsersRound size={14} strokeWidth={2.4} />
+                                                {selectedLpj.execution?.can_edit_activity_data ? 'Bisa diedit' : 'Hanya baca'}
+                                            </div>
+                                        </div>
+
+                                        {executionMessage && <div className="profile-message">{executionMessage}</div>}
+
+                                        <section className="execution-card">
+                                            <div className="finance-form-title">
+                                                <UsersRound size={16} strokeWidth={2.4} />
+                                                <span>Data peserta</span>
+                                            </div>
+                                            {executionForms.participants.map((participant, index) => (
+                                                <div className="execution-row" key={`participant-${index}`}>
+                                                    <input
+                                                        disabled={!selectedLpj.execution?.can_edit_activity_data}
+                                                        placeholder="Nama peserta"
+                                                        value={participant.name}
+                                                        onChange={(event) =>
+                                                            updateExecutionRow('participants', index, 'name', event.target.value)
+                                                        }
+                                                    />
+                                                    <input
+                                                        disabled={!selectedLpj.execution?.can_edit_activity_data}
+                                                        placeholder="Asal/kelas/divisi"
+                                                        value={participant.origin ?? ''}
+                                                        onChange={(event) =>
+                                                            updateExecutionRow('participants', index, 'origin', event.target.value)
+                                                        }
+                                                    />
+                                                    <input
+                                                        disabled={!selectedLpj.execution?.can_edit_activity_data}
+                                                        placeholder="Nomor peserta"
+                                                        value={participant.participant_number ?? ''}
+                                                        onChange={(event) =>
+                                                            updateExecutionRow(
+                                                                'participants',
+                                                                index,
+                                                                'participant_number',
+                                                                event.target.value
+                                                            )
+                                                        }
+                                                    />
+                                                    <select
+                                                        disabled={!selectedLpj.execution?.can_edit_activity_data}
+                                                        value={participant.attendance_status ?? 'hadir'}
+                                                        onChange={(event) =>
+                                                            updateExecutionRow(
+                                                                'participants',
+                                                                index,
+                                                                'attendance_status',
+                                                                event.target.value
+                                                            )
+                                                        }
+                                                    >
+                                                        {Object.entries(selectedLpj.execution?.attendance_options ?? {}).map(
+                                                            ([value, label]) => (
+                                                                <option value={value} key={value}>
+                                                                    {label}
+                                                                </option>
+                                                            )
+                                                        )}
+                                                    </select>
+                                                    <input
+                                                        disabled={!selectedLpj.execution?.can_edit_activity_data}
+                                                        placeholder="Hasil/status"
+                                                        value={participant.result_status ?? ''}
+                                                        onChange={(event) =>
+                                                            updateExecutionRow(
+                                                                'participants',
+                                                                index,
+                                                                'result_status',
+                                                                event.target.value
+                                                            )
+                                                        }
+                                                    />
+                                                    <input
+                                                        disabled={!selectedLpj.execution?.can_edit_activity_data}
+                                                        placeholder="Keterangan"
+                                                        value={participant.note ?? ''}
+                                                        onChange={(event) =>
+                                                            updateExecutionRow('participants', index, 'note', event.target.value)
+                                                        }
+                                                    />
+                                                </div>
+                                            ))}
+                                            <button
+                                                className="add-row-button"
+                                                type="button"
+                                                disabled={!selectedLpj.execution?.can_edit_activity_data}
+                                                onClick={() => addExecutionRow('participants', emptyParticipant)}
+                                            >
+                                                <PlusCircle size={16} strokeWidth={2.4} />
+                                                Tambah Peserta
+                                            </button>
+                                        </section>
+
+                                        <section className="execution-card">
+                                            <div className="finance-form-title">
+                                                <ClipboardList size={16} strokeWidth={2.4} />
+                                                <span>Panitia / pendamping</span>
+                                            </div>
+                                            {executionForms.committees.map((committee, index) => (
+                                                <div className="execution-row two" key={`committee-${index}`}>
+                                                    <input
+                                                        disabled={!selectedLpj.execution?.can_edit_activity_data}
+                                                        placeholder="Nama"
+                                                        value={committee.name}
+                                                        onChange={(event) =>
+                                                            updateExecutionRow('committees', index, 'name', event.target.value)
+                                                        }
+                                                    />
+                                                    <input
+                                                        disabled={!selectedLpj.execution?.can_edit_activity_data}
+                                                        placeholder="Jabatan/peran"
+                                                        value={committee.role ?? ''}
+                                                        onChange={(event) =>
+                                                            updateExecutionRow('committees', index, 'role', event.target.value)
+                                                        }
+                                                    />
+                                                    <input
+                                                        disabled={!selectedLpj.execution?.can_edit_activity_data}
+                                                        placeholder="Tugas"
+                                                        value={committee.task ?? ''}
+                                                        onChange={(event) =>
+                                                            updateExecutionRow('committees', index, 'task', event.target.value)
+                                                        }
+                                                    />
+                                                    <input
+                                                        disabled={!selectedLpj.execution?.can_edit_activity_data}
+                                                        placeholder="Kontak opsional"
+                                                        value={committee.contact ?? ''}
+                                                        onChange={(event) =>
+                                                            updateExecutionRow('committees', index, 'contact', event.target.value)
+                                                        }
+                                                    />
+                                                </div>
+                                            ))}
+                                            <button
+                                                className="add-row-button"
+                                                type="button"
+                                                disabled={!selectedLpj.execution?.can_edit_activity_data}
+                                                onClick={() => addExecutionRow('committees', emptyCommittee)}
+                                            >
+                                                <PlusCircle size={16} strokeWidth={2.4} />
+                                                Tambah Tim
+                                            </button>
+                                        </section>
+
+                                        <section className="execution-card">
+                                            <div className="finance-form-title">
+                                                <Clock3 size={16} strokeWidth={2.4} />
+                                                <span>Rundown</span>
+                                            </div>
+                                            {executionForms.schedules.map((schedule, index) => (
+                                                <div className="execution-row two" key={`schedule-${index}`}>
+                                                    <input
+                                                        disabled={!selectedLpj.execution?.can_edit_activity_data}
+                                                        type="datetime-local"
+                                                        value={schedule.start_time ?? ''}
+                                                        onChange={(event) =>
+                                                            updateExecutionRow('schedules', index, 'start_time', event.target.value)
+                                                        }
+                                                    />
+                                                    <input
+                                                        disabled={!selectedLpj.execution?.can_edit_activity_data}
+                                                        type="datetime-local"
+                                                        value={schedule.end_time ?? ''}
+                                                        onChange={(event) =>
+                                                            updateExecutionRow('schedules', index, 'end_time', event.target.value)
+                                                        }
+                                                    />
+                                                    <input
+                                                        disabled={!selectedLpj.execution?.can_edit_activity_data}
+                                                        placeholder="Nama aktivitas"
+                                                        value={schedule.activity_name}
+                                                        onChange={(event) =>
+                                                            updateExecutionRow(
+                                                                'schedules',
+                                                                index,
+                                                                'activity_name',
+                                                                event.target.value
+                                                            )
+                                                        }
+                                                    />
+                                                    <input
+                                                        disabled={!selectedLpj.execution?.can_edit_activity_data}
+                                                        placeholder="Penanggung jawab"
+                                                        value={schedule.responsible_person ?? ''}
+                                                        onChange={(event) =>
+                                                            updateExecutionRow(
+                                                                'schedules',
+                                                                index,
+                                                                'responsible_person',
+                                                                event.target.value
+                                                            )
+                                                        }
+                                                    />
+                                                    <input
+                                                        disabled={!selectedLpj.execution?.can_edit_activity_data}
+                                                        placeholder="Catatan"
+                                                        value={schedule.note ?? ''}
+                                                        onChange={(event) =>
+                                                            updateExecutionRow('schedules', index, 'note', event.target.value)
+                                                        }
+                                                    />
+                                                </div>
+                                            ))}
+                                            <button
+                                                className="add-row-button"
+                                                type="button"
+                                                disabled={!selectedLpj.execution?.can_edit_activity_data}
+                                                onClick={() => addExecutionRow('schedules', emptySchedule)}
+                                            >
+                                                <PlusCircle size={16} strokeWidth={2.4} />
+                                                Tambah Rundown
+                                            </button>
+                                        </section>
+
+                                        <button
+                                            className="save-profile-button"
+                                            type="submit"
+                                            disabled={!selectedLpj.execution?.can_edit_activity_data}
+                                        >
+                                            <Save size={17} strokeWidth={2.5} />
+                                            Simpan Data Kegiatan
+                                        </button>
+                                    </form>
+
+                                    <div className="upload-grid">
+                                        <form
+                                            className="finance-form"
+                                            onSubmit={(event) =>
+                                                handleExecutionUpload(event, 'documentation', 'documentations')
+                                            }
+                                        >
+                                            <div className="finance-form-title">
+                                                <Camera size={16} strokeWidth={2.4} />
+                                                <span>Dokumentasi kegiatan</span>
+                                            </div>
+                                            <select
+                                                disabled={!selectedLpj.execution?.can_upload_documentation}
+                                                value={executionForms.documentation.category}
+                                                onChange={(event) =>
+                                                    updateExecutionUploadForm(
+                                                        'documentation',
+                                                        'category',
+                                                        event.target.value
+                                                    )
+                                                }
+                                            >
+                                                {Object.entries(selectedLpj.execution?.documentation_categories ?? {}).map(
+                                                    ([value, label]) => (
+                                                        <option value={value} key={value}>
+                                                            {label}
+                                                        </option>
+                                                    )
+                                                )}
+                                            </select>
+                                            <textarea
+                                                disabled={!selectedLpj.execution?.can_upload_documentation}
+                                                placeholder="Caption dokumentasi"
+                                                value={executionForms.documentation.caption}
+                                                onChange={(event) =>
+                                                    updateExecutionUploadForm(
+                                                        'documentation',
+                                                        'caption',
+                                                        event.target.value
+                                                    )
+                                                }
+                                            />
+                                            <label className="check-row">
+                                                <input
+                                                    disabled={!selectedLpj.execution?.can_upload_documentation}
+                                                    type="checkbox"
+                                                    checked={executionForms.documentation.include_in_report}
+                                                    onChange={(event) =>
+                                                        updateExecutionUploadForm(
+                                                            'documentation',
+                                                            'include_in_report',
+                                                            event.target.checked
+                                                        )
+                                                    }
+                                                />
+                                                <span>Masuk LPJ</span>
+                                            </label>
+                                            <label className="file-button">
+                                                <UploadCloud size={15} strokeWidth={2.4} />
+                                                <span>{executionForms.documentation.file?.name ?? 'Upload foto/PDF'}</span>
+                                                <input
+                                                    disabled={!selectedLpj.execution?.can_upload_documentation}
+                                                    accept="image/*,.pdf"
+                                                    type="file"
+                                                    onChange={(event) =>
+                                                        updateExecutionUploadForm(
+                                                            'documentation',
+                                                            'file',
+                                                            event.target.files?.[0] ?? null
+                                                        )
+                                                    }
+                                                />
+                                            </label>
+                                            <button
+                                                className="save-profile-button"
+                                                type="submit"
+                                                disabled={!selectedLpj.execution?.can_upload_documentation}
+                                            >
+                                                <UploadCloud size={17} strokeWidth={2.5} />
+                                                Simpan Dokumentasi
+                                            </button>
+                                        </form>
+
+                                        <form
+                                            className="finance-form"
+                                            onSubmit={(event) => handleExecutionUpload(event, 'attachment', 'attachments')}
+                                        >
+                                            <div className="finance-form-title">
+                                                <Paperclip size={16} strokeWidth={2.4} />
+                                                <span>Lampiran pendukung</span>
+                                            </div>
+                                            <input
+                                                disabled={!selectedLpj.execution?.can_upload_documentation}
+                                                placeholder="Judul lampiran"
+                                                value={executionForms.attachment.title}
+                                                onChange={(event) =>
+                                                    updateExecutionUploadForm('attachment', 'title', event.target.value)
+                                                }
+                                                required
+                                            />
+                                            <textarea
+                                                disabled={!selectedLpj.execution?.can_upload_documentation}
+                                                placeholder="Keterangan lampiran"
+                                                value={executionForms.attachment.description}
+                                                onChange={(event) =>
+                                                    updateExecutionUploadForm('attachment', 'description', event.target.value)
+                                                }
+                                            />
+                                            <label className="check-row">
+                                                <input
+                                                    disabled={!selectedLpj.execution?.can_upload_documentation}
+                                                    type="checkbox"
+                                                    checked={executionForms.attachment.include_in_report}
+                                                    onChange={(event) =>
+                                                        updateExecutionUploadForm(
+                                                            'attachment',
+                                                            'include_in_report',
+                                                            event.target.checked
+                                                        )
+                                                    }
+                                                />
+                                                <span>Masuk LPJ</span>
+                                            </label>
+                                            <label className="file-button">
+                                                <FileText size={15} strokeWidth={2.4} />
+                                                <span>{executionForms.attachment.file?.name ?? 'Upload lampiran'}</span>
+                                                <input
+                                                    disabled={!selectedLpj.execution?.can_upload_documentation}
+                                                    accept="image/*,.pdf,.doc,.docx,.xls,.xlsx"
+                                                    type="file"
+                                                    onChange={(event) =>
+                                                        updateExecutionUploadForm(
+                                                            'attachment',
+                                                            'file',
+                                                            event.target.files?.[0] ?? null
+                                                        )
+                                                    }
+                                                />
+                                            </label>
+                                            <button
+                                                className="save-profile-button"
+                                                type="submit"
+                                                disabled={!selectedLpj.execution?.can_upload_documentation}
+                                            >
+                                                <UploadCloud size={17} strokeWidth={2.5} />
+                                                Simpan Lampiran
+                                            </button>
+                                        </form>
+                                    </div>
+
+                                    <section className="execution-card">
+                                        <div className="finance-form-title">
+                                            <FileText size={16} strokeWidth={2.4} />
+                                            <span>File tersimpan</span>
+                                        </div>
+                                        <div className="file-list">
+                                            {(selectedLpj.execution?.documentations ?? []).map((item) => (
+                                                <a href={item.url} key={`documentation-${item.id}`} target="_blank">
+                                                    <Camera size={15} strokeWidth={2.4} />
+                                                    <span>{item.caption || item.original_name || item.category_label}</span>
+                                                    {item.include_in_report && <b>LPJ</b>}
+                                                </a>
+                                            ))}
+                                            {(selectedLpj.execution?.attachments ?? []).map((item) => (
+                                                <a href={item.url} key={`attachment-${item.id}`} target="_blank">
+                                                    <Paperclip size={15} strokeWidth={2.4} />
+                                                    <span>{item.title}</span>
+                                                    {item.include_in_report && <b>LPJ</b>}
+                                                </a>
+                                            ))}
+                                            {(selectedLpj.execution?.documentations ?? []).length === 0 &&
+                                                (selectedLpj.execution?.attachments ?? []).length === 0 && (
+                                                    <div className="empty-state">Belum ada dokumentasi atau lampiran.</div>
+                                                )}
+                                        </div>
+                                    </section>
                                 </>
                             )}
 
                             {isFinanceNav && <section className="finance-panel">
                                 <div className="narrative-header">
                                     <div>
-                                        <p className="section-kicker">Operasional Keuangan</p>
+                                        <p className="section-kicker">Dana Kegiatan</p>
                                         <h2>Saldo dan transaksi</h2>
                                     </div>
                                     <div className="save-state">

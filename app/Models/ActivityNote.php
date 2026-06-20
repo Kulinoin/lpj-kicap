@@ -9,6 +9,8 @@ class ActivityNote extends Model
 {
     public const TYPE_RESULT = 'hasil';
 
+    public const TYPE_EVALUATION = 'evaluasi';
+
     public const TYPE_OBSTACLE = 'kendala';
 
     public const TYPE_SUGGESTION = 'saran';
@@ -42,6 +44,7 @@ class ActivityNote extends Model
     {
         return [
             self::TYPE_RESULT,
+            self::TYPE_EVALUATION,
             self::TYPE_OBSTACLE,
             self::TYPE_SUGGESTION,
         ];
@@ -51,6 +54,7 @@ class ActivityNote extends Model
     {
         return [
             self::TYPE_RESULT => 'Hasil di Lapangan',
+            self::TYPE_EVALUATION => 'Evaluasi',
             self::TYPE_OBSTACLE => 'Kendala',
             self::TYPE_SUGGESTION => 'Saran Tindak Lanjut',
         ];

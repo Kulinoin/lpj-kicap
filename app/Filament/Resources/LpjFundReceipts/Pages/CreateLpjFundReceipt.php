@@ -23,6 +23,6 @@ class CreateLpjFundReceipt extends CreateRecord
 
     protected function getCreatedNotificationTitle(): ?string
     {
-        return 'Dana masuk LPJ tercatat';
+        return 'Dana masuk event tercatat';
     }
 }

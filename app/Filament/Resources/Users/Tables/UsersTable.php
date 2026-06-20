@@ -33,7 +33,7 @@ class UsersTable
                     ->label('Aktif')
                     ->boolean(),
                 IconColumn::make('can_create_lpj')
-                    ->label('Buat LPJ')
+                    ->label('Buat Event')
                     ->boolean(),
                 IconColumn::make('can_transfer_balance')
                     ->label('Transfer Saldo')

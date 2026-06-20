@@ -20,11 +20,11 @@ class LpjUserBalanceResource extends Resource
 
     protected static ?string $navigationLabel = 'Saldo User';
 
-    protected static ?string $modelLabel = 'Saldo User';
+    protected static ?string $modelLabel = 'Saldo User per Event';
 
-    protected static ?string $pluralModelLabel = 'Saldo User';
+    protected static ?string $pluralModelLabel = 'Saldo User per Event';
 
-    protected static \UnitEnum|string|null $navigationGroup = 'Operasional Keuangan';
+    protected static \UnitEnum|string|null $navigationGroup = 'Dana Kegiatan';
 
     public static function form(Schema $schema): Schema
     {
@@ -36,10 +36,10 @@ class LpjUserBalanceResource extends Resource
         return $table
             ->columns([
                 TextColumn::make('lpj.code')
-                    ->label('Kode LPJ')
+                    ->label('Kode Event')
                     ->searchable(),
                 TextColumn::make('lpj.title')
-                    ->label('LPJ')
+                    ->label('Event')
                     ->searchable(),
                 TextColumn::make('user.name')
                     ->label('User')

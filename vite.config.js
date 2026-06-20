@@ -23,8 +23,8 @@ export default defineConfig(({ mode }) => {
                 registerType: 'autoUpdate',
                 includeAssets: ['icons/kicap-lpj.svg'],
                 manifest: {
-                    name: 'Kicap LPJ',
-                    short_name: 'Kicap LPJ',
+                    name: 'Kicap Event',
+                    short_name: 'Kicap Event',
                     description: 'Aplikasi PWA mobile-first untuk Laporan Pertanggungjawaban.',
                     start_url: '/app',
                     scope: '/',

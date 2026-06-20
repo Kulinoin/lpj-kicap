@@ -1,11 +1,28 @@
-# PRD Kicap LPJ v1.0
+# PRD Kicap Event v1.0
 
-**Nama aplikasi:** Kicap LPJ  
-**Domain rencana:** `lpj.kicap.id`  
-**Lembaga awal:** PT. Kazoku Indonesia Center  
-**Jenis lembaga:** Lembaga Pelatihan Kerja  
-**Status:** PRD MVP v1.0  
-**Basis:** Concept Lock & PRD Handoff Kicap LPJ, disesuaikan dengan keputusan terbaru bahwa transfer saldo antar user tidak memerlukan approval Admin.
+**Nama aplikasi:** Kicap Event
+**Domain rencana:** `lpj.kicap.id`
+**Lembaga awal:** PT. Kazoku Indonesia Center
+**Jenis lembaga:** Lembaga Pelatihan Kerja
+**Status:** PRD MVP v1.0
+**Basis:** Concept Lock & PRD Handoff Kicap Event, disesuaikan dengan keputusan terbaru bahwa transfer saldo antar user tidak memerlukan approval Admin.
+
+---
+
+## 0.0 Decision — Kicap Event sebagai Konsep Utama
+
+Keputusan 20 Juni 2026:
+
+```text
+Event / Kegiatan = objek utama yang dikelola aplikasi
+LPJ = output akhir/dokumen hasil dari event/kegiatan
+```
+
+Kicap Event mengelola event/kegiatan dari pembuatan kerangka, pengisian operasional lapangan, pencatatan dana/transaksi/dokumentasi, review, sampai finalisasi. LPJ tetap menjadi dokumen pertanggungjawaban resmi yang digenerate sebagai output akhir.
+
+Perubahan ini adalah refactor istilah/konsep produk. Alur bisnis, role Admin/User, login, status, transfer saldo, dana talangan, dan review/finalisasi tetap mengikuti keputusan yang sudah dikunci.
+
+Istilah lama di dokumen ini yang memakai LPJ sebagai objek kerja harus dibaca sebagai **Event/Kegiatan**, kecuali bagian yang membahas dokumen final, preview, export, template, halaman pengesahan, rincian transaksi valid, atau lampiran yang masuk dokumen final.
 
 ---
 
@@ -13,9 +30,9 @@
 
 Bagian ini menjadi acuan terbaru jika ada konflik dengan teks PRD lama.
 
-1. LPJ hanya dibuat oleh Admin.
-2. User/petugas tidak membuat LPJ; User hanya mengisi data operasional pada LPJ yang ditugaskan.
-3. Status LPJ MVP hanya:
+1. Event/Kegiatan hanya dibuat oleh Admin.
+2. User/petugas tidak membuat event/kegiatan; User hanya mengisi data operasional pada event/kegiatan yang ditugaskan.
+3. Status event/kegiatan MVP hanya:
 
 ```text
 draft
@@ -24,7 +41,7 @@ finish
 arsipkan
 ```
 
-4. Di halaman user, LPJ yang tampil hanya status `aktif` dan `finish`.
+4. Di halaman user, event/kegiatan yang tampil hanya status `aktif` dan `finish`.
 5. Status `draft` dan `arsipkan` adalah area kerja Admin.
 6. Status `finish` bersifat terkunci untuk input operasional User, kecuali nanti ada keputusan unlock khusus.
 7. Login memakai satu halaman untuk Admin dan User.
@@ -38,11 +55,11 @@ arsipkan
 
 ## 1. Ringkasan Produk
 
-Kicap LPJ adalah aplikasi PWA mobile-first untuk membantu lembaga, panitia, tim pendamping, atau organisasi membuat Laporan Pertanggungjawaban secara lebih cepat dan rapi.
+Kicap Event adalah aplikasi PWA mobile-first untuk membantu lembaga, panitia, tim pendamping, atau organisasi mengelola event/kegiatan dan menghasilkan Laporan Pertanggungjawaban secara lebih cepat dan rapi.
 
 Aplikasi membantu proses mulai dari pencatatan cepat di lapangan, pengelolaan saldo user, pencatatan transaksi, upload bukti, dokumentasi kegiatan, review Admin, finalisasi, sampai export dokumen LPJ.
 
-Kicap LPJ menjaga prinsip:
+Kicap Event menjaga prinsip:
 
 ```text
 Operasional detail dicatat di sistem.
@@ -65,7 +82,7 @@ Kondisi lapangan sering tidak ideal:
 8. Catatan kendala sering lupa ditulis.
 9. Dokumen LPJ akhir tetap harus rapi dan formal.
 
-Kicap LPJ dibuat untuk mengakomodir kondisi itu tanpa membuat output akhir menjadi terlalu rumit.
+Kicap Event dibuat untuk mengakomodir kondisi itu tanpa membuat output akhir menjadi terlalu rumit.
 
 ---
 
@@ -83,7 +100,7 @@ Kicap LPJ dibuat untuk mengakomodir kondisi itu tanpa membuat output akhir menja
 
 ## 4. Target Pengguna
 
-Kicap LPJ dapat digunakan oleh:
+Kicap Event dapat digunakan oleh:
 
 - Lembaga pelatihan.
 - Sekolah.
@@ -108,23 +125,23 @@ Tugas Admin:
 
 - Kelola profil lembaga.
 - Kelola user.
-- Kelola tipe LPJ.
+- Kelola tipe event/kegiatan.
 - Kelola template narasi.
 - Kelola template dokumen.
-- Membuat LPJ.
-- Melihat semua LPJ.
-- Mengatur user yang bertugas dalam LPJ.
+- Membuat event/kegiatan.
+- Melihat semua event/kegiatan.
+- Mengatur user yang bertugas dalam event/kegiatan.
 - Memberikan dana pegangan ke user.
 - Melihat saldo user.
 - Melihat transaksi global.
 - Melihat transfer saldo antar user.
 - Review dan validasi transaksi.
-- Review kelengkapan LPJ.
-- Mengembalikan LPJ untuk revisi.
-- Menyetujui LPJ.
-- Finalisasi LPJ.
+- Review kelengkapan event/kegiatan.
+- Mengembalikan event/kegiatan untuk revisi.
+- Menyetujui event/kegiatan.
+- Finalisasi event/kegiatan.
 - Export PDF.
-- Mengunci LPJ final.
+- Mengunci event final sebagai dasar LPJ final.
 - Verifikasi dan bayar klaim dana talangan.
 
 ### 5.2 User
@@ -133,7 +150,7 @@ User adalah petugas lapangan, panitia, bendahara kegiatan, pendamping, atau oran
 
 Tugas User:
 
-- Mengisi data operasional pada LPJ yang ditugaskan.
+- Mengisi data operasional pada event/kegiatan yang ditugaskan.
 - Mengisi data kegiatan.
 - Mencatat transaksi.
 - Upload bukti/nota.
@@ -143,13 +160,13 @@ Tugas User:
 - Upload dokumentasi kegiatan.
 - Mencatat pelaksanaan kegiatan.
 - Mencatat kendala, hasil, dan evaluasi.
-- Mengajukan LPJ ke Admin untuk review.
+- Mengajukan event/kegiatan ke Admin untuk review.
 
 ---
 
-## 6. Status LPJ
+## 6. Status Event/Kegiatan
 
-Status LPJ MVP:
+Status event/kegiatan MVP:
 
 ```text
 draft
@@ -166,17 +183,17 @@ draft → aktif → finish → arsipkan
 
 Aturan:
 
-1. `draft` dibuat dan dikelola Admin sebelum LPJ dibuka untuk user.
-2. `aktif` berarti LPJ berjalan dan dapat diisi User yang ditugaskan.
-3. `finish` berarti LPJ selesai, dikunci dari input operasional User, dan siap menjadi dasar output resmi.
-4. `arsipkan` berarti LPJ tidak aktif tetapi tetap tersimpan untuk Admin.
-5. User hanya melihat LPJ status `aktif` dan `finish`.
+1. `draft` dibuat dan dikelola Admin sebelum event/kegiatan dibuka untuk user.
+2. `aktif` berarti event/kegiatan berjalan dan dapat diisi User yang ditugaskan.
+3. `finish` berarti event/kegiatan selesai, dikunci dari input operasional User, dan siap menjadi dasar output resmi.
+4. `arsipkan` berarti event/kegiatan tidak aktif tetapi tetap tersimpan untuk Admin.
+5. User hanya melihat event/kegiatan status `aktif` dan `finish`.
 
 ---
 
-## 7. Tipe LPJ / Tipe Kegiatan
+## 7. Tipe Event / Tipe Kegiatan
 
-MVP mendukung tipe LPJ berikut:
+MVP mendukung tipe event/kegiatan berikut:
 
 | Tipe | Fungsi |
 |---|---|
@@ -186,7 +203,7 @@ MVP mendukung tipe LPJ berikut:
 | Bantuan Dana / Sponsorship | Untuk pertanggungjawaban penggunaan dana bantuan |
 | Kegiatan Internal | Untuk rapat, pelatihan, workshop, dan kegiatan internal |
 
-Tipe LPJ memengaruhi:
+Tipe event/kegiatan memengaruhi:
 
 1. Field data.
 2. Template narasi.
@@ -196,12 +213,12 @@ Tipe LPJ memengaruhi:
 
 ---
 
-## 8. Input Data LPJ
+## 8. Input Data Event/Kegiatan
 
 ### 8.1 Data Dasar Kegiatan
 
 - Nama kegiatan.
-- Tipe LPJ.
+- Tipe event/kegiatan.
 - Tanggal mulai.
 - Tanggal selesai.
 - Lokasi/tempat kegiatan.
@@ -504,8 +521,8 @@ Fitur wajib MVP:
 1. PWA mobile-first.
 2. Login tunggal Admin/User berbasis role.
 3. Profil lembaga.
-4. Admin membuat LPJ/kegiatan baru.
-5. Tipe LPJ.
+4. Admin membuat event/kegiatan baru.
+5. Tipe event/kegiatan.
 6. Template latar belakang otomatis editable.
 7. Template maksud dan tujuan otomatis editable.
 8. Input data dasar kegiatan.

@@ -13,7 +13,7 @@ class Login extends BaseLogin
 {
     public function getHeading(): string
     {
-        return 'Kicap LPJ';
+        return 'Kicap Event';
     }
 
     public function authenticate(): ?LoginResponseContract

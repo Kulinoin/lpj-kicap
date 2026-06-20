@@ -1,14 +1,29 @@
-# Concept Lock Kicap LPJ v1.0
+# Concept Lock Kicap Event v1.0
 
-**Status:** Locked concept / basis PRD dan implementasi  
-**Tanggal lock:** 19 Juni 2026  
-**Nama aplikasi:** Kicap LPJ  
-**Domain rencana:** `lpj.kicap.id`  
-**Lembaga awal:** PT. Kazoku Indonesia Center  
-**Jenis lembaga:** Lembaga Pelatihan Kerja  
-**Repo lokal:** `D:\kulino\lpj-kicap`  
-**WSL path:** `/mnt/d/kulino/lpj-kicap`  
-**GitHub SSH:** `git@github.com:Kulinoin/lpj-kicap.git`  
+**Status:** Locked concept / basis PRD dan implementasi
+**Tanggal lock:** 19 Juni 2026
+**Nama aplikasi:** Kicap Event
+**Domain rencana:** `lpj.kicap.id`
+**Lembaga awal:** PT. Kazoku Indonesia Center
+**Jenis lembaga:** Lembaga Pelatihan Kerja
+**Repo lokal:** `D:\kulino\lpj-kicap`
+**WSL path:** `/mnt/d/kulino/lpj-kicap`
+**GitHub SSH:** `git@github.com:Kulinoin/lpj-kicap.git`
+
+---
+
+## 0.0 Decision — Kicap Event sebagai Konsep Utama
+
+Keputusan 20 Juni 2026:
+
+```text
+Event / Kegiatan = objek utama yang dikelola aplikasi
+LPJ = output akhir/dokumen hasil dari event/kegiatan
+```
+
+Perubahan ini meluruskan istilah produk, bukan mengubah alur kerja mesin. Alur tetap: Admin membuat event/kegiatan, Admin menentukan tipe/data dasar/petugas, User mengisi operasional lapangan, Admin review/finalisasi, lalu sistem generate dokumen LPJ sebagai output akhir.
+
+Mulai keputusan ini, istilah lama seperti "membuat LPJ", "LPJ aktif", "Tipe LPJ", atau "Status LPJ" dibaca sebagai legacy wording untuk objek **Event/Kegiatan**, kecuali konteksnya jelas membahas dokumen final/export/template LPJ.
 
 ---
 
@@ -16,9 +31,9 @@
 
 Keputusan berikut menggantikan bagian lama yang bertentangan, tanpa mengubah konsep utama aplikasi:
 
-1. LPJ hanya dibuat oleh Admin.
-2. User/petugas hanya mengisi kebutuhan operasional pada LPJ yang ditugaskan.
-3. Status LPJ MVP disederhanakan menjadi:
+1. Event/Kegiatan hanya dibuat oleh Admin.
+2. User/petugas hanya mengisi kebutuhan operasional pada event/kegiatan yang ditugaskan.
+3. Status event/kegiatan MVP disederhanakan menjadi:
 
 ```text
 draft
@@ -27,7 +42,7 @@ finish
 arsipkan
 ```
 
-4. Halaman user hanya menampilkan LPJ berstatus `aktif` dan `finish`.
+4. Halaman user hanya menampilkan event/kegiatan berstatus `aktif` dan `finish`.
 5. Login menggunakan satu halaman untuk semua role.
 6. Setelah login, sistem mengarahkan Admin ke panel Admin dan User ke PWA.
 7. Fitur `Ingat saya` wajib tersedia dan berjalan, terutama untuk user HP agar tidak sering login ulang.
@@ -41,7 +56,7 @@ arsipkan
 
 ## 1. Ringkasan Konsep
 
-Kicap LPJ adalah aplikasi **PWA mobile-first** untuk membantu user lapangan mencatat kegiatan, transaksi operasional, dokumentasi, bukti kegiatan, saldo pegangan user, transfer saldo antar user, dana talangan, dan klaim/reimbursement secara cepat.
+Kicap Event adalah aplikasi **PWA mobile-first** untuk membantu user lapangan mencatat kegiatan, transaksi operasional, dokumentasi, bukti kegiatan, saldo pegangan user, transfer saldo antar user, dana talangan, dan klaim/reimbursement secara cepat.
 
 Aplikasi ini bukan hanya aplikasi pembukuan. Fokus utamanya adalah:
 
@@ -60,22 +75,22 @@ Output akhir berupa dokumen LPJ resmi yang rapi, formal, dan mudah dibaca. Detai
 
 ## 2. Prinsip Utama
 
-1. **Mobile-first**  
+1. **Mobile-first**
    User lapangan harus nyaman input data dari HP.
 
-2. **PWA**  
+2. **PWA**
    Aplikasi bisa dibuka seperti aplikasi, installable, dan mendukung autosave/draft ringan.
 
-3. **Detail di sistem, LPJ final sederhana**  
+3. **Detail di sistem, LPJ final sederhana**
    Sistem mencatat detail operasional, tapi dokumen akhir tetap global dan formal.
 
-4. **Template otomatis tapi editable**  
+4. **Template otomatis tapi editable**
    Narasi dibuat otomatis berdasarkan tipe LPJ, tetapi user tetap bisa mengedit.
 
-5. **Aman secara konteks kegiatan**  
+5. **Aman secara konteks kegiatan**
    Untuk tipe pendampingan peserta, dokumen tidak boleh seolah-olah menyatakan organisasi sebagai penyelenggara utama jika kegiatan diselenggarakan pihak luar.
 
-6. **Realistis untuk kondisi lapangan**  
+6. **Realistis untuk kondisi lapangan**
    Mendukung saldo pindah tangan, dana pribadi/talangan, bukti menyusul, transaksi tanpa bukti dengan alasan, dan revisi transaksi.
 
 ---
@@ -84,20 +99,20 @@ Output akhir berupa dokumen LPJ resmi yang rapi, formal, dan mudah dibaca. Detai
 
 | Bagian | Keputusan |
 |---|---|
-| Nama aplikasi | Kicap LPJ |
+| Nama aplikasi | Kicap Event |
 | Domain | `lpj.kicap.id` |
 | Bentuk aplikasi | PWA mobile-first |
 | Stack | Laravel + React PWA + Filament |
 | Database | MySQL untuk implementasi awal |
 | Role MVP | Admin + User |
-| Pembuat LPJ | Admin saja |
-| Tugas User | Input operasional pada LPJ aktif/finish yang ditugaskan |
+| Pembuat Event/Kegiatan | Admin saja |
+| Tugas User | Input operasional pada event/kegiatan aktif/finish yang ditugaskan |
 | Super Admin | Tidak dimunculkan di MVP umum |
-| Tipe LPJ | Berbasis tipe kegiatan |
-| Status LPJ MVP | draft, aktif, finish, arsipkan |
+| Tipe Event/Kegiatan | Berbasis tipe kegiatan |
+| Status Event/Kegiatan MVP | draft, aktif, finish, arsipkan |
 | Login | Satu halaman login berbasis role |
 | Ingat saya | Aktif dan wajib berjalan untuk sesi tahan lama |
-| Template narasi | Otomatis berdasarkan tipe LPJ, editable |
+| Template narasi | Otomatis berdasarkan tipe event/kegiatan, editable |
 | Saldo user | Ada saldo pegangan/operasional per user |
 | Transfer saldo | Antar user, langsung tercatat tanpa approval Admin |
 | Dana talangan | Dicatat sebagai biaya kegiatan jika valid, klaimnya internal |
@@ -116,28 +131,28 @@ Output akhir berupa dokumen LPJ resmi yang rapi, formal, dan mudah dibaca. Detai
 
 ---
 
-## 4. Tipe LPJ Awal
+## 4. Tipe Event/Kegiatan Awal
 
-1. **Penyelenggaraan Event**  
+1. **Penyelenggaraan Event**
    Untuk kegiatan yang diselenggarakan sendiri.
 
-2. **Pendampingan Peserta Seleksi**  
+2. **Pendampingan Peserta Seleksi**
    Untuk mendampingi peserta mengikuti seleksi/lomba/audisi/kegiatan pihak luar. Organisasi bukan penyelenggara utama.
 
-3. **Delegasi / Perwakilan**  
+3. **Delegasi / Perwakilan**
    Untuk mengirim peserta/tim mewakili lembaga/organisasi.
 
-4. **Bantuan Dana / Sponsorship**  
+4. **Bantuan Dana / Sponsorship**
    Untuk mempertanggungjawabkan penggunaan dana bantuan.
 
-5. **Kegiatan Internal**  
+5. **Kegiatan Internal**
    Untuk rapat, pelatihan, workshop, program internal, atau operasional lembaga.
 
 ---
 
 ## 5. Sistem Keuangan Operasional
 
-Kicap LPJ membedakan:
+Kicap Event membedakan:
 
 ```text
 Data operasional internal
