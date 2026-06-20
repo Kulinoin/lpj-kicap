@@ -84,3 +84,29 @@
 - Validasi PASS: `php artisan test`.
 - Validasi PASS: `php artisan migrate:fresh --seed`.
 - Validasi PASS: `cmd.exe /c "cd /d D:\kulino\lpj-kicap && npm.cmd run build"`.
+
+## 2026-06-20 18:53 +07 — Slice 03 Operasional Keuangan
+
+- Menambahkan tabel dana masuk LPJ, saldo user per LPJ, mutasi saldo, transaksi operasional, dan klaim dana talangan.
+- Menambahkan model `LpjFundReceipt`, `LpjUserBalance`, `LpjBalanceMutation`, `LpjFinancialTransaction`, dan `LpjAdvanceClaim`.
+- Menambahkan `LpjFinanceService` untuk dana masuk, dana pegangan, pengeluaran, transfer saldo, dan dana talangan.
+- Menambahkan endpoint PWA untuk pengeluaran, transfer saldo, dan dana talangan.
+- Menambahkan payload finance pada detail LPJ User.
+- Menambahkan panel Operasional Keuangan pada detail LPJ PWA.
+- Menambahkan resource Filament untuk `Dana Masuk LPJ`, `Mutasi Saldo`, `Saldo User`, `Transaksi Operasional`, dan `Klaim Talangan`.
+- Menambahkan seed saldo demo dan penugasan user kedua untuk simulasi transfer.
+- Menambahkan coverage test `Slice03OperationalFinanceTest`.
+- Validasi PASS: `php artisan test tests/Feature/Slice03OperationalFinanceTest.php`.
+- Validasi PASS: `php artisan route:list --path=api/app`.
+- Validasi PASS: `php artisan route:list --path=admin`.
+- Validasi PASS: `php artisan test tests/Feature/Slice02LpjDetailMobileInputTest.php`.
+- Validasi PASS: `php artisan test`.
+- Validasi PASS: `php artisan migrate:fresh --seed -n`.
+- Validasi PASS: `cmd.exe /c "cd /d D:\kulino\lpj-kicap && npm.cmd run build"`.
+
+## 2026-06-20 — Slice 03 Follow-up Review Manual
+
+- Mengubah sumber dana pada `Dana Masuk LPJ` menjadi pilihan `Lembaga`, `Sponsor`, dan `Dinas`.
+- Mengubah kategori transaksi User pada PWA menjadi pilihan tetap: `Konsumsi`, `Akomodasi`, `Operasional`, `Transportasi`, `Dokumentasi`, dan `Lainnya`.
+- Memisahkan menu bawah PWA menjadi `Operasional` untuk catatan petugas dan `Keuangan` untuk transaksi/saldo.
+- Mengganti label kolom mutasi menjadi `User Terkait Transfer` dan menampilkan `-` untuk mutasi non-transfer.

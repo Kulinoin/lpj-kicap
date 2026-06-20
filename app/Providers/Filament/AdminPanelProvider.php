@@ -3,8 +3,13 @@
 namespace App\Providers\Filament;
 
 use App\Filament\Pages\Auth\Login;
+use App\Filament\Resources\LpjAdvanceClaims\LpjAdvanceClaimResource;
+use App\Filament\Resources\LpjBalanceMutations\LpjBalanceMutationResource;
+use App\Filament\Resources\LpjFinancialTransactions\LpjFinancialTransactionResource;
+use App\Filament\Resources\LpjFundReceipts\LpjFundReceiptResource;
 use App\Filament\Resources\Lpjs\LpjResource;
 use App\Filament\Resources\LpjTypes\LpjTypeResource;
+use App\Filament\Resources\LpjUserBalances\LpjUserBalanceResource;
 use App\Filament\Resources\OrganizationProfiles\OrganizationProfileResource;
 use App\Filament\Resources\Users\UserResource;
 use Filament\Actions\Action;
@@ -154,8 +159,13 @@ class AdminPanelProvider extends PanelProvider
                 'primary' => Color::Amber,
             ])
             ->resources([
+                LpjAdvanceClaimResource::class,
+                LpjBalanceMutationResource::class,
+                LpjFinancialTransactionResource::class,
+                LpjFundReceiptResource::class,
                 LpjResource::class,
                 LpjTypeResource::class,
+                LpjUserBalanceResource::class,
                 OrganizationProfileResource::class,
                 UserResource::class,
             ])

@@ -111,3 +111,34 @@ Validasi otomatis PASS:
 - `php artisan migrate:fresh --seed`
 - `php artisan route:list --path=api/app`
 - `cmd.exe /c "cd /d D:\kulino\lpj-kicap && npm.cmd run build"`
+
+## Slice 03 — Operasional Keuangan
+
+Status: Implementasi + validasi otomatis PASS, menunggu review manual user sebelum commit/push.
+
+Selesai:
+
+- Menambahkan data model dana masuk LPJ, saldo pegangan user, mutasi saldo, transaksi operasional, dan klaim dana talangan.
+- Menambahkan service transaksi keuangan berbasis DB transaction.
+- Admin dapat mencatat dana masuk LPJ dan dana pegangan user melalui Filament.
+- Admin dapat melihat saldo user, mutasi saldo, transaksi operasional, dan klaim talangan.
+- User PWA dapat melihat saldo pada detail LPJ.
+- User PWA dapat mencatat pengeluaran dari saldo pegangan dengan bukti atau alasan tanpa bukti.
+- User PWA dapat transfer saldo antar user yang ditugaskan tanpa approval Admin.
+- User PWA dapat mencatat dana talangan dan sistem membuat klaim internal.
+- Transfer saldo tidak membuat transaksi pengeluaran LPJ.
+- LPJ `finish` tetap read-only untuk input keuangan.
+- Follow-up review: sumber dana masuk dijadikan pilihan `Lembaga/Sponsor/Dinas`.
+- Follow-up review: kategori transaksi User dijadikan pilihan tetap.
+- Follow-up review: `Input Operasional` dan `Operasional Keuangan` dipisah menjadi menu bawah `Operasional` dan `Keuangan`.
+- Follow-up review: kolom `User Terkait Transfer` diberi placeholder `-` untuk mutasi non-transfer.
+
+Validasi otomatis PASS:
+
+- `php artisan test tests/Feature/Slice03OperationalFinanceTest.php` — 6 tests, 31 assertions
+- `php artisan route:list --path=api/app`
+- `php artisan route:list --path=admin`
+- `php artisan test tests/Feature/Slice02LpjDetailMobileInputTest.php` — 5 tests, 27 assertions
+- `php artisan test` — 40 tests, 130 assertions
+- `php artisan migrate:fresh --seed -n`
+- `cmd.exe /c "cd /d D:\kulino\lpj-kicap && npm.cmd run build"`

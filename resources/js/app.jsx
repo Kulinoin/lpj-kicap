@@ -2,20 +2,24 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import {
     ArrowLeft,
+    Banknote,
     CalendarDays,
     Camera,
     CheckCircle2,
     ClipboardList,
-    FileText,
     Home,
     LockKeyhole,
     LogOut,
     MapPin,
     Phone,
     PlusCircle,
+    ReceiptText,
     Save,
+    Send,
+    UploadCloud,
     UserRound,
     UsersRound,
+    Wallet,
 } from 'lucide-react';
 import { registerSW } from 'virtual:pwa-register';
 import '../css/app.css';
@@ -24,8 +28,8 @@ registerSW({ immediate: true });
 
 const navItems = [
     { key: 'beranda', label: 'Beranda', icon: Home },
-    { key: 'lpj', label: 'LPJ', icon: ClipboardList },
-    { key: 'input', label: 'Input Cepat', icon: PlusCircle, isPrimary: true },
+    { key: 'operasional', label: 'Operasional', icon: PlusCircle },
+    { key: 'keuangan', label: 'Keuangan', icon: Wallet, isPrimary: true },
     { key: 'selesai', label: 'Selesai', icon: CheckCircle2 },
     { key: 'profil', label: 'Profil', icon: UserRound },
 ];
@@ -36,6 +40,30 @@ const emptyProfile = {
     email: '',
     whatsapp: '',
     avatar_url: null,
+};
+
+const emptyFinanceForms = {
+    expense: {
+        category: '',
+        description: '',
+        amount: '',
+        spent_at: new Date().toISOString().slice(0, 10),
+        no_proof_reason: '',
+        proof: null,
+    },
+    advance: {
+        category: '',
+        description: '',
+        amount: '',
+        spent_at: new Date().toISOString().slice(0, 10),
+        no_proof_reason: '',
+        proof: null,
+    },
+    transfer: {
+        recipient_user_id: '',
+        amount: '',
+        note: '',
+    },
 };
 
 function formatDateRange(lpj) {
@@ -54,6 +82,14 @@ function getCsrfToken() {
     return document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') ?? '';
 }
 
+function formatCurrency(value) {
+    return new Intl.NumberFormat('id-ID', {
+        style: 'currency',
+        currency: 'IDR',
+        maximumFractionDigits: 0,
+    }).format(value ?? 0);
+}
+
 function KicapApp() {
     const [lpjs, setLpjs] = useState([]);
     const [selectedLpjId, setSelectedLpjId] = useState(null);
@@ -66,6 +102,7 @@ function KicapApp() {
         password: '',
         password_confirmation: '',
     });
+    const [financeForms, setFinanceForms] = useState(emptyFinanceForms);
     const [profilePhoto, setProfilePhoto] = useState(null);
     const [profilePhotoPreview, setProfilePhotoPreview] = useState(null);
     const [isLoading, setIsLoading] = useState(true);
@@ -73,6 +110,7 @@ function KicapApp() {
     const [isSavingProfile, setIsSavingProfile] = useState(false);
     const [isOperationalDirty, setIsOperationalDirty] = useState(false);
     const [profileMessage, setProfileMessage] = useState('');
+    const [financeMessage, setFinanceMessage] = useState('');
     const [operationalSaveMessage, setOperationalSaveMessage] = useState('');
     const [activeNav, setActiveNav] = useState('beranda');
 
@@ -133,6 +171,7 @@ function KicapApp() {
 
         setIsDetailLoading(true);
         setOperationalSaveMessage('');
+        setFinanceMessage('');
 
         fetch(`/api/app/lpjs/${selectedLpjId}`, {
             headers: {
@@ -160,6 +199,7 @@ function KicapApp() {
 
                 setSelectedLpj(detail);
                 setOperationalDrafts(drafts);
+                setFinanceForms(emptyFinanceForms);
                 setIsOperationalDirty(false);
             })
             .catch(() => {
@@ -305,6 +345,72 @@ function KicapApp() {
             });
     };
 
+    const updateFinanceForm = (formKey, field, value) => {
+        setFinanceForms((current) => ({
+            ...current,
+            [formKey]: {
+                ...current[formKey],
+                [field]: value,
+            },
+        }));
+    };
+
+    const handleFinanceSubmit = (event, formKey, endpoint) => {
+        event.preventDefault();
+
+        if (!selectedLpj?.finance?.can_input_finance) {
+            return;
+        }
+
+        setFinanceMessage('Menyimpan transaksi...');
+
+        const form = financeForms[formKey];
+        const formData = new FormData();
+
+        Object.entries(form).forEach(([key, value]) => {
+            if (value !== null && value !== '') {
+                formData.append(key, value);
+            }
+        });
+
+        fetch(`/api/app/lpjs/${selectedLpj.id}/${endpoint}`, {
+            method: 'POST',
+            headers: {
+                Accept: 'application/json',
+                'X-CSRF-TOKEN': getCsrfToken(),
+            },
+            body: formData,
+        })
+            .then(async (response) => {
+                if (!response.ok) {
+                    throw await response.json();
+                }
+
+                return response.json();
+            })
+            .then((payload) => {
+                setSelectedLpj((current) => {
+                    if (!current) {
+                        return current;
+                    }
+
+                    return {
+                        ...current,
+                        finance: payload.data.finance,
+                    };
+                });
+                setFinanceForms((current) => ({
+                    ...current,
+                    [formKey]: emptyFinanceForms[formKey],
+                }));
+                setFinanceMessage('Transaksi tersimpan');
+            })
+            .catch((error) => {
+                const firstMessage = Object.values(error?.errors ?? {})?.[0]?.[0];
+                setFinanceMessage(firstMessage ?? 'Transaksi belum tersimpan');
+            });
+    };
+
     const totals = useMemo(() => {
         return {
             active: lpjs.filter((lpj) => lpj.status === 'aktif').length,
@@ -315,10 +421,12 @@ function KicapApp() {
     const activeLpjs = useMemo(() => lpjs.filter((lpj) => lpj.status === 'aktif'), [lpjs]);
     const finishedLpjs = useMemo(() => lpjs.filter((lpj) => lpj.status === 'finish'), [lpjs]);
     const avatarSource = profilePhotoPreview ?? profile.avatar_url;
-    const showDetail = activeNav === 'input' && selectedLpjId;
+    const isOperationalNav = activeNav === 'operasional';
+    const isFinanceNav = activeNav === 'keuangan';
+    const showDetail = (isOperationalNav || isFinanceNav) && selectedLpjId;
     const pageTitle = activeNav === 'profil' ? 'Profil pengguna' : showDetail ? 'Detail LPJ' : 'Ruang kerja petugas';
     const visibleLpjs = useMemo(() => {
-        if (activeNav === 'input') {
+        if (activeNav === 'operasional' || activeNav === 'keuangan') {
             return activeLpjs;
         }
 
@@ -331,27 +439,33 @@ function KicapApp() {
 
     const lpjHeading = {
         beranda: 'Aktif dan selesai',
-        lpj: 'Semua tugas',
-        input: 'Siap diisi',
+        operasional: 'Input operasional',
+        keuangan: 'Operasional keuangan',
         selesai: 'Sudah selesai',
     }[activeNav] ?? 'Aktif dan selesai';
 
     const emptyLpjMessage = {
-        input: 'Belum ada LPJ aktif yang bisa diisi.',
+        operasional: 'Belum ada LPJ aktif untuk input operasional.',
+        keuangan: 'Belum ada LPJ aktif untuk operasional keuangan.',
         selesai: 'Belum ada LPJ selesai yang ditugaskan.',
     }[activeNav] ?? 'Belum ada LPJ aktif atau selesai yang ditugaskan.';
 
     const openLpjDetail = (lpjId) => {
         setSelectedLpjId(lpjId);
-        setActiveNav('input');
+
+        if (!isOperationalNav && !isFinanceNav) {
+            setActiveNav('operasional');
+        }
     };
 
     const closeLpjDetail = () => {
         setSelectedLpjId(null);
         setSelectedLpj(null);
         setOperationalDrafts({});
+        setFinanceForms(emptyFinanceForms);
         setIsOperationalDirty(false);
         setOperationalSaveMessage('');
+        setFinanceMessage('');
     };
 
     const handleOperationalChange = (type, content) => {
@@ -440,8 +554,12 @@ function KicapApp() {
                                             </span>
                                         </div>
                                         <span className="open-detail-label">
-                                            <FileText size={14} strokeWidth={2.4} />
-                                            Buka detail
+                                            {isFinanceNav ? (
+                                                <Wallet size={14} strokeWidth={2.4} />
+                                            ) : (
+                                                <ClipboardList size={14} strokeWidth={2.4} />
+                                            )}
+                                            {isFinanceNav ? 'Buka keuangan' : 'Buka detail'}
                                         </span>
                                     </button>
                                 ))}
@@ -490,38 +608,315 @@ function KicapApp() {
                                 </div>
                             </article>
 
-                            <div className="narrative-header">
-                                <div>
-                                    <p className="section-kicker">Input Operasional</p>
-                                    <h2>
-                                        {selectedLpj.can_input_operational_data
-                                            ? 'Catatan petugas'
-                                            : 'Catatan terkunci'}
-                                    </h2>
-                                </div>
-                                <div className="save-state">
-                                    <Save size={14} strokeWidth={2.4} />
-                                    {selectedLpj.can_input_operational_data
-                                        ? operationalSaveMessage || 'Siap diisi'
-                                        : 'Hanya baca'}
-                                </div>
-                            </div>
+                            {isOperationalNav && (
+                                <>
+                                    <div className="narrative-header">
+                                        <div>
+                                            <p className="section-kicker">Input Operasional</p>
+                                            <h2>
+                                                {selectedLpj.can_input_operational_data
+                                                    ? 'Catatan petugas'
+                                                    : 'Catatan terkunci'}
+                                            </h2>
+                                        </div>
+                                        <div className="save-state">
+                                            <Save size={14} strokeWidth={2.4} />
+                                            {selectedLpj.can_input_operational_data
+                                                ? operationalSaveMessage || 'Siap diisi'
+                                                : 'Hanya baca'}
+                                        </div>
+                                    </div>
 
-                            <div className="narrative-list">
-                                {selectedLpj.activity_notes.map((note) => (
-                                    <label className="narrative-card" key={note.type}>
-                                        <span>{note.label}</span>
-                                        <textarea
-                                            disabled={!selectedLpj.can_input_operational_data}
-                                            rows={5}
-                                            value={operationalDrafts[note.type] ?? ''}
+                                    <div className="narrative-list">
+                                        {selectedLpj.activity_notes.map((note) => (
+                                            <label className="narrative-card" key={note.type}>
+                                                <span>{note.label}</span>
+                                                <textarea
+                                                    disabled={!selectedLpj.can_input_operational_data}
+                                                    rows={5}
+                                                    value={operationalDrafts[note.type] ?? ''}
+                                                    onChange={(event) =>
+                                                        handleOperationalChange(note.type, event.target.value)
+                                                    }
+                                                />
+                                            </label>
+                                        ))}
+                                    </div>
+                                </>
+                            )}
+
+                            {isFinanceNav && <section className="finance-panel">
+                                <div className="narrative-header">
+                                    <div>
+                                        <p className="section-kicker">Operasional Keuangan</p>
+                                        <h2>Saldo dan transaksi</h2>
+                                    </div>
+                                    <div className="save-state">
+                                        <Wallet size={14} strokeWidth={2.4} />
+                                        {formatCurrency(selectedLpj.finance?.balance ?? 0)}
+                                    </div>
+                                </div>
+
+                                <div className="finance-summary">
+                                    <article>
+                                        <span>Saldo pegangan</span>
+                                        <strong>{formatCurrency(selectedLpj.finance?.balance ?? 0)}</strong>
+                                    </article>
+                                    <article>
+                                        <span>Transaksi saya</span>
+                                        <strong>{selectedLpj.finance?.transactions?.length ?? 0}</strong>
+                                    </article>
+                                    <article>
+                                        <span>Klaim talangan</span>
+                                        <strong>{selectedLpj.finance?.advance_claims?.length ?? 0}</strong>
+                                    </article>
+                                </div>
+
+                                {financeMessage && <div className="profile-message">{financeMessage}</div>}
+
+                                <form
+                                    className="finance-form"
+                                    onSubmit={(event) => handleFinanceSubmit(event, 'expense', 'expenses')}
+                                >
+                                    <div className="finance-form-title">
+                                        <ReceiptText size={16} strokeWidth={2.4} />
+                                        <span>Catat pengeluaran</span>
+                                    </div>
+                                    <select
+                                        disabled={!selectedLpj.finance?.can_input_finance}
+                                        value={financeForms.expense.category}
+                                        onChange={(event) =>
+                                            updateFinanceForm('expense', 'category', event.target.value)
+                                        }
+                                        required
+                                    >
+                                        <option value="">Pilih kategori</option>
+                                        {(selectedLpj.finance_category_options ?? []).map((category) => (
+                                            <option value={category} key={category}>
+                                                {category}
+                                            </option>
+                                        ))}
+                                    </select>
+                                    <input
+                                        disabled={!selectedLpj.finance?.can_input_finance}
+                                        inputMode="decimal"
+                                        placeholder="Nominal"
+                                        type="number"
+                                        min="1"
+                                        value={financeForms.expense.amount}
+                                        onChange={(event) => updateFinanceForm('expense', 'amount', event.target.value)}
+                                        required
+                                    />
+                                    <input
+                                        disabled={!selectedLpj.finance?.can_input_finance}
+                                        type="date"
+                                        value={financeForms.expense.spent_at}
+                                        onChange={(event) =>
+                                            updateFinanceForm('expense', 'spent_at', event.target.value)
+                                        }
+                                        required
+                                    />
+                                    <textarea
+                                        disabled={!selectedLpj.finance?.can_input_finance}
+                                        placeholder="Keterangan pengeluaran"
+                                        value={financeForms.expense.description}
+                                        onChange={(event) =>
+                                            updateFinanceForm('expense', 'description', event.target.value)
+                                        }
+                                        required
+                                    />
+                                    <input
+                                        disabled={!selectedLpj.finance?.can_input_finance}
+                                        placeholder="Alasan jika tidak ada bukti"
+                                        value={financeForms.expense.no_proof_reason}
+                                        onChange={(event) =>
+                                            updateFinanceForm('expense', 'no_proof_reason', event.target.value)
+                                        }
+                                    />
+                                    <label className="file-button">
+                                        <UploadCloud size={15} strokeWidth={2.4} />
+                                        <span>{financeForms.expense.proof?.name ?? 'Upload bukti'}</span>
+                                        <input
+                                            disabled={!selectedLpj.finance?.can_input_finance}
+                                            accept="image/*,.pdf"
+                                            type="file"
                                             onChange={(event) =>
-                                                handleOperationalChange(note.type, event.target.value)
+                                                updateFinanceForm('expense', 'proof', event.target.files?.[0] ?? null)
                                             }
                                         />
                                     </label>
-                                ))}
-                            </div>
+                                    <button
+                                        className="save-profile-button"
+                                        type="submit"
+                                        disabled={!selectedLpj.finance?.can_input_finance}
+                                    >
+                                        <Save size={17} strokeWidth={2.5} />
+                                        Simpan Pengeluaran
+                                    </button>
+                                </form>
+
+                                <form
+                                    className="finance-form"
+                                    onSubmit={(event) =>
+                                        handleFinanceSubmit(event, 'transfer', 'balance-transfers')
+                                    }
+                                >
+                                    <div className="finance-form-title">
+                                        <Send size={16} strokeWidth={2.4} />
+                                        <span>Transfer saldo</span>
+                                    </div>
+                                    <select
+                                        disabled={
+                                            !selectedLpj.finance?.can_input_finance ||
+                                            !selectedLpj.finance?.can_transfer_balance
+                                        }
+                                        value={financeForms.transfer.recipient_user_id}
+                                        onChange={(event) =>
+                                            updateFinanceForm('transfer', 'recipient_user_id', event.target.value)
+                                        }
+                                        required
+                                    >
+                                        <option value="">Pilih penerima</option>
+                                        {(selectedLpj.finance?.transfer_targets ?? []).map((target) => (
+                                            <option value={target.id} key={target.id}>
+                                                {target.name}
+                                            </option>
+                                        ))}
+                                    </select>
+                                    <input
+                                        disabled={
+                                            !selectedLpj.finance?.can_input_finance ||
+                                            !selectedLpj.finance?.can_transfer_balance
+                                        }
+                                        inputMode="decimal"
+                                        placeholder="Nominal"
+                                        type="number"
+                                        min="1"
+                                        value={financeForms.transfer.amount}
+                                        onChange={(event) => updateFinanceForm('transfer', 'amount', event.target.value)}
+                                        required
+                                    />
+                                    <input
+                                        disabled={
+                                            !selectedLpj.finance?.can_input_finance ||
+                                            !selectedLpj.finance?.can_transfer_balance
+                                        }
+                                        placeholder="Catatan transfer"
+                                        value={financeForms.transfer.note}
+                                        onChange={(event) => updateFinanceForm('transfer', 'note', event.target.value)}
+                                    />
+                                    <button
+                                        className="save-profile-button"
+                                        type="submit"
+                                        disabled={
+                                            !selectedLpj.finance?.can_input_finance ||
+                                            !selectedLpj.finance?.can_transfer_balance
+                                        }
+                                    >
+                                        <Send size={17} strokeWidth={2.5} />
+                                        Transfer Sekarang
+                                    </button>
+                                </form>
+
+                                <form
+                                    className="finance-form"
+                                    onSubmit={(event) =>
+                                        handleFinanceSubmit(event, 'advance', 'advance-expenses')
+                                    }
+                                >
+                                    <div className="finance-form-title">
+                                        <Banknote size={16} strokeWidth={2.4} />
+                                        <span>Dana talangan</span>
+                                    </div>
+                                    <select
+                                        disabled={!selectedLpj.finance?.can_input_finance}
+                                        value={financeForms.advance.category}
+                                        onChange={(event) =>
+                                            updateFinanceForm('advance', 'category', event.target.value)
+                                        }
+                                        required
+                                    >
+                                        <option value="">Pilih kategori</option>
+                                        {(selectedLpj.finance_category_options ?? []).map((category) => (
+                                            <option value={category} key={category}>
+                                                {category}
+                                            </option>
+                                        ))}
+                                    </select>
+                                    <input
+                                        disabled={!selectedLpj.finance?.can_input_finance}
+                                        inputMode="decimal"
+                                        placeholder="Nominal"
+                                        type="number"
+                                        min="1"
+                                        value={financeForms.advance.amount}
+                                        onChange={(event) => updateFinanceForm('advance', 'amount', event.target.value)}
+                                        required
+                                    />
+                                    <input
+                                        disabled={!selectedLpj.finance?.can_input_finance}
+                                        type="date"
+                                        value={financeForms.advance.spent_at}
+                                        onChange={(event) =>
+                                            updateFinanceForm('advance', 'spent_at', event.target.value)
+                                        }
+                                        required
+                                    />
+                                    <textarea
+                                        disabled={!selectedLpj.finance?.can_input_finance}
+                                        placeholder="Keterangan dana talangan"
+                                        value={financeForms.advance.description}
+                                        onChange={(event) =>
+                                            updateFinanceForm('advance', 'description', event.target.value)
+                                        }
+                                        required
+                                    />
+                                    <input
+                                        disabled={!selectedLpj.finance?.can_input_finance}
+                                        placeholder="Alasan jika tidak ada bukti"
+                                        value={financeForms.advance.no_proof_reason}
+                                        onChange={(event) =>
+                                            updateFinanceForm('advance', 'no_proof_reason', event.target.value)
+                                        }
+                                    />
+                                    <label className="file-button">
+                                        <UploadCloud size={15} strokeWidth={2.4} />
+                                        <span>{financeForms.advance.proof?.name ?? 'Upload bukti'}</span>
+                                        <input
+                                            disabled={!selectedLpj.finance?.can_input_finance}
+                                            accept="image/*,.pdf"
+                                            type="file"
+                                            onChange={(event) =>
+                                                updateFinanceForm('advance', 'proof', event.target.files?.[0] ?? null)
+                                            }
+                                        />
+                                    </label>
+                                    <button
+                                        className="save-profile-button"
+                                        type="submit"
+                                        disabled={!selectedLpj.finance?.can_input_finance}
+                                    >
+                                        <Save size={17} strokeWidth={2.5} />
+                                        Simpan Talangan
+                                    </button>
+                                </form>
+
+                                <div className="finance-history">
+                                    <h3>Riwayat terbaru</h3>
+                                    {(selectedLpj.finance?.transactions ?? []).length === 0 && (
+                                        <div className="empty-state">Belum ada transaksi keuangan.</div>
+                                    )}
+                                    {(selectedLpj.finance?.transactions ?? []).map((transaction) => (
+                                        <article key={transaction.id}>
+                                            <div>
+                                                <strong>{transaction.category}</strong>
+                                                <span>{transaction.source_label} · {transaction.status_label}</span>
+                                            </div>
+                                            <b>{formatCurrency(transaction.amount)}</b>
+                                        </article>
+                                    ))}
+                                </div>
+                            </section>}
                         </>
                     )}
                 </section>

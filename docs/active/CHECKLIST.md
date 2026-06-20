@@ -1,20 +1,41 @@
 # Checklist Manual Aktif
 
-## Slice 02 — LPJ Detail & Input Mobile
+## Slice 03 — Operasional Keuangan
 
+- [ ] Login sebagai Admin.
+- [ ] Buka `/admin`.
+- [ ] Pastikan menu `Operasional Keuangan` tersedia.
+- [ ] Pastikan menu berisi `Dana Masuk LPJ`, `Mutasi Saldo`, `Saldo User`, `Transaksi Operasional`, dan `Klaim Talangan`.
+- [ ] Catat `Dana Masuk LPJ` untuk LPJ aktif.
+- [ ] Pastikan `Sumber Dana` hanya pilihan `Lembaga`, `Sponsor`, dan `Dinas`.
+- [ ] Pastikan total dana LPJ bertambah di data LPJ.
+- [ ] Buka `Mutasi Saldo`.
+- [ ] Klik `Beri Dana Pegangan`.
+- [ ] Pilih LPJ aktif dan User yang ditugaskan.
+- [ ] Simpan nominal dana pegangan.
+- [ ] Pastikan `Saldo User` bertambah.
+- [ ] Pastikan kolom `User Terkait Transfer` menampilkan nama user lawan transfer untuk transfer, dan `-` untuk mutasi non-transfer.
 - [ ] Login sebagai User.
 - [ ] Buka `/app` dari viewport HP.
-- [ ] Pastikan bottom navigation masih mengambang dan berisi 5 item: `Beranda`, `LPJ`, `Input Cepat`, `Selesai`, `Profil`.
-- [ ] Pastikan tab tengah bertuliskan `Input Cepat`.
-- [ ] Buka tab `Input Cepat`.
+- [ ] Pastikan bottom navigation tetap 5 item: `Beranda`, `Operasional`, `Keuangan`, `Selesai`, `Profil`.
+- [ ] Buka `Operasional`.
 - [ ] Buka LPJ aktif yang ditugaskan.
-- [ ] Pastikan detail LPJ tampil dengan kode, judul, tipe, tanggal, lokasi, dan penanggung jawab.
-- [ ] Pastikan yang tampil adalah `Input Operasional`, bukan editor narasi.
-- [ ] Isi `Hasil di Lapangan`, `Kendala`, atau `Saran Tindak Lanjut`.
-- [ ] Tunggu indikator `Catatan tersimpan`.
-- [ ] Refresh halaman dan pastikan catatan operasional tetap tersimpan.
-- [ ] Buka LPJ `finish` yang ditugaskan.
-- [ ] Pastikan status tampil sebagai `Selesai`.
-- [ ] Pastikan LPJ `finish` tidak bisa diedit dari PWA.
-- [ ] Pastikan LPJ `draft` dan `arsipkan` tetap tidak tampil di PWA User.
-- [ ] Pastikan teks UX yang terlihat user memakai bahasa Indonesia.
+- [ ] Pastikan detail hanya menampilkan input operasional/catatan petugas.
+- [ ] Kembali, buka `Keuangan`.
+- [ ] Buka LPJ aktif yang ditugaskan.
+- [ ] Pastikan detail menampilkan panel `Operasional Keuangan`.
+- [ ] Pastikan saldo pegangan tampil.
+- [ ] Pastikan kategori pengeluaran berupa pilihan tetap.
+- [ ] Catat pengeluaran dengan upload bukti PDF/gambar.
+- [ ] Pastikan saldo berkurang dan transaksi muncul dengan status `Perlu Review`.
+- [ ] Catat pengeluaran tanpa bukti dengan mengisi alasan.
+- [ ] Pastikan transaksi tersimpan.
+- [ ] Transfer saldo ke user lain yang ditugaskan.
+- [ ] Pastikan saldo pengirim langsung berkurang.
+- [ ] Pastikan transfer tidak muncul sebagai pengeluaran LPJ.
+- [ ] Catat dana talangan.
+- [ ] Pastikan kategori dana talangan berupa pilihan tetap.
+- [ ] Pastikan saldo pegangan tidak berkurang.
+- [ ] Login Admin dan pastikan klaim muncul di `Klaim Talangan`.
+- [ ] Buka LPJ `finish` sebagai User.
+- [ ] Pastikan form keuangan read-only/tidak bisa dipakai.

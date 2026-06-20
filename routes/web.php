@@ -2,9 +2,11 @@
 
 use App\Models\ActivityNote;
 use App\Models\Lpj;
+use App\Models\LpjFinancialTransaction;
 use App\Models\LpjType;
 use App\Models\User;
 use App\Services\ActivityNoteService;
+use App\Services\LpjFinanceService;
 use Filament\Facades\Filament;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -88,7 +90,7 @@ Route::middleware('auth')->group(function (): void {
         return response()->json(['data' => $lpjs]);
     });
 
-    Route::get('/api/app/lpjs/{lpj}', function (Request $request, Lpj $lpj, ActivityNoteService $activityNoteService) {
+    Route::get('/api/app/lpjs/{lpj}', function (Request $request, Lpj $lpj, ActivityNoteService $activityNoteService, LpjFinanceService $financeService) {
         /** @var User $user */
         $user = $request->user();
 
@@ -125,6 +127,8 @@ Route::middleware('auth')->group(function (): void {
                 'person_in_charge' => $lpj->personInCharge?->name,
                 'can_input_operational_data' => $lpj->status === Lpj::STATUS_AKTIF && $assignment->can_edit_activity_data,
                 'activity_notes' => $activityNoteService->payload($activityNotes),
+                'finance_category_options' => array_values(LpjFinancialTransaction::categoryOptions()),
+                'finance' => $financeService->financePayload($lpj, $user),
             ],
         ]);
     });
@@ -173,6 +177,91 @@ Route::middleware('auth')->group(function (): void {
                 ),
             ],
         ]);
+    });
+
+    Route::post('/api/app/lpjs/{lpj}/expenses', function (Request $request, Lpj $lpj, LpjFinanceService $financeService) {
+        /** @var User $user */
+        $user = $request->user();
+
+        abort_unless($user->isUser(), 403);
+
+        $lpj = Lpj::query()
+            ->visibleToAssignedUser($user)
+            ->findOrFail($lpj->id);
+
+        $validated = $request->validate([
+            'category' => ['required', 'string', Rule::in(array_keys(LpjFinancialTransaction::categoryOptions()))],
+            'description' => ['required', 'string', 'max:5000'],
+            'amount' => ['required', 'numeric', 'min:1'],
+            'spent_at' => ['required', 'date'],
+            'proof' => ['nullable', 'file', 'mimes:jpg,jpeg,png,webp,pdf', 'max:4096'],
+            'no_proof_reason' => ['required_without:proof', 'nullable', 'string', 'max:1000'],
+        ]);
+
+        $transaction = $financeService->createExpense($lpj, $user, $validated, $request->file('proof'));
+
+        return response()->json([
+            'data' => [
+                'transaction_id' => $transaction->id,
+                'finance' => $financeService->financePayload($lpj->fresh(), $user),
+            ],
+        ], 201);
+    });
+
+    Route::post('/api/app/lpjs/{lpj}/advance-expenses', function (Request $request, Lpj $lpj, LpjFinanceService $financeService) {
+        /** @var User $user */
+        $user = $request->user();
+
+        abort_unless($user->isUser(), 403);
+
+        $lpj = Lpj::query()
+            ->visibleToAssignedUser($user)
+            ->findOrFail($lpj->id);
+
+        $validated = $request->validate([
+            'category' => ['required', 'string', Rule::in(array_keys(LpjFinancialTransaction::categoryOptions()))],
+            'description' => ['required', 'string', 'max:5000'],
+            'amount' => ['required', 'numeric', 'min:1'],
+            'spent_at' => ['required', 'date'],
+            'proof' => ['nullable', 'file', 'mimes:jpg,jpeg,png,webp,pdf', 'max:4096'],
+            'no_proof_reason' => ['required_without:proof', 'nullable', 'string', 'max:1000'],
+        ]);
+
+        $transaction = $financeService->createAdvanceExpense($lpj, $user, $validated, $request->file('proof'));
+
+        return response()->json([
+            'data' => [
+                'transaction_id' => $transaction->id,
+                'finance' => $financeService->financePayload($lpj->fresh(), $user),
+            ],
+        ], 201);
+    });
+
+    Route::post('/api/app/lpjs/{lpj}/balance-transfers', function (Request $request, Lpj $lpj, LpjFinanceService $financeService) {
+        /** @var User $user */
+        $user = $request->user();
+
+        abort_unless($user->isUser(), 403);
+
+        $lpj = Lpj::query()
+            ->visibleToAssignedUser($user)
+            ->findOrFail($lpj->id);
+
+        $validated = $request->validate([
+            'recipient_user_id' => ['required', 'integer', 'exists:users,id'],
+            'amount' => ['required', 'numeric', 'min:1'],
+            'note' => ['nullable', 'string', 'max:1000'],
+        ]);
+
+        $recipient = User::query()->findOrFail($validated['recipient_user_id']);
+
+        $financeService->transferBalance($lpj, $user, $recipient, $validated);
+
+        return response()->json([
+            'data' => [
+                'finance' => $financeService->financePayload($lpj->fresh(), $user),
+            ],
+        ], 201);
     });
 
     Route::get('/api/app/profile', function (Request $request) {
