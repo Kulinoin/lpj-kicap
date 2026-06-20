@@ -5,6 +5,15 @@
 
 ---
 
+## 0. Keputusan Revisi 20 Juni 2026
+
+1. Dokumen resmi/PDF hanya dibuat dari LPJ status `finish`.
+2. Istilah "LPJ final" pada dokumen ini berarti output resmi dari LPJ yang sudah `finish`.
+3. LPJ `draft` dan `aktif` hanya boleh memiliki preview kerja, bukan PDF resmi.
+4. LPJ `arsipkan` dapat diexport ulang oleh Admin jika diperlukan.
+
+---
+
 ## 1. Output yang Didukung MVP
 
 Output utama:
@@ -371,4 +380,3 @@ Lampiran internal tidak tampil default:
 ## 20. Penutup
 
 Penutup berisi ringkasan bahwa LPJ disusun sebagai bentuk pertanggungjawaban kegiatan dan penggunaan dana.
-

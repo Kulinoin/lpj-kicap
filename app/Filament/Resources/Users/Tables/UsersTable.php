@@ -16,20 +16,27 @@ class UsersTable
         return $table
             ->columns([
                 TextColumn::make('name')
+                    ->label('Nama')
                     ->searchable(),
                 TextColumn::make('email')
-                    ->label('Email address')
+                    ->label('Email')
                     ->searchable(),
                 TextColumn::make('email_verified_at')
+                    ->label('Email Terverifikasi')
                     ->dateTime()
                     ->sortable(),
                 TextColumn::make('role')
+                    ->label('Role')
+                    ->badge()
                     ->searchable(),
                 IconColumn::make('is_active')
+                    ->label('Aktif')
                     ->boolean(),
                 IconColumn::make('can_create_lpj')
+                    ->label('Buat LPJ')
                     ->boolean(),
                 IconColumn::make('can_transfer_balance')
+                    ->label('Transfer Saldo')
                     ->boolean(),
                 TextColumn::make('created_at')
                     ->dateTime()

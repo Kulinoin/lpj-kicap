@@ -1,162 +1,109 @@
-# Slice 01 — Master LPJ & Role
+# Slice 01 — Master LPJ, Role, Login, dan UI Baseline
 
 ## Status
 
-Implemented, validation script ready.
+Reset dan akan dikerjakan ulang dari awal mengikuti keputusan revisi 20 Juni 2026.
 
-## Target
+Implementasi Slice 01 lama dianggap tidak menjadi acuan final karena ada perubahan produk:
 
-- Role Admin/User.
-- Profil lembaga.
-- Tipe LPJ.
-- Status LPJ.
-- Struktur awal data kegiatan.
-- Data user seed.
+- LPJ hanya dibuat oleh Admin.
+- User tidak membuat LPJ.
+- Status LPJ disederhanakan menjadi `draft`, `aktif`, `finish`, `arsipkan`.
+- User hanya melihat LPJ `aktif` dan `finish` yang ditugaskan.
+- Login menjadi satu halaman untuk Admin dan User.
+- `Ingat saya` wajib berfungsi.
+- User PWA memakai bottom navigation mengambang.
+- Admin panel dibuat responsive full-width.
 
-## Implementasi
+## Target Baru
 
-### Database
+- Role MVP Admin/User.
+- Login tunggal branded Kicap LPJ.
+- Login menerima username/email dan password.
+- Checkbox `Ingat saya` berjalan secara fungsional.
+- Redirect setelah login:
 
-- Menambahkan kolom role dan izin dasar pada tabel users:
-  - role
-  - is_active
-  - can_create_lpj
-  - can_transfer_balance
-- Menambahkan tabel:
-  - organization_profiles
-  - lpj_types
-  - lpjs
-  - lpj_assigned_users
+```text
+Admin -> /admin
+User  -> /app
+```
 
-### Model
+- Profil lembaga awal.
+- Tipe LPJ awal.
+- Struktur LPJ awal dengan status:
 
-- User
-- OrganizationProfile
-- LpjType
-- Lpj
-- LpjAssignedUser
+```text
+draft
+aktif
+finish
+arsipkan
+```
 
-### Seed
+- Admin dapat membuat dan mengelola LPJ.
+- Admin dapat menugaskan User ke LPJ.
+- User tidak dapat membuat LPJ.
+- User hanya melihat LPJ `aktif` dan `finish` yang ditugaskan.
+- Seed Admin/User/Pendamping.
+- Endpoint awal untuk kebutuhan PWA.
+- Admin layout full-width.
+- User PWA baseline responsive HP/tablet dengan bottom navigation mengambang.
 
-- Admin:
-  - admin@kicap.id
-  - password
-- User:
-  - user@kicap.id
-  - password
-- Pendamping:
-  - pendamping@kicap.id
-  - password
-- Profil lembaga awal:
-  - PT. Kazoku Indonesia Center
-  - Lembaga Pelatihan Kerja
-- Tipe LPJ awal:
-  - Penyelenggaraan Event
-  - Pendampingan Peserta Seleksi
-  - Delegasi / Perwakilan
-  - Bantuan Dana / Sponsorship
-  - Kegiatan Internal
-- Demo LPJ awal:
-  - LPJ-DEMO-001
+## Arah UI Login
 
-### Filament
+Struktur mengikuti referensi screenshot user:
 
-Resource dibuat menggunakan generator Filament terpasang:
+- Background lembut.
+- Kartu login putih di tengah.
+- Logo Kicap di atas.
+- Judul `Kicap LPJ`.
+- Field `Username / Email`.
+- Field `Password`.
+- Checkbox `Ingat saya`.
+- Tombol login utama.
+- Footer versi dan copyright.
 
-- User
-- OrganizationProfile
-- LpjType
-- Lpj
+Warna tidak wajib mengikuti hijau pada screenshot. Tema dipilih agar cocok dengan logo Kicap, eye-catching, nyaman, dan memotivasi.
 
-Admin dapat mengelola master dasar dari backoffice.
+Arah palet awal:
 
-### PWA/API sanity endpoint
+```text
+Brand accent: merah/coral selaras logo
+Action/positive: teal segar
+Highlight: amber hangat
+Surface: putih dan netral terang
+Text: slate/abu gelap
+```
 
-- GET `/api/master/lpj-types`
+## Validasi Otomatis Rencana
 
-Endpoint ini disiapkan sebagai sumber awal tipe LPJ untuk PWA.
+- `php artisan migrate:fresh --seed`
+- Test login tunggal username/email.
+- Test remember-me/remember token tersedia.
+- Test Admin redirect ke `/admin`.
+- Test User redirect ke `/app`.
+- Test User ditolak dari `/admin`.
+- Test status LPJ hanya `draft`, `aktif`, `finish`, `arsipkan`.
+- Test User tidak bisa membuat LPJ.
+- Test User hanya menerima LPJ aktif/finish yang ditugaskan.
+- `npm run build`
 
-## Validasi Otomatis
+## Validasi Manual Rencana
 
-- `php artisan migrate --seed`
-- `php artisan test --filter=Slice01MasterLpjRoleTest`
-- `php artisan route:list`
-- `php artisan optimize:clear`
+- Buka halaman login tunggal.
+- Cek tampilan login sesuai arah visual.
+- Login Admin.
+- Login User dengan `Ingat saya`.
+- Cek User masuk ke PWA.
+- Cek bottom navigation user di HP/tablet.
+- Cek Admin panel tidak menyisakan ruang kosong lebar kiri-kanan.
+- Cek LPJ draft tidak tampil di user.
+- Cek LPJ aktif dan finish tampil di user jika ditugaskan.
 
-## Validasi Manual
+## Di Luar Scope Slice 01
 
-- Admin login ke panel.
-- User seed tersedia.
-- Admin melihat menu resource master.
-- User tidak diberi akses ke panel Admin.
-- Tipe LPJ tersedia.
-- LPJ demo awal tersedia.
-- Endpoint `/api/master/lpj-types` mengembalikan 5 tipe LPJ.
-
-## Catatan
-
-- Slice ini belum mengerjakan wizard narasi.
-- Slice ini belum mengerjakan transaksi, saldo, dana talangan, dan dokumen PDF.
-- Transfer saldo tetap mengikuti lock konsep: tanpa approval Admin, tetapi implementasi mutasi saldo baru masuk Slice 03.
-
-## Tambahan Patch: Login Username/Email & Profil
-
-Tambahan sebelum commit Slice 01:
-
-- Login mendukung username atau email melalui custom Laravel Auth provider.
-- Field user bertambah:
-  - username
-  - whatsapp
-  - profile_photo_path
-- Field `name` dipakai sebagai Nama Lengkap.
-- Profile page ditambahkan:
-  - Nama lengkap bisa diubah.
-  - WhatsApp bisa diubah.
-  - Foto profil bisa diubah.
-  - Username dan email dikunci dari form profile.
-- Seed username:
-  - admin
-  - user
-  - pendamping
-
-Catatan:
-- User PWA nanti memakai pondasi field yang sama.
-- UI profile untuk user lapangan akan disambungkan saat PWA auth/profile dibuat.
-
-## Patch Login Form Username
-
-- Halaman login Filament dioverride agar field login tidak lagi bertipe email-only.
-- Label login menjadi `Username / Email`.
-- Input login menerima username tanpa karakter `@`.
-- Auth tetap memakai field request `email`, tetapi provider custom mencari ke kolom `email` atau `username`.
-
-## Patch Profile Dropdown Modal
-
-- `Profil Saya` tidak lagi dijadikan menu sidebar.
-- Profile dipindahkan ke user dropdown di kanan atas.
-- Item profile membuka modal/popup.
-- Field yang bisa diedit:
-  - Nama lengkap
-  - WhatsApp
-  - Foto profil
-- Field yang dikunci:
-  - Username
-  - Email
-
-Catatan:
-- Halaman `MyProfile` tetap disimpan sebagai fallback teknis, tetapi tidak didaftarkan ke navigation/sidebar.
-
-## Patch Avatar Sync & Password Profile
-
-Penyesuaian setelah Slice 01 commit:
-
-- Foto profil diletakkan di bagian paling atas modal profile.
-- Avatar pojok kanan atas memakai `profile_photo_path` melalui kontrak Filament `HasAvatar`.
-- Bagian ganti password ditambahkan di bawah sendiri.
-- Password baru bersifat opsional.
-- Username dan email tetap terkunci.
-
-## Patch Center Profile Photo
-
-- Area foto profil pada modal profile diposisikan di tengah/center.
-- Fallback halaman profile juga disesuaikan agar foto profil tampil center.
+- Wizard narasi LPJ lengkap.
+- Transaksi, saldo, transfer saldo, dan dana talangan.
+- Review transaksi.
+- Rekonsiliasi.
+- Generate PDF.
+- Offline sync kompleks.

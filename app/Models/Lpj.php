@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -9,15 +10,17 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class Lpj extends Model
 {
     public const STATUS_DRAFT = 'draft';
-    public const STATUS_DALAM_PENGISIAN = 'dalam_pengisian';
-    public const STATUS_DIAJUKAN = 'diajukan';
-    public const STATUS_PERLU_REVISI = 'perlu_revisi';
-    public const STATUS_DISETUJUI = 'disetujui';
-    public const STATUS_FINAL = 'final';
-    public const STATUS_DIARSIPKAN = 'diarsipkan';
+
+    public const STATUS_AKTIF = 'aktif';
+
+    public const STATUS_FINISH = 'finish';
+
+    public const STATUS_ARSIPKAN = 'arsipkan';
 
     public const COMPLETENESS_BELUM_LENGKAP = 'belum_lengkap';
+
     public const COMPLETENESS_SIAP_REVIEW = 'siap_review';
+
     public const COMPLETENESS_SIAP_FINALISASI = 'siap_finalisasi';
 
     protected $fillable = [
@@ -80,5 +83,40 @@ class Lpj extends Model
     public function assignedUsers(): HasMany
     {
         return $this->hasMany(LpjAssignedUser::class);
+    }
+
+    public static function statuses(): array
+    {
+        return [
+            self::STATUS_DRAFT,
+            self::STATUS_AKTIF,
+            self::STATUS_FINISH,
+            self::STATUS_ARSIPKAN,
+        ];
+    }
+
+    public static function statusLabels(): array
+    {
+        return [
+            self::STATUS_DRAFT => 'Draft',
+            self::STATUS_AKTIF => 'Aktif',
+            self::STATUS_FINISH => 'Finish',
+            self::STATUS_ARSIPKAN => 'Arsipkan',
+        ];
+    }
+
+    public static function userVisibleStatuses(): array
+    {
+        return [
+            self::STATUS_AKTIF,
+            self::STATUS_FINISH,
+        ];
+    }
+
+    public function scopeVisibleToAssignedUser(Builder $query, User $user): Builder
+    {
+        return $query
+            ->whereIn('status', self::userVisibleStatuses())
+            ->whereHas('assignedUsers', fn (Builder $query): Builder => $query->where('user_id', $user->id));
     }
 }

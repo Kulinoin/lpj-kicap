@@ -5,6 +5,19 @@
 
 ---
 
+## 0. Keputusan Revisi 20 Juni 2026
+
+Data model MVP mengikuti keputusan terbaru:
+
+1. LPJ hanya dibuat oleh Admin.
+2. Kolom izin `can_create_lpj` tidak digunakan untuk User pada MVP baru, atau bernilai `false` untuk User.
+3. Status LPJ disederhanakan menjadi `draft`, `aktif`, `finish`, `arsipkan`.
+4. Query LPJ untuk PWA User hanya mengambil LPJ yang ditugaskan dengan status `aktif` atau `finish`.
+5. Auth memakai satu halaman login dan redirect berdasarkan role.
+6. Remember-me harus didukung oleh session/auth layer.
+
+---
+
 ## 1. Prinsip Data Model
 
 Data model harus mendukung:
@@ -38,7 +51,7 @@ Data model harus mendukung:
 | password | Password |
 | role | admin/user |
 | is_active | Status aktif |
-| can_create_lpj | Izin membuat LPJ |
+| can_create_lpj | Legacy/opsional; User MVP bernilai false karena LPJ hanya dibuat Admin |
 | can_transfer_balance | Izin transfer saldo |
 | created_at | Waktu dibuat |
 | updated_at | Waktu update |
@@ -107,7 +120,7 @@ Tipe awal:
 | lpj_type_id | Tipe LPJ |
 | created_by | Pembuat |
 | person_in_charge_id | Penanggung jawab |
-| status | draft/dalam_pengisian/diajukan/perlu_revisi/disetujui/final/diarsipkan |
+| status | draft/aktif/finish/arsipkan |
 | completeness_status | belum_lengkap/siap_review/siap_finalisasi |
 | start_date | Tanggal mulai |
 | end_date | Tanggal selesai |
@@ -516,4 +529,3 @@ Klaim internal dana talangan.
 | after_values | Data sesudah |
 | note | Catatan |
 | created_at | Waktu dibuat |
-

@@ -5,18 +5,32 @@
 
 ---
 
+## 0. Keputusan Revisi 20 Juni 2026
+
+Keputusan ini menggantikan workflow lama yang bertentangan:
+
+1. LPJ hanya dibuat oleh Admin.
+2. User hanya input kebutuhan operasional pada LPJ yang ditugaskan.
+3. Status LPJ MVP: `draft`, `aktif`, `finish`, `arsipkan`.
+4. User hanya melihat LPJ `aktif` dan `finish`.
+5. Login satu halaman, lalu redirect berdasarkan role.
+6. `Ingat saya` harus membuat sesi login lebih tahan lama terutama di HP.
+
+---
+
 ## 1. Workflow Besar
 
 ```text
-Admin membuat/membuka LPJ
+Admin membuat LPJ draft
 → Admin mengatur user bertugas
+→ Admin mengaktifkan LPJ
 → Admin memberi dana pegangan
 → User mencatat transaksi/dokumentasi/catatan lapangan
 → User bisa transfer saldo antar user jika perlu
 → User bisa mencatat dana talangan pribadi
 → Admin review transaksi dan kelengkapan
-→ Admin meminta revisi atau menyetujui
-→ Admin finalisasi
+→ Admin melakukan rekonsiliasi/closing
+→ Admin menyelesaikan LPJ
 → Sistem generate dokumen LPJ global
 ```
 
@@ -26,19 +40,18 @@ Admin membuat/membuka LPJ
 
 1. Login.
 2. Mengatur profil lembaga.
-3. Membuat LPJ/kegiatan baru.
+3. Membuat LPJ/kegiatan baru sebagai draft.
 4. Memilih tipe LPJ.
 5. Mengatur user yang bertugas.
-6. Memberikan dana pegangan ke user.
-7. Memantau transaksi dan saldo.
-8. Melihat riwayat transfer saldo antar user.
-9. Review transaksi.
-10. Review kelengkapan LPJ.
-11. Meminta revisi jika perlu.
-12. Menyetujui LPJ.
-13. Melakukan rekonsiliasi/closing.
-14. Finalisasi LPJ.
-15. Export PDF.
+6. Mengubah status LPJ menjadi aktif saat siap diisi User.
+7. Memberikan dana pegangan ke user.
+8. Memantau transaksi dan saldo.
+9. Melihat riwayat transfer saldo antar user.
+10. Review transaksi.
+11. Review kelengkapan LPJ.
+12. Melakukan rekonsiliasi/closing.
+13. Mengubah status LPJ menjadi finish.
+14. Export PDF.
 
 ---
 
@@ -54,7 +67,7 @@ Admin membuat/membuka LPJ
 8. Upload dokumentasi.
 9. Catat kejadian/kendala.
 10. Lengkapi bagian kegiatan.
-11. Ajukan LPJ ke Admin.
+11. Melihat LPJ finish secara read-only sesuai izin.
 
 ---
 
@@ -63,10 +76,12 @@ Admin membuat/membuka LPJ
 ### 4.1 Buat LPJ
 
 ```text
-Admin/User memilih Buat LPJ
+Admin memilih Buat LPJ
 Pilih tipe LPJ
 Isi data dasar kegiatan
 Sistem membuat LPJ Draft
+Admin menugaskan User
+Admin mengubah status ke Aktif saat LPJ siap diisi User
 ```
 
 Data dasar:
@@ -359,13 +374,11 @@ Rekonsiliasi membantu memastikan saldo user beres sebelum finalisasi LPJ.
 ## 16. Workflow Finalisasi LPJ
 
 ```text
-LPJ Siap Review
+LPJ Aktif
 Admin review semua bagian
-Admin meminta revisi atau menyetujui
-Jika disetujui:
-  Status = Disetujui
-Admin melakukan finalisasi
-Status = Final
+Admin melakukan rekonsiliasi/closing
+Admin menyelesaikan LPJ
+Status = finish
 Dokumen dikunci
 PDF dapat dibuat
 ```
@@ -375,7 +388,7 @@ PDF dapat dibuat
 ## 17. Workflow Export Dokumen
 
 ```text
-LPJ Final
+LPJ finish
 Admin/User membuka preview
 Sistem menampilkan print-ready view
 Sistem generate PDF
@@ -399,4 +412,3 @@ PDF tidak menampilkan default:
 - Reimbursement.
 - Audit trail.
 - Transaksi ditolak.
-

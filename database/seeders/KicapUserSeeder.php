@@ -30,7 +30,7 @@ class KicapUserSeeder extends Seeder
                 'password' => 'password',
                 'role' => User::ROLE_USER,
                 'is_active' => true,
-                'can_create_lpj' => true,
+                'can_create_lpj' => false,
                 'can_transfer_balance' => true,
             ]
         );

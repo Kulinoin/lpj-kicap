@@ -24,13 +24,21 @@ Status: pondasi awal.
 - Vite dev server: http://127.0.0.1:5230
 - MySQL host port: 127.0.0.1:3460
 
-### Login seed awal
+### Login
 
-- Admin: admin@kicap.id
-- User: user@kicap.id
-- Password: password
+Kicap LPJ memakai satu halaman login berbasis role.
 
-Catatan: role detail Admin/User akan dirapikan di Slice 01.
+- Admin diarahkan ke `/admin`.
+- User diarahkan ke `/app`.
+- Login menerima username/email dan password.
+- Checkbox `Ingat saya` wajib berfungsi, terutama untuk user HP.
+
+Seed awal:
+
+- Admin: admin@kicap.id / password
+- User: user@kicap.id / password
+
+Catatan: Slice 01 direvisi dan akan dikerjakan ulang untuk mengunci login tunggal, role, status LPJ sederhana, dan UI baseline.
 
 ### Menjalankan aplikasi
 
@@ -67,7 +75,15 @@ git remote -v
 
 ### Catatan UI
 
-Frontend Kicap LPJ diarahkan menjadi mobile-first seperti aplikasi HP. Menu dibuat ringkas, fungsional, dan mewakili workflow utama, bukan sidebar/menu yang terlalu banyak.
+Frontend Kicap LPJ diarahkan menjadi mobile-first seperti aplikasi HP. User PWA memakai bottom navigation mengambang, responsive untuk HP/tablet, dan tema visual yang cocok dengan logo Kicap.
+
+Admin panel dibuat responsive full-width agar halaman table/resource tidak terasa sempit atau menyisakan ruang kosong berlebihan.
+
+Archive validasi slice disimpan di:
+
+```text
+docs/archive/
+```
 
 ## phpMyAdmin lokal
 

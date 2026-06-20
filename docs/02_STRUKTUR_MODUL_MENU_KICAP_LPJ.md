@@ -6,6 +6,21 @@
 
 ---
 
+## 0. Keputusan Revisi 20 Juni 2026
+
+Jika ada konflik dengan struktur lama, gunakan keputusan berikut:
+
+1. LPJ hanya dibuat oleh Admin.
+2. User tidak memiliki menu `Buat LPJ`.
+3. Status LPJ MVP: `draft`, `aktif`, `finish`, `arsipkan`.
+4. Halaman user hanya menampilkan LPJ `aktif` dan `finish`.
+5. Login hanya satu halaman untuk semua role.
+6. User PWA memakai bottom navigation mengambang, responsive untuk HP dan tablet.
+7. Admin panel dibuat responsive full-width agar tabel/resource tidak terasa sempit.
+8. Tema visual boleh dipilih bebas selama cocok dengan logo Kicap, nyaman, dan memotivasi.
+
+---
+
 ## 1. Prinsip Struktur Menu
 
 1. Admin menggunakan Filament/backoffice.
@@ -126,10 +141,8 @@ Menu group:
 Data LPJ
   - Semua LPJ
   - LPJ Draft
-  - LPJ Diajukan
-  - LPJ Perlu Revisi
-  - LPJ Disetujui
-  - LPJ Final
+  - LPJ Aktif
+  - LPJ Finish
   - Arsip LPJ
 ```
 
@@ -327,25 +340,41 @@ Dashboard Saya
 Fungsi:
 
 - Melihat LPJ yang ditugaskan.
-- Membuat LPJ jika diberi izin.
 - Melengkapi data kegiatan.
 - Mengajukan review.
+- Membuka LPJ finish secara read-only sesuai izin.
 
 Menu group:
 
 ```text
 LPJ Saya
-  - Semua LPJ Saya
-  - Buat LPJ
-  - Draft
-  - Perlu Revisi
-  - Diajukan
-  - Final
+  - Aktif
+  - Finish
 ```
 
 Catatan:
 
-- Status bisa dibuat sebagai tab/filter agar menu PWA tetap ringkas.
+- Status dibuat sebagai tab/filter agar menu PWA tetap ringkas.
+- LPJ draft dan arsip tidak tampil di PWA user.
+
+### 3.2.1 Bottom Navigation User
+
+Menu utama user ditampilkan sebagai bottom navigation mengambang:
+
+```text
+Beranda
+LPJ
+Catat
+Saldo
+Akun
+```
+
+Catatan:
+
+- `Catat` menjadi akses cepat untuk transaksi, bukti, dokumentasi, transfer saldo, dan dana talangan.
+- Bottom navigation harus nyaman dipakai di HP dan tetap proporsional di tablet.
+- Hindari sidebar untuk user PWA.
+- Gunakan warna aktif yang jelas, touch target besar, dan kontras yang nyaman.
 
 ---
 
@@ -494,7 +523,7 @@ Fungsi:
 
 - Preview bagian LPJ.
 - Cek kelengkapan.
-- Ajukan review ke Admin.
+- Melihat rangkuman LPJ aktif/finish sesuai izin.
 
 Menu:
 
@@ -551,15 +580,23 @@ Export Dokumen
 ## 5. Ringkasan Menu User
 
 ```text
-Dashboard Saya
-LPJ Saya
-Catat Cepat
-Saldo Saya
+Beranda
+LPJ
+Catat
+Saldo
+Akun
+```
+
+Subfitur user tetap tersedia dari halaman terkait:
+
+```text
+LPJ Aktif
+LPJ Finish
 Catat Pengeluaran
 Transfer Saldo
 Dana Talangan
+Upload Bukti/Foto
 Dokumentasi
 Catatan Kegiatan
 Preview LPJ
 ```
-

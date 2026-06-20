@@ -12,6 +12,33 @@
 
 ---
 
+## 0. Revisi Terkunci 20 Juni 2026
+
+Keputusan berikut menggantikan bagian lama yang bertentangan, tanpa mengubah konsep utama aplikasi:
+
+1. LPJ hanya dibuat oleh Admin.
+2. User/petugas hanya mengisi kebutuhan operasional pada LPJ yang ditugaskan.
+3. Status LPJ MVP disederhanakan menjadi:
+
+```text
+draft
+aktif
+finish
+arsipkan
+```
+
+4. Halaman user hanya menampilkan LPJ berstatus `aktif` dan `finish`.
+5. Login menggunakan satu halaman untuk semua role.
+6. Setelah login, sistem mengarahkan Admin ke panel Admin dan User ke PWA.
+7. Fitur `Ingat saya` wajib tersedia dan berjalan, terutama untuk user HP agar tidak sering login ulang.
+8. User PWA menggunakan layout responsive mobile/tablet dengan bottom navigation mengambang.
+9. Admin panel dibuat responsive dan full-width, tidak terlalu banyak ruang kosong kiri-kanan.
+10. Tema visual dipilih agar cocok dengan logo Kicap, lebih eye-catching, nyaman, dan memotivasi user; tidak wajib mengikuti warna hijau pada contoh login.
+11. Archive project disimpan di dalam `docs/archive/`.
+12. Slice 01 di-reset dan dikerjakan ulang mengikuti keputusan revisi ini.
+
+---
+
 ## 1. Ringkasan Konsep
 
 Kicap LPJ adalah aplikasi **PWA mobile-first** untuk membantu user lapangan mencatat kegiatan, transaksi operasional, dokumentasi, bukti kegiatan, saldo pegangan user, transfer saldo antar user, dana talangan, dan klaim/reimbursement secara cepat.
@@ -63,8 +90,13 @@ Output akhir berupa dokumen LPJ resmi yang rapi, formal, dan mudah dibaca. Detai
 | Stack | Laravel + React PWA + Filament |
 | Database | MySQL untuk implementasi awal |
 | Role MVP | Admin + User |
+| Pembuat LPJ | Admin saja |
+| Tugas User | Input operasional pada LPJ aktif/finish yang ditugaskan |
 | Super Admin | Tidak dimunculkan di MVP umum |
 | Tipe LPJ | Berbasis tipe kegiatan |
+| Status LPJ MVP | draft, aktif, finish, arsipkan |
+| Login | Satu halaman login berbasis role |
+| Ingat saya | Aktif dan wajib berjalan untuk sesi tahan lama |
 | Template narasi | Otomatis berdasarkan tipe LPJ, editable |
 | Saldo user | Ada saldo pegangan/operasional per user |
 | Transfer saldo | Antar user, langsung tercatat tanpa approval Admin |
@@ -75,6 +107,10 @@ Output akhir berupa dokumen LPJ resmi yang rapi, formal, dan mudah dibaca. Detai
 | Cover | Formal bersih |
 | Kop surat | Kop lengkap hanya di halaman pengesahan/awal sesuai template |
 | Halaman isi | Footer + nomor halaman |
+| UI User | Mobile/tablet responsive dengan bottom navigation mengambang |
+| UI Admin | Responsive full-width |
+| Tema visual | Brand accent merah/coral, aksen pendukung teal/amber, dasar netral terang |
+| Archive | `docs/archive/` |
 | Workflow kerja | Manual chat, vertical slice, archive sebelum commit/push |
 | Codex | Tidak digunakan sampai user konfirmasi eksplisit |
 
@@ -210,4 +246,3 @@ Tidak tampil default:
 6. Jangan gunakan `git add .`.
 7. Hindari asumsi.
 8. Cek versi package dan signature sebelum implementasi.
-

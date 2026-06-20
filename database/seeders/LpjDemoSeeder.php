@@ -27,7 +27,7 @@ class LpjDemoSeeder extends Seeder
                 'lpj_type_id' => $type->id,
                 'created_by' => $admin->id,
                 'person_in_charge_id' => $user->id,
-                'status' => Lpj::STATUS_DRAFT,
+                'status' => Lpj::STATUS_AKTIF,
                 'completeness_status' => Lpj::COMPLETENESS_BELUM_LENGKAP,
                 'start_date' => now()->toDateString(),
                 'end_date' => now()->toDateString(),

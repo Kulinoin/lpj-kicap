@@ -9,6 +9,33 @@
 
 ---
 
+## 0. Keputusan Revisi 20 Juni 2026
+
+Bagian ini menjadi acuan terbaru jika ada konflik dengan teks PRD lama.
+
+1. LPJ hanya dibuat oleh Admin.
+2. User/petugas tidak membuat LPJ; User hanya mengisi data operasional pada LPJ yang ditugaskan.
+3. Status LPJ MVP hanya:
+
+```text
+draft
+aktif
+finish
+arsipkan
+```
+
+4. Di halaman user, LPJ yang tampil hanya status `aktif` dan `finish`.
+5. Status `draft` dan `arsipkan` adalah area kerja Admin.
+6. Status `finish` bersifat terkunci untuk input operasional User, kecuali nanti ada keputusan unlock khusus.
+7. Login memakai satu halaman untuk Admin dan User.
+8. Setelah login, Admin diarahkan ke panel Admin dan User diarahkan ke PWA.
+9. Opsi `Ingat saya` wajib berjalan agar user HP tidak sering login ulang.
+10. User PWA menggunakan bottom navigation mengambang dan tetap nyaman di HP/tablet.
+11. Admin panel dibuat responsive full-width.
+12. Tema warna dipilih agar cocok dengan logo Kicap, nyaman, eye-catching, dan memotivasi; tidak wajib mengikuti warna hijau contoh login.
+
+---
+
 ## 1. Ringkasan Produk
 
 Kicap LPJ adalah aplikasi PWA mobile-first untuk membantu lembaga, panitia, tim pendamping, atau organisasi membuat Laporan Pertanggungjawaban secara lebih cepat dan rapi.
@@ -106,7 +133,7 @@ User adalah petugas lapangan, panitia, bendahara kegiatan, pendamping, atau oran
 
 Tugas User:
 
-- Membuat LPJ baru jika diberi izin.
+- Mengisi data operasional pada LPJ yang ditugaskan.
 - Mengisi data kegiatan.
 - Mencatat transaksi.
 - Upload bukti/nota.
@@ -122,32 +149,28 @@ Tugas User:
 
 ## 6. Status LPJ
 
-Status LPJ:
+Status LPJ MVP:
 
 ```text
-Draft
-Dalam Pengisian
-Diajukan
-Perlu Revisi
-Disetujui
-Final
-Diarsipkan
+draft
+aktif
+finish
+arsipkan
 ```
 
 Alur:
 
 ```text
-Draft → Dalam Pengisian → Diajukan → Perlu Revisi / Disetujui → Final → Diarsipkan
+draft → aktif → finish → arsipkan
 ```
 
 Aturan:
 
-1. Draft dan Dalam Pengisian masih dapat diedit.
-2. Diajukan berarti LPJ siap direview Admin.
-3. Perlu Revisi berarti Admin mengembalikan LPJ.
-4. Disetujui berarti isi LPJ sudah lolos review.
-5. Final berarti LPJ dikunci dan siap menjadi dokumen resmi.
-6. Diarsipkan berarti LPJ tidak aktif tetapi tetap tersimpan.
+1. `draft` dibuat dan dikelola Admin sebelum LPJ dibuka untuk user.
+2. `aktif` berarti LPJ berjalan dan dapat diisi User yang ditugaskan.
+3. `finish` berarti LPJ selesai, dikunci dari input operasional User, dan siap menjadi dasar output resmi.
+4. `arsipkan` berarti LPJ tidak aktif tetapi tetap tersimpan untuk Admin.
+5. User hanya melihat LPJ status `aktif` dan `finish`.
 
 ---
 
@@ -479,9 +502,9 @@ Word tidak wajib untuk MVP. Jika tidak terlalu berat, export Word boleh masuk fi
 Fitur wajib MVP:
 
 1. PWA mobile-first.
-2. Login Admin dan User.
+2. Login tunggal Admin/User berbasis role.
 3. Profil lembaga.
-4. Buat LPJ/kegiatan baru.
+4. Admin membuat LPJ/kegiatan baru.
 5. Tipe LPJ.
 6. Template latar belakang otomatis editable.
 7. Template maksud dan tujuan otomatis editable.
@@ -499,6 +522,10 @@ Fitur wajib MVP:
 19. Layout dokumen formal.
 20. Export PDF.
 21. Autosave draft ringan.
+22. Opsi `Ingat saya` pada login.
+23. Bottom navigation mengambang untuk user PWA.
+24. Admin panel responsive full-width.
+25. Tema visual yang cocok dengan logo dan nyaman untuk penggunaan harian.
 
 ---
 
@@ -517,4 +544,3 @@ Fitur post-MVP:
 - Export Excel lengkap.
 - Notifikasi lanjutan.
 - Import peserta dari Excel.
-

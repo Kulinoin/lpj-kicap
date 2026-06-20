@@ -5,6 +5,19 @@
 
 ---
 
+## 0. Keputusan Revisi 20 Juni 2026
+
+Jika ada konflik dengan bagian lama, gunakan aturan berikut:
+
+1. LPJ hanya dibuat oleh Admin.
+2. User tidak memiliki permission membuat LPJ.
+3. User hanya input operasional pada LPJ `aktif` yang ditugaskan.
+4. User dapat melihat LPJ `finish` yang ditugaskan secara read-only sesuai izin.
+5. Status LPJ MVP: `draft`, `aktif`, `finish`, `arsipkan`.
+6. Login satu halaman untuk Admin dan User, redirect berdasarkan role.
+
+---
+
 ## 1. Prinsip Permission
 
 1. Permission dibuat sederhana berbasis role.
@@ -55,7 +68,7 @@ Hak User:
 |---|---|
 | Dashboard saya | Lihat |
 | LPJ saya | Lihat |
-| Buat LPJ | Bisa jika diberi izin |
+| Buat LPJ | Tidak |
 | Data kegiatan | Isi/edit sesuai status |
 | Narasi | Isi/edit sebelum final |
 | Transaksi | Buat/edit sesuai status |
@@ -82,7 +95,7 @@ Hak User:
 | Kelola user | Ya | Tidak |
 | Kelola tipe LPJ | Ya | Tidak |
 | Kelola template narasi | Ya | Tidak |
-| Buat LPJ | Ya | Ya, jika diberi izin |
+| Buat LPJ | Ya | Tidak |
 | Lihat semua LPJ | Ya | Tidak |
 | Lihat LPJ sendiri/ditugaskan | Ya | Ya |
 | Edit LPJ draft | Ya | Ya, miliknya/ditugaskan |
@@ -114,69 +127,49 @@ Hak User:
 
 ## 5. Permission Berdasarkan Status LPJ
 
-### Draft
+### draft
 
 | Aksi | Admin | User |
 |---|---|---|
-| Edit data dasar | Ya | Ya |
-| Edit narasi | Ya | Ya |
-| Tambah transaksi | Ya | Ya |
-| Upload bukti | Ya | Ya |
-| Upload dokumentasi | Ya | Ya |
-| Ajukan review | Ya | Ya |
+| Membuat LPJ | Ya | Tidak |
+| Edit data dasar | Ya | Tidak |
+| Edit narasi | Ya | Tidak |
+| Menugaskan user | Ya | Tidak |
+| Memberi dana pegangan | Ya | Tidak |
+| Tampil di PWA user | Tidak | Tidak |
 | Export resmi | Tidak | Tidak |
 
-### Dalam Pengisian
+### aktif
 
 | Aksi | Admin | User |
 |---|---|---|
-| Edit data | Ya | Ya |
-| Tambah transaksi | Ya | Ya |
-| Transfer saldo | Ya | Ya |
-| Catat talangan | Ya | Ya |
-| Ajukan review | Ya | Ya |
-
-### Diajukan
-
-| Aksi | Admin | User |
-|---|---|---|
-| Review | Ya | Tidak |
-| Edit besar | Ya | Tidak, kecuali dikembalikan |
-| Tambah catatan revisi | Ya | Tidak |
+| Edit data | Ya | Ya, jika ditugaskan |
+| Tambah transaksi | Ya | Ya, jika ditugaskan |
+| Upload bukti | Ya | Ya, jika ditugaskan |
+| Upload dokumentasi | Ya | Ya, jika ditugaskan |
+| Transfer saldo | Ya | Ya, jika diizinkan |
+| Catat talangan | Ya | Ya, jika ditugaskan |
+| Review transaksi | Ya | Tidak |
+| Rekonsiliasi | Ya | Tidak |
 | Export resmi | Tidak | Tidak |
 
-### Perlu Revisi
+### finish
 
 | Aksi | Admin | User |
 |---|---|---|
-| Melihat alasan revisi | Ya | Ya |
-| Edit data yang direvisi | Ya | Ya |
-| Ajukan ulang | Ya | Ya |
-
-### Disetujui
-
-| Aksi | Admin | User |
-|---|---|---|
-| Finalisasi | Ya | Tidak |
-| Edit | Terbatas | Tidak |
-| Preview | Ya | Ya |
-| Export resmi | Opsional | Opsional |
-
-### Final
-
-| Aksi | Admin | User |
-|---|---|---|
-| Edit | Tidak, kecuali buka lock khusus | Tidak |
+| Edit operasional | Tidak, kecuali unlock khusus | Tidak |
+| Preview | Ya | Ya, jika ditugaskan/diizinkan |
 | Export PDF | Ya | Ya, jika diizinkan |
+| Tampil di PWA user | Ya | Ya, jika ditugaskan |
 | Arsipkan | Ya | Tidak |
 
-### Diarsipkan
+### arsipkan
 
 | Aksi | Admin | User |
 |---|---|---|
-| Lihat | Ya | Ya, jika terkait |
+| Lihat | Ya | Tidak default |
 | Edit | Tidak | Tidak |
-| Export ulang | Ya | Ya, jika diizinkan |
+| Export ulang | Ya | Tidak default |
 
 ---
 
@@ -203,4 +196,3 @@ Aturan permission:
 4. Admin memverifikasi klaim internalnya.
 5. Pembayaran klaim tidak menambah pengeluaran LPJ.
 6. Klaim tidak tampil default di LPJ akhir.
-

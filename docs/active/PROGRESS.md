@@ -38,55 +38,52 @@ Status: Implementasi + patch cache + patch timezone + patch PHPUnit tests + vali
 - Master LPJ.
 - Data model LPJ.
 
-### Next Slice
+### Next Slice Revisi
 
-Slice 01 — Master LPJ & Role.
+Slice 01 — Master LPJ, Role, Login, dan UI Baseline.
 
 ## Slice 01 — Master LPJ & Role
 
-- Menambahkan role MVP Admin/User.
-- Menambahkan izin dasar user: aktif, boleh membuat LPJ, boleh transfer saldo.
-- Menambahkan profil lembaga awal.
-- Menambahkan master tipe LPJ awal.
-- Menambahkan struktur awal LPJ/kegiatan.
-- Menambahkan penugasan user ke LPJ.
-- Menambahkan seed user, profil lembaga, tipe LPJ, dan LPJ demo.
-- Menambahkan endpoint awal `/api/master/lpj-types`.
-- Menambahkan test Slice 01.
-- Resource Filament dibuat lewat generator berdasarkan versi package terpasang.
+Status: Reset dan akan dikerjakan ulang dari awal.
 
-### Patch Slice 01 — Username/Email Login & Profile
+Alasan reset:
 
-- Menambahkan login menggunakan username/email lewat custom Laravel Auth provider.
-- Menambahkan username pada user.
-- Menambahkan WhatsApp user.
-- Menambahkan foto profile user.
-- Mengunci username dan email pada halaman profile.
-- Nama lengkap memakai field `name`.
-- Menambahkan halaman Profil Saya di Filament.
-- Menambahkan test patch login/profile.
+- LPJ hanya dibuat oleh Admin.
+- User hanya input operasional.
+- Status LPJ disederhanakan menjadi `draft`, `aktif`, `finish`, `arsipkan`.
+- User hanya melihat LPJ `aktif` dan `finish`.
+- Login menjadi satu halaman berbasis role.
+- `Ingat saya` wajib berjalan.
+- User PWA memakai bottom navigation mengambang.
+- Admin panel dibuat full-width.
 
-### Patch Login Form Username
+Target baru tercatat di `docs/active/SLICE_01_MASTER_LPJ_ROLE.md`.
 
-- Mengganti form login Filament agar menerima username/email.
-- Menghapus constraint email-only pada input login.
-- Menambahkan test custom login form dan provider username/email.
+## Slice 01 Revisi — Implementasi 2026-06-20
 
-### Patch Profile Dropdown Modal
+Status: Implementasi + validasi otomatis PASS, menunggu review manual user sebelum commit/push.
 
-- Memindahkan profile dari sidebar ke user dropdown kanan atas.
-- Menambahkan modal profile dari user menu.
-- Menyembunyikan halaman MyProfile dari navigation/sidebar.
-- Username dan email tetap terkunci.
+Selesai:
 
-### Patch Avatar Sync & Password Profile
+- Login tunggal Admin/User memakai field username/email dan password.
+- Redirect role setelah login: Admin ke `/admin`, User ke `/app`.
+- Checkbox `Ingat saya` dipertahankan dan teruji menghasilkan remember token.
+- User role ditolak dari panel Admin.
+- Status LPJ dikunci ke `draft`, `aktif`, `finish`, `arsipkan`.
+- Seed user MVP: Admin dapat membuat LPJ, User/Pendamping tidak dapat membuat LPJ.
+- Endpoint PWA `/api/app/lpjs` hanya menampilkan LPJ assigned berstatus `aktif` dan `finish`.
+- Admin resource LPJ memakai pilihan status terkunci dan assignment user.
+- Admin panel memakai layout full-width.
+- User PWA baseline responsive dengan bottom navigation mengambang.
 
-- Memindahkan foto profil ke bagian paling atas modal profile.
-- Menyinkronkan foto profil dengan avatar pojok kanan atas.
-- Menambahkan field ganti password di bagian bawah modal profile.
-- Menambahkan test avatar dan password profile.
+Validasi otomatis PASS:
 
-### Patch Center Profile Photo
+- `php artisan migrate:fresh --seed`
+- `php artisan test` — 26 tests, 59 assertions
+- `php artisan route:list --path=admin`
+- `cmd.exe /c "cd /d D:\kulino\lpj-kicap && npm.cmd run build"`
 
-- Memusatkan posisi foto profil pada modal profile.
-- Memusatkan posisi foto profil pada fallback page profile.
+Catatan runtime:
+
+- `npm run build` dari bash gagal karena `npm` Windows tidak bisa membaca shim Vite Linux.
+- Build PASS setelah `npm install --ignore-scripts` lewat Windows npm melengkapi optional native dependency Rolldown, lalu build dijalankan via `cmd.exe`.

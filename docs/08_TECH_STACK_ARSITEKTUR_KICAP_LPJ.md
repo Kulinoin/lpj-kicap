@@ -7,6 +7,26 @@
 
 ---
 
+## 0. Keputusan Revisi 20 Juni 2026
+
+1. Login aplikasi memakai satu halaman branded Kicap LPJ untuk Admin dan User.
+2. Login menerima username/email dan password.
+3. Checkbox `Ingat saya` wajib terhubung ke mekanisme remember-me Laravel.
+4. Setelah login, redirect berdasarkan role:
+
+```text
+Admin -> /admin
+User  -> /app
+```
+
+5. User yang mencoba membuka `/admin` diarahkan/ditolak sesuai guard role.
+6. User PWA memakai responsive layout dengan bottom navigation mengambang.
+7. Admin Filament dibuat responsive full-width agar konten table/resource memakai lebar layar.
+8. Archive validasi slice disimpan di `docs/archive/`.
+9. Tema visual mengikuti arah brand Kicap, bukan menyalin warna hijau contoh login secara wajib.
+
+---
+
 ## 1. Stack yang Dikunci
 
 | Bagian | Teknologi |
@@ -80,7 +100,7 @@ React PWA digunakan untuk user lapangan:
 
 ```text
 [React PWA User]
-      ↓ API
+      ↓ Login/API
 [Laravel API + Business Logic]
       ↓
 [MySQL Database]
@@ -93,6 +113,8 @@ React PWA digunakan untuk user lapangan:
       ↓
 [Laravel Models + Services]
 ```
+
+Login menggunakan entry point tunggal sebelum redirect ke PWA atau Admin panel.
 
 ---
 
@@ -182,6 +204,42 @@ Fitur PWA MVP:
 7. Upload foto dari kamera HP.
 8. Preview dokumen.
 9. Offline sync kompleks belum masuk MVP.
+10. Bottom navigation mengambang.
+11. Responsive untuk HP dan tablet.
+
+## 6.1 Login MVP
+
+Konsep login:
+
+```text
+Satu halaman login Kicap LPJ
+Logo di atas
+Field Username / Email
+Field Password
+Checkbox Ingat saya
+Tombol Login
+Footer versi dan copyright
+```
+
+Aturan:
+
+1. Desain mengikuti struktur referensi screenshot user: background lembut, kartu login putih di tengah, logo Kicap, field jelas, checkbox `Ingat saya`, tombol utama, dan footer versi/copyright.
+2. Warna akhir dipilih agar cocok dengan logo Kicap dan terasa eye-catching, nyaman, serta memotivasi.
+3. Arah palet awal:
+
+```text
+Brand accent: merah/coral selaras logo
+Action/positive: teal segar
+Highlight: amber hangat
+Surface: putih dan netral terang
+Text: slate/abu gelap
+```
+
+4. Hindari tampilan yang terlalu monoton satu warna.
+5. `Ingat saya` harus aktif secara fungsional, bukan hanya tampilan.
+6. Admin diarahkan ke `/admin`.
+7. User diarahkan ke `/app`.
+8. Sesi User HP dibuat nyaman agar tidak sering login ulang selama remember-me aktif.
 
 ---
 
@@ -222,7 +280,7 @@ Output:
 - PDF.
 - Print-ready HTML view.
 
-PDF final hanya dapat dibuat untuk LPJ status Final.
+PDF resmi/final hanya dapat dibuat untuk LPJ status `finish`.
 
 ---
 
@@ -293,4 +351,3 @@ Slice 00 harus:
 9. Health check.
 10. Archive.
 11. Commit/push setelah user validasi.
-

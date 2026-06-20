@@ -4,13 +4,29 @@
 
 ---
 
+## 0. Keputusan Revisi 20 Juni 2026
+
+Roadmap ini mengikuti revisi:
+
+1. Slice 01 di-reset dan dikerjakan ulang dari awal.
+2. LPJ hanya dibuat oleh Admin.
+3. User hanya input operasional.
+4. Status LPJ MVP: `draft`, `aktif`, `finish`, `arsipkan`.
+5. User hanya melihat LPJ `aktif` dan `finish`.
+6. Login tunggal berbasis role dengan remember-me aktif.
+7. User PWA memakai bottom navigation mengambang.
+8. Admin panel dibuat full-width.
+9. Archive disimpan di `docs/archive/`.
+
+---
+
 ## 1. Aturan Pengerjaan
 
 1. Gunakan vertical slice.
 2. Tiap slice harus punya target jelas.
 3. Tiap slice harus bisa divalidasi.
 4. Update dokumen setiap slice.
-5. Buat archive setelah validasi pass.
+5. Buat archive di `docs/archive/` setelah validasi pass.
 6. Commit dan push setelah user menyetujui.
 7. Jangan `git add .`; stage file sesuai scope.
 8. Jangan lanjut jika ada error.
@@ -59,34 +75,43 @@ Validasi:
 Target:
 
 - Role Admin/User.
+- Login tunggal berbasis role.
+- Remember-me aktif.
 - Profil lembaga.
 - Tipe LPJ.
-- Status LPJ.
+- Status LPJ sederhana: draft/aktif/finish/arsipkan.
 - Struktur awal data kegiatan.
 - Data user seed.
+- Admin membuat LPJ.
+- User hanya melihat LPJ aktif/finish yang ditugaskan.
+- Admin panel full-width.
 
 Hasil:
 
 - Admin bisa mengelola master dasar.
-- LPJ/kegiatan bisa dibuat secara awal.
+- Admin bisa membuat LPJ/kegiatan secara awal.
 - Role MVP aktif.
+- User tidak bisa membuat LPJ.
+- User PWA punya pondasi menu bawah mengambang.
 
 Validasi:
 
 - Admin login.
 - User login.
+- Login remember-me tersedia.
 - Admin melihat menu master.
 - User tidak melihat menu Admin.
 - Tipe LPJ tersedia.
+- User hanya melihat LPJ aktif/finish yang ditugaskan.
 
 ---
 
-## 4. Slice 02 — LPJ Wizard Mobile
+## 4. Slice 02 — LPJ Detail & Input Mobile
 
 Target:
 
-- Wizard buat LPJ.
-- Input data dasar kegiatan.
+- Halaman detail LPJ aktif untuk User.
+- Input/lengkapi data kegiatan sesuai penugasan.
 - Template narasi otomatis.
 - Narasi editable.
 - Draft/autosave ringan.
@@ -94,13 +119,14 @@ Target:
 
 Hasil:
 
-- User bisa membuat LPJ dari HP.
+- User bisa melengkapi LPJ aktif dari HP.
 - Narasi awal otomatis terbentuk.
 
 Validasi:
 
-- Buat LPJ tipe Event.
-- Buat LPJ tipe Pendampingan.
+- Admin membuat LPJ tipe Event dan mengaktifkannya.
+- Admin membuat LPJ tipe Pendampingan dan mengaktifkannya.
+- User melihat LPJ aktif yang ditugaskan.
 - Narasi berbeda sesuai tipe.
 - Narasi bisa diedit.
 - Draft tersimpan.
@@ -271,4 +297,3 @@ Fitur lanjutan:
 - Export Excel lengkap.
 - Notifikasi lanjutan.
 - Import peserta dari Excel.
-

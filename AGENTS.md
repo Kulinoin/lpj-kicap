@@ -2,11 +2,11 @@
 
 Dokumen ini berisi aturan kerja untuk AI assistant/agent yang membantu pengembangan Kicap LPJ.
 
-**Project:** Kicap LPJ  
-**Lembaga awal:** PT. Kazoku Indonesia Center  
-**Jenis lembaga:** Lembaga Pelatihan Kerja  
-**Repo lokal:** `D:\kulino\lpj-kicap`  
-**WSL path:** `/mnt/d/kulino/lpj-kicap`  
+**Project:** Kicap LPJ
+**Lembaga awal:** PT. Kazoku Indonesia Center
+**Jenis lembaga:** Lembaga Pelatihan Kerja
+**Repo lokal:** `D:\kulino\lpj-kicap`
+**WSL path:** `/mnt/d/kulino/lpj-kicap`
 **GitHub SSH:** `git@github.com:Kulinoin/lpj-kicap.git`
 
 ---
