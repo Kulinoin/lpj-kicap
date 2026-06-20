@@ -35,7 +35,7 @@ class OrganizationProfileForm
                     ->imageEditor()
                     ->openable()
                     ->downloadable()
-                    ->helperText('Dipakai pada cover dan kop LPJ. Logo aplikasi tetap hardcode di public/icons/kicap-lpj.svg, public/favicon.ico, dan konfigurasi PWA vite.config.js.'),
+                    ->helperText('Dipakai pada cover dan kop LPJ. Logo aplikasi tetap hardcode di public/icons/kicap-event-logo.svg, public/favicon.ico, dan konfigurasi PWA vite.config.js.'),
                 TextInput::make('footer_text'),
                 TextInput::make('default_city'),
                 TextInput::make('leader_name'),

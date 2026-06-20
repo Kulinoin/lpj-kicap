@@ -14,6 +14,9 @@ use App\Filament\Resources\LpjUserBalances\LpjUserBalanceResource;
 use App\Filament\Resources\OrganizationProfiles\OrganizationProfileResource;
 use App\Filament\Resources\StorageSettings\StorageSettingResource;
 use App\Filament\Resources\Users\UserResource;
+use App\Filament\Pages\AdminDashboard;
+use App\Filament\Widgets\AdminOverviewStats;
+use App\Filament\Widgets\LatestEventsTable;
 use Filament\Actions\Action;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\TextInput;
@@ -22,13 +25,11 @@ use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
 use Filament\Http\Middleware\DispatchServingFilamentEvent;
 use Filament\Notifications\Notification;
-use Filament\Pages\Dashboard;
 use Filament\Panel;
 use Filament\PanelProvider;
 use Filament\Support\Colors\Color;
 use Filament\Support\Enums\Width;
-use Filament\Widgets\AccountWidget;
-use Filament\Widgets\FilamentInfoWidget;
+use Filament\View\PanelsRenderHook;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
 use Illuminate\Cookie\Middleware\EncryptCookies;
 use Illuminate\Foundation\Http\Middleware\PreventRequestForgery;
@@ -47,10 +48,15 @@ class AdminPanelProvider extends PanelProvider
             ->id('admin')
             ->path('admin')
             ->brandName('Kicap Event')
-            ->favicon('/icons/kicap-lpj.svg')
+            ->favicon('/icons/kicap-event-logo.svg')
             ->maxContentWidth(Width::Full)
             ->simplePageMaxContentWidth(Width::Large)
             ->login(Login::class)
+            ->renderHook(
+                PanelsRenderHook::STYLES_AFTER,
+                fn (): string => view('filament.auth.login-polish')->render(),
+                Login::class,
+            )
             ->userMenuItems([
                 'profile' => Action::make('profile')
                     ->label('Profil Saya')
@@ -174,12 +180,11 @@ class AdminPanelProvider extends PanelProvider
                 UserResource::class,
             ])
             ->pages([
-                Dashboard::class,
+                AdminDashboard::class,
             ])
-            ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\Filament\Widgets')
             ->widgets([
-                AccountWidget::class,
-                FilamentInfoWidget::class,
+                AdminOverviewStats::class,
+                LatestEventsTable::class,
             ])
             ->middleware([
                 EncryptCookies::class,

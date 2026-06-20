@@ -21,11 +21,15 @@ export default defineConfig(({ mode }) => {
             react(),
             VitePWA({
                 registerType: 'autoUpdate',
-                includeAssets: ['favicon.ico', 'icons/kicap-lpj.svg'],
+                includeAssets: [
+                    'favicon.ico',
+                    'icons/kicap-event-logo.svg',
+                    'icons/kicap-event-apple-touch.png',
+                ],
                 manifest: {
                     name: 'Kicap Event',
                     short_name: 'Kicap Event',
-                    description: 'Aplikasi PWA mobile-first untuk Laporan Pertanggungjawaban.',
+                    description: 'Aplikasi PWA mobile-first untuk pengelolaan Event/Kegiatan dan output LPJ.',
                     start_url: '/app',
                     scope: '/',
                     display: 'standalone',
@@ -33,9 +37,21 @@ export default defineConfig(({ mode }) => {
                     theme_color: '#0f766e',
                     icons: [
                         {
-                            src: '/icons/kicap-lpj.svg',
+                            src: '/icons/kicap-event-logo.svg',
                             sizes: 'any',
                             type: 'image/svg+xml',
+                            purpose: 'any maskable',
+                        },
+                        {
+                            src: '/icons/kicap-event-192.png',
+                            sizes: '192x192',
+                            type: 'image/png',
+                            purpose: 'any maskable',
+                        },
+                        {
+                            src: '/icons/kicap-event-512.png',
+                            sizes: '512x512',
+                            type: 'image/png',
                             purpose: 'any maskable',
                         },
                     ],

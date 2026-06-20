@@ -1,5 +1,55 @@
 # Worklog Kicap Event
 
+## 2026-06-21 — Slice 07 MVP Polish User PWA
+
+- Memoles User PWA mengikuti brief UI Kicap Event dan screenshot referensi dashboard, daftar event, dan profil.
+- Mengubah Beranda User menjadi ringkasan mobile-first: sapaan, avatar menuju Profil, nama lembaga, indikator online/offline, statistik Aktif/Selesai/Tugas, maksimal dua Event Aktif, dan transaksi terakhir.
+- Menambahkan layar Daftar Event di dalam PWA dengan search client-side, tab filter `Semua/Aktif/Selesai/Tugas`, kartu event ber-accent bar, badge status, progress, dan chevron.
+- Merapikan Profil User menjadi layar profil dengan avatar besar, statistik, menu Personal Information, Activity History, Settings, dan Logout.
+- Avatar profil langsung upload saat dipilih; Personal Information autosave ringan saat blur/back; Settings password memakai password lama sebelum update.
+- Menata ulang bottom navigation User menjadi `Beranda`, `Operasional`, `Keuangan`, `Dokumentasi`, `Catatan` dengan tombol tengah Keuangan sebagai aksi visual utama.
+- Memperluas payload `/api/app/lpjs` dengan role penugasan, jumlah peserta, progress ringkas, dan transaksi terakhir dari data nyata.
+- Memperluas payload `/api/app/profile` dengan nama lembaga, role label, dan tahun member.
+- Menjaga guardrail: tidak mengubah login, role Admin/User, status event, transfer saldo, PDF LPJ final, atau schema/model internal `lpj`.
+- Validasi PASS: `npm run build`.
+- Validasi PASS: `php -l routes/web.php`.
+- Validasi PASS: `php artisan test tests/Feature/Slice01UsernameLoginFormTest.php tests/Feature/Slice02LpjDetailMobileInputTest.php tests/Feature/Slice03OperationalFinanceTest.php tests/Feature/Slice04ExecutionDocumentationTest.php` — 28 tests, 126 assertions.
+- Validasi PASS: `php artisan test tests/Feature/Slice05ReviewFinalizationTest.php tests/Feature/Slice06ReportGenerationTest.php` — 7 tests, 53 assertions.
+- Validasi PASS: `php artisan migrate:fresh --seed -n`.
+- Validasi PASS: `php artisan route:list --path=api/app` dan `php artisan route:list --path=app`.
+- Validasi PASS: `php artisan test tests/Feature/HealthCheckTest.php` — 3 tests, 4 assertions.
+- Validasi PASS: `php artisan test` — 53 tests, 222 assertions.
+- Validasi PASS: `git diff --check`.
+- Visual smoke: Playwright memakai Chrome lokal berhasil membuka login dan masuk sebagai `user@kicap.id`, lalu merender Beranda/Daftar Event/Profil. Catatan runtime: PHP local server merespons lambat sekitar 25 detik untuk request awal, sehingga validasi utama tetap memakai artisan/test/build.
+
+### Follow-up Review User 2026-06-21
+
+- Mengunci sapaan atas Beranda agar menampilkan nama depan user satu kata, bukan role.
+- Menghapus tombol teks `Kembali` di detail event karena header sudah memiliki ikon kembali dengan fungsi yang sama.
+- Memoles tampilan login Filament mengikuti screenshot referensi: background mint/ice, card putih centered, ikon aplikasi, field rounded, checkbox `Ingat saya`, tombol teal gradient, dan footer versi/copyright.
+- Menambahkan placeholder login `Masukkan username/email` dan `Masukkan password`.
+- Mengubah label tombol submit login menjadi `Login`.
+- Menghilangkan frame/kotak hitam pada login dan memakai mark login transparan tanpa pembungkus kotak.
+- Mengecilkan tinggi field input login agar lebih proporsional dengan placeholder.
+- Memperbaiki rasio card/form login agar tidak terlihat gepeng: card responsif 27rem, input full-width, dan logo 80x80 proporsional.
+- Mengubah footer login menjadi `V2.4.1 © 2026 Kulino` dengan font tipis.
+- Menambahkan kolom Avatar pada tabel Admin `Users`.
+- Mengganti dashboard default Filament dengan dashboard Kicap Event berisi statistik operasional dan tabel Event Terbaru.
+- Menambahkan daftar direktori aset favicon/logo/PWA pada `docs/active/APP_ASSET_GUIDE.md`.
+- Mengganti favicon dan logo aplikasi dengan aset resmi Kicap dari folder `D:/kulino/Logo`.
+- Menyesuaikan nama file aset aplikasi menjadi `kicap-event-logo.svg`, `kicap-event-192.png`, `kicap-event-512.png`, dan `kicap-event-apple-touch.png`.
+- Menambahkan panduan deploy VPS domain `lpj.kicap.id` via repo GitHub di `docs/deploy/VPS_LPJ_KICAP_ID_DEPLOY.md`.
+- Validasi PASS: syntax `Login.php` dan `AdminPanelProvider.php`.
+- Validasi PASS: `php artisan test tests/Feature/Slice01UsernameLoginFormTest.php tests/Feature/Slice01ProfileLoginPatchTest.php` — 14 tests, 38 assertions.
+- Validasi PASS: `npm run build`.
+- Validasi PASS: `php artisan route:list --path=admin/login`.
+- Validasi PASS: syntax file dashboard/widget/user table.
+- Validasi PASS: `php artisan route:list --path=admin`.
+- Validasi PASS: `php artisan test tests/Feature/Slice01UsernameLoginFormTest.php tests/Feature/Slice01ProfileLoginPatchTest.php tests/Feature/Slice01MasterLpjRoleTest.php` — 21 tests, 62 assertions.
+- Validasi PASS: Livewire smoke `AdminDashboard` dan `ListUsers`.
+- Validasi PASS: visual smoke login via Chrome lokal, card 432px, input 379px x 44px, logo 80px x 80px.
+- Validasi PASS: `git diff --check`.
+
 ## 2026-06-21 — Slice 06 Follow-up R2, Logo LPJ, dan Catatan User
 
 - Melanjutkan implementasi Cloudflare R2 dengan resource Admin `Pengaturan Penyimpanan`.

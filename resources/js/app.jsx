@@ -3,12 +3,15 @@ import { createRoot } from 'react-dom/client';
 import {
     ArrowLeft,
     Banknote,
+    Building2,
     CalendarDays,
     Camera,
     CheckCircle2,
+    ChevronRight,
     ClipboardList,
     Clock3,
     FileText,
+    History,
     Home,
     LockKeyhole,
     LogOut,
@@ -19,11 +22,15 @@ import {
     Printer,
     ReceiptText,
     Save,
+    Search,
     Send,
+    Settings,
     UploadCloud,
     UserRound,
     UsersRound,
     Wallet,
+    Wifi,
+    WifiOff,
 } from 'lucide-react';
 import { registerSW } from 'virtual:pwa-register';
 import '../css/app.css';
@@ -32,10 +39,10 @@ registerSW({ immediate: true });
 
 const navItems = [
     { key: 'beranda', label: 'Beranda', icon: Home },
-    { key: 'catatan', label: 'Catatan', icon: FileText },
+    { key: 'operasional', label: 'Operasional', icon: PlusCircle },
     { key: 'keuangan', label: 'Keuangan', icon: Wallet, isPrimary: true },
     { key: 'dokumentasi', label: 'Dokumentasi', icon: Camera },
-    { key: 'operasional', label: 'Operasional', icon: PlusCircle },
+    { key: 'catatan', label: 'Catatan', icon: FileText },
 ];
 
 const emptyProfile = {
@@ -43,6 +50,9 @@ const emptyProfile = {
     username: '',
     email: '',
     whatsapp: '',
+    role_label: 'Petugas Lapangan',
+    organization_name: 'PT. Kazoku Indonesia Center',
+    member_since: '',
     avatar_url: null,
 };
 
@@ -151,6 +161,47 @@ function formatCurrency(value) {
     }).format(value ?? 0);
 }
 
+function formatShortDateRange(lpj) {
+    const options = { day: '2-digit', month: 'short' };
+
+    if (!lpj.start_date && !lpj.end_date) {
+        return 'Tanggal belum diisi';
+    }
+
+    const start = lpj.start_date ? new Date(lpj.start_date) : null;
+    const end = lpj.end_date ? new Date(lpj.end_date) : null;
+
+    if (!start || !end || lpj.start_date === lpj.end_date) {
+        return (start ?? end)?.toLocaleDateString('id-ID', options) ?? 'Tanggal belum diisi';
+    }
+
+    return `${start.toLocaleDateString('id-ID', options)} - ${end.toLocaleDateString('id-ID', {
+        ...options,
+        year: 'numeric',
+    })}`;
+}
+
+function initials(name) {
+    return (name || 'User')
+        .split(' ')
+        .filter(Boolean)
+        .slice(0, 2)
+        .map((part) => part.charAt(0).toUpperCase())
+        .join('');
+}
+
+function firstName(name) {
+    return (name || 'Petugas').trim().split(/\s+/)[0] || 'Petugas';
+}
+
+function statusClass(status) {
+    return status === 'finish' ? 'finish' : status === 'aktif' ? 'aktif' : 'draft';
+}
+
+function statusAccent(status) {
+    return status === 'finish' ? 'finish' : status === 'aktif' ? 'aktif' : 'draft';
+}
+
 function rowsOrEmpty(rows, emptyRow) {
     return rows?.length ? rows.map((row) => ({ ...emptyRow, ...row })) : [{ ...emptyRow }];
 }
@@ -164,6 +215,7 @@ function KicapApp() {
     const [profileForm, setProfileForm] = useState({
         name: '',
         whatsapp: '',
+        current_password: '',
         password: '',
         password_confirmation: '',
     });
@@ -182,6 +234,10 @@ function KicapApp() {
     const [operationalSaveMessage, setOperationalSaveMessage] = useState('');
     const [activeNav, setActiveNav] = useState('beranda');
     const [galleryPreview, setGalleryPreview] = useState(null);
+    const [isOnline, setIsOnline] = useState(navigator.onLine);
+    const [eventSearch, setEventSearch] = useState('');
+    const [eventFilter, setEventFilter] = useState('tugas');
+    const [profileView, setProfileView] = useState('home');
 
     useEffect(() => {
         let isMounted = true;
@@ -210,6 +266,7 @@ function KicapApp() {
                 setProfileForm({
                     name: nextProfile.name ?? '',
                     whatsapp: nextProfile.whatsapp ?? '',
+                    current_password: '',
                     password: '',
                     password_confirmation: '',
                 });
@@ -228,6 +285,22 @@ function KicapApp() {
 
         return () => {
             isMounted = false;
+        };
+    }, []);
+
+    useEffect(() => {
+        const updateStatus = () => setIsOnline(navigator.onLine);
+
+        window.addEventListener('online', updateStatus);
+        window.addEventListener('offline', updateStatus);
+
+        fetch('/health', { headers: { Accept: 'application/json' } })
+            .then((response) => setIsOnline(response.ok && navigator.onLine))
+            .catch(() => setIsOnline(false));
+
+        return () => {
+            window.removeEventListener('online', updateStatus);
+            window.removeEventListener('offline', updateStatus);
         };
     }, []);
 
@@ -368,10 +441,13 @@ function KicapApp() {
 
         setProfilePhoto(file);
         setProfilePhotoPreview(file ? URL.createObjectURL(file) : null);
+
+        if (file) {
+            submitProfile({ photo: file, message: 'Foto profil tersimpan' });
+        }
     };
 
-    const handleProfileSubmit = (event) => {
-        event.preventDefault();
+    const submitProfile = ({ photo = profilePhoto, includePassword = false, message = 'Profil tersimpan' } = {}) => {
         setIsSavingProfile(true);
         setProfileMessage('');
 
@@ -379,11 +455,12 @@ function KicapApp() {
         formData.append('name', profileForm.name);
         formData.append('whatsapp', profileForm.whatsapp);
 
-        if (profilePhoto) {
-            formData.append('profile_photo', profilePhoto);
+        if (photo) {
+            formData.append('profile_photo', photo);
         }
 
-        if (profileForm.password) {
+        if (includePassword && profileForm.password) {
+            formData.append('current_password', profileForm.current_password);
             formData.append('password', profileForm.password);
             formData.append('password_confirmation', profileForm.password_confirmation);
         }
@@ -412,17 +489,48 @@ function KicapApp() {
                 setProfileForm({
                     name: nextProfile.name ?? '',
                     whatsapp: nextProfile.whatsapp ?? '',
+                    current_password: '',
                     password: '',
                     password_confirmation: '',
                 });
-                setProfileMessage('Profil tersimpan');
+                setProfileMessage(message);
             })
-            .catch(() => {
-                setProfileMessage('Profil belum tersimpan');
+            .catch((error) => {
+                const firstMessage = Object.values(error?.errors ?? {})?.[0]?.[0];
+                setProfileMessage(firstMessage ?? 'Profil belum tersimpan');
             })
             .finally(() => {
                 setIsSavingProfile(false);
             });
+    };
+
+    const handleProfileSubmit = (event) => {
+        event.preventDefault();
+        submitProfile();
+    };
+
+    const saveProfileFromSubpage = () => {
+        if (profileView === 'settings') {
+            if (!profileForm.current_password && !profileForm.password && !profileForm.password_confirmation) {
+                setProfileView('home');
+                return;
+            }
+
+            if (!profileForm.current_password || !profileForm.password || profileForm.password !== profileForm.password_confirmation) {
+                setProfileMessage('Lengkapi password lama dan pastikan konfirmasi cocok');
+                return;
+            }
+
+            submitProfile({ includePassword: true, message: 'Password tersimpan' });
+            setProfileView('home');
+            return;
+        }
+
+        if (profileView === 'personal') {
+            submitProfile();
+        }
+
+        setProfileView('home');
     };
 
     const updateFinanceForm = (formKey, field, value) => {
@@ -601,6 +709,7 @@ function KicapApp() {
         return {
             active: lpjs.filter((lpj) => lpj.status === 'aktif').length,
             finished: lpjs.filter((lpj) => lpj.status === 'finish').length,
+            assigned: lpjs.length,
         };
     }, [lpjs]);
 
@@ -608,20 +717,33 @@ function KicapApp() {
     const finishedLpjs = useMemo(() => lpjs.filter((lpj) => lpj.status === 'finish'), [lpjs]);
     const avatarSource = profilePhotoPreview ?? profile.avatar_url;
     const isHomeNav = activeNav === 'beranda';
+    const isEventsNav = activeNav === 'events';
+    const isProfileNav = activeNav === 'profil';
     const isNotesNav = activeNav === 'catatan';
     const isOperationalNav = activeNav === 'operasional';
     const isFinanceNav = activeNav === 'keuangan';
     const isDocumentationNav = activeNav === 'dokumentasi';
-    const showDetail = (isHomeNav || isNotesNav || isOperationalNav || isFinanceNav || isDocumentationNav) && selectedLpjId;
+    const showDetail = (isHomeNav || isEventsNav || isNotesNav || isOperationalNav || isFinanceNav || isDocumentationNav) && selectedLpjId;
     const pageTitle = showDetail
         ? {
             beranda: 'Detail Event',
+            events: 'Detail Event',
             catatan: 'Catatan petugas',
             operasional: 'Pelaksanaan event',
             keuangan: 'Dana kegiatan',
             dokumentasi: 'Dokumentasi event',
         }[activeNav] ?? 'Detail Event'
-        : 'Ruang kerja petugas';
+        : isEventsNav
+            ? 'Daftar Event'
+            : isProfileNav
+                ? profileView === 'home'
+                    ? 'Profil'
+                    : profileView === 'personal'
+                        ? 'Personal Information'
+                        : profileView === 'settings'
+                            ? 'Settings'
+                            : 'Activity History'
+                : 'Beranda';
     const visibleLpjs = useMemo(() => {
         const sortByWorkPriority = (items) => [...items].sort((left, right) => {
             const leftActive = left.status === 'aktif' ? 0 : 1;
@@ -644,6 +766,39 @@ function KicapApp() {
 
         return sortByWorkPriority([...activeLpjs, ...finishedLpjs]);
     }, [activeLpjs, activeNav, finishedLpjs]);
+
+    const dashboardEvents = useMemo(() => activeLpjs.slice(0, 2), [activeLpjs]);
+    const latestTransaction = useMemo(() => {
+        return lpjs
+            .map((lpj) => ({ ...lpj.latest_transaction, event_title: lpj.title }))
+            .find((transaction) => transaction?.category);
+    }, [lpjs]);
+
+    const filteredEvents = useMemo(() => {
+        const query = eventSearch.trim().toLowerCase();
+
+        return lpjs
+            .filter((lpj) => {
+                if (eventFilter === 'aktif') {
+                    return lpj.status === 'aktif';
+                }
+
+                if (eventFilter === 'selesai') {
+                    return lpj.status === 'finish';
+                }
+
+                return true;
+            })
+            .filter((lpj) => {
+                if (!query) {
+                    return true;
+                }
+
+                return [lpj.title, lpj.location, lpj.type, lpj.code]
+                    .filter(Boolean)
+                    .some((value) => value.toLowerCase().includes(query));
+            });
+    }, [eventFilter, eventSearch, lpjs]);
 
     const lpjHeading = {
         beranda: 'Event terbaru',
@@ -684,6 +839,19 @@ function KicapApp() {
 
     const handleNavChange = (navKey) => {
         setActiveNav(navKey);
+        setProfileView('home');
+        clearSelectedLpj();
+    };
+
+    const openProfile = () => {
+        setActiveNav('profil');
+        setProfileView('home');
+        clearSelectedLpj();
+    };
+
+    const openEventList = () => {
+        setActiveNav('events');
+        setEventFilter('tugas');
         clearSelectedLpj();
     };
 
@@ -835,23 +1003,59 @@ function KicapApp() {
 
     return (
         <main className="mobile-shell">
-            <header className="app-header">
-                <div className="brand-mark">
-                    <img src="/icons/kicap-lpj.svg" alt="" />
+            <header className={`app-header ${isHomeNav && !showDetail ? 'home-header' : 'compact-header'}`}>
+                {isHomeNav && !showDetail ? (
+                    <>
+                        <button className="avatar-button" type="button" onClick={openProfile} aria-label="Buka profil">
+                            {avatarSource ? <img src={avatarSource} alt="" /> : <span>{initials(profile.name)}</span>}
+                        </button>
+                        <div>
+                            <p className="section-kicker">Halo, {firstName(profile.name)}!</p>
+                            <h1>{profile.organization_name || 'PT. Kazoku Indonesia Center'}</h1>
+                        </div>
+                    </>
+                ) : (
+                    <>
+                        <button
+                            className="icon-back-button"
+                            type="button"
+                            onClick={() => {
+                                if (showDetail) {
+                                    closeLpjDetail();
+                                    return;
+                                }
+
+                                if (isProfileNav && profileView !== 'home') {
+                                    saveProfileFromSubpage();
+                                    return;
+                                }
+
+                                handleNavChange('beranda');
+                            }}
+                            aria-label="Kembali"
+                        >
+                            <ArrowLeft size={20} strokeWidth={2.4} />
+                        </button>
+                        <h1>{pageTitle}</h1>
+                    </>
+                )}
+
+                <div className="header-actions">
+                    <span className={`online-dot ${isOnline ? 'online' : 'offline'}`} title={isOnline ? 'Online' : 'Offline'}>
+                        {isOnline ? <Wifi size={13} strokeWidth={2.6} /> : <WifiOff size={13} strokeWidth={2.6} />}
+                    </span>
+                    {!isHomeNav && !isProfileNav && (
+                        <button className="avatar-button small" type="button" onClick={openProfile} aria-label="Buka profil">
+                            {avatarSource ? <img src={avatarSource} alt="" /> : <span>{initials(profile.name)}</span>}
+                        </button>
+                    )}
                 </div>
-                <div>
-                    <p className="section-kicker">Kicap Event</p>
-                    <h1>{pageTitle}</h1>
-                </div>
-                <button className="logout-button" type="button" onClick={handleLogout} aria-label="Keluar">
-                    <LogOut size={18} strokeWidth={2.4} />
-                </button>
             </header>
 
-            {activeNav !== 'profil' && !showDetail && (
+            {isHomeNav && !showDetail && (
                 <>
                     <section className="summary-grid" aria-label="Ringkasan event">
-                        <article className="summary-tile coral">
+                        <article className="summary-tile blue">
                             <div className="summary-icon">
                                 <ClipboardList size={18} strokeWidth={2.5} />
                             </div>
@@ -869,11 +1073,145 @@ function KicapApp() {
                             <div className="summary-icon">
                                 <UsersRound size={18} strokeWidth={2.5} />
                             </div>
-                            <span>Ditugaskan</span>
-                            <strong>{lpjs.length}</strong>
+                            <span>Tugas</span>
+                            <strong>{totals.assigned}</strong>
                         </article>
                     </section>
 
+                    <section className="lpj-section home-events-section">
+                        <div className="section-heading">
+                            <div>
+                                <h2>Event Aktif</h2>
+                            </div>
+                            <button className="see-all-button" type="button" onClick={openEventList}>
+                                Lihat Semua
+                            </button>
+                        </div>
+
+                        <div className="lpj-list">
+                            {isLoading && <div className="empty-state">Memuat event...</div>}
+
+                            {!isLoading && dashboardEvents.length === 0 && (
+                                <div className="empty-state">Belum ada event aktif yang ditugaskan.</div>
+                            )}
+
+                            {!isLoading &&
+                                dashboardEvents.map((lpj) => (
+                                    <button
+                                        className={`event-card ${statusAccent(lpj.status)}`}
+                                        key={lpj.id}
+                                        type="button"
+                                        onClick={() => openLpjDetail(lpj.id)}
+                                    >
+                                        <div className="event-card-top">
+                                            <span className={`status-pill ${statusClass(lpj.status)}`}>{lpj.status_label}</span>
+                                            <span className="event-date">{formatShortDateRange(lpj)}</span>
+                                        </div>
+                                        <h3>{lpj.title}</h3>
+                                        <p>{lpj.location ?? '-'} • {lpj.participant_count ?? 0} Peserta</p>
+                                        <div className="progress-row">
+                                            <span>{lpj.progress_label ?? 'Kelengkapan Lapangan'}</span>
+                                            <b>{lpj.progress_percentage ?? 0}%</b>
+                                        </div>
+                                        <div className="progress-track">
+                                            <span style={{ width: `${lpj.progress_percentage ?? 0}%` }} />
+                                        </div>
+                                    </button>
+                                ))}
+                        </div>
+                    </section>
+
+                    <button
+                        className="last-activity-card"
+                        type="button"
+                        onClick={() => latestTransaction && handleNavChange('keuangan')}
+                    >
+                        <span className="activity-icon">
+                            <History size={17} strokeWidth={2.4} />
+                        </span>
+                        <span>
+                            <b>Transaksi Terakhir</b>
+                            {latestTransaction
+                                ? `${latestTransaction.category} - ${formatCurrency(latestTransaction.amount)} (${latestTransaction.status_label})`
+                                : 'Belum ada transaksi terbaru'}
+                        </span>
+                        <ChevronRight size={16} strokeWidth={2.5} />
+                    </button>
+                </>
+            )}
+
+            {isEventsNav && !showDetail && (
+                <>
+                    <label className="search-box">
+                        <Search size={17} strokeWidth={2.4} />
+                        <input
+                            placeholder="Cari nama event..."
+                            value={eventSearch}
+                            onChange={(event) => setEventSearch(event.target.value)}
+                        />
+                    </label>
+
+                    <div className="event-filter-tabs" role="tablist" aria-label="Filter event">
+                        {[
+                            ['semua', 'Semua'],
+                            ['aktif', 'Aktif'],
+                            ['selesai', 'Selesai'],
+                            ['tugas', 'Tugas'],
+                        ].map(([key, label]) => (
+                            <button
+                                className={eventFilter === key ? 'is-active' : ''}
+                                key={key}
+                                type="button"
+                                onClick={() => setEventFilter(key)}
+                            >
+                                {label}
+                            </button>
+                        ))}
+                    </div>
+
+                    <div className="event-list-screen">
+                        {isLoading && <div className="empty-state">Memuat event...</div>}
+                        {!isLoading && filteredEvents.length === 0 && (
+                            <div className="empty-state">Event tidak ditemukan.</div>
+                        )}
+                        {!isLoading &&
+                            filteredEvents.map((lpj) => (
+                                <button
+                                    className={`event-list-card ${statusAccent(lpj.status)}`}
+                                    key={lpj.id}
+                                    type="button"
+                                    onClick={() => openLpjDetail(lpj.id)}
+                                >
+                                    <div>
+                                        <div className="event-list-title">
+                                            <h3>{lpj.title}</h3>
+                                            <span className={`status-pill ${statusClass(lpj.status)}`}>{lpj.status_label}</span>
+                                        </div>
+                                        <span className="event-list-meta">
+                                            <CalendarDays size={14} strokeWidth={2.3} />
+                                            {formatShortDateRange(lpj)}
+                                        </span>
+                                        <span className="event-list-meta">
+                                            <MapPin size={14} strokeWidth={2.3} />
+                                            {lpj.location ?? 'Belum ditentukan'}
+                                        </span>
+                                        <div className="progress-row">
+                                            <span>{lpj.progress_label ?? 'Kelengkapan Lapangan'}</span>
+                                            <b>{lpj.progress_percentage ?? 0}%</b>
+                                        </div>
+                                        <div className="progress-line">
+                                            <span style={{ width: `${lpj.progress_percentage ?? 0}%` }} />
+                                        </div>
+                                    </div>
+                                    <ChevronRight size={18} strokeWidth={2.5} />
+                                </button>
+                            ))}
+                    </div>
+                </>
+            )}
+
+            {!isHomeNav && !isEventsNav && !isProfileNav && !showDetail && (
+                <>
                     <section className="lpj-section">
                         <div className="section-heading">
                             <div>
@@ -892,49 +1230,26 @@ function KicapApp() {
                             {!isLoading &&
                                 visibleLpjs.map((lpj) => (
                                     <button
-                                        className="lpj-card"
+                                        className={`event-list-card compact ${statusAccent(lpj.status)}`}
                                         key={lpj.id}
                                         type="button"
                                         onClick={() => openLpjDetail(lpj.id)}
                                     >
-                                        <div className="lpj-card-top">
-                                            <span className={`status-pill ${lpj.status}`}>{lpj.status_label}</span>
-                                            <span className="lpj-code">{lpj.code}</span>
-                                        </div>
-                                        <h3>{lpj.title}</h3>
-                                        <p className="lpj-type">{lpj.type ?? '-'}</p>
-                                        <div className="meta-list">
-                                            <span>
-                                                <CalendarDays size={15} strokeWidth={2.4} />
-                                                {formatDateRange(lpj)}
+                                        <div>
+                                            <div className="event-list-title">
+                                                <h3>{lpj.title}</h3>
+                                                <span className={`status-pill ${statusClass(lpj.status)}`}>{lpj.status_label}</span>
+                                            </div>
+                                            <span className="event-list-meta">
+                                                <CalendarDays size={14} strokeWidth={2.3} />
+                                                {formatShortDateRange(lpj)}
                                             </span>
-                                            <span>
-                                                <MapPin size={15} strokeWidth={2.4} />
-                                                {lpj.location ?? '-'}
+                                            <span className="event-list-meta">
+                                                <MapPin size={14} strokeWidth={2.3} />
+                                                {lpj.location ?? 'Belum ditentukan'}
                                             </span>
                                         </div>
-                                        <span className="open-detail-label">
-                                            {isFinanceNav ? (
-                                                <Wallet size={14} strokeWidth={2.4} />
-                                            ) : isDocumentationNav ? (
-                                                <Camera size={14} strokeWidth={2.4} />
-                                            ) : isNotesNav ? (
-                                                <FileText size={14} strokeWidth={2.4} />
-                                            ) : isOperationalNav ? (
-                                                <UsersRound size={14} strokeWidth={2.4} />
-                                            ) : (
-                                                <ClipboardList size={14} strokeWidth={2.4} />
-                                            )}
-                                            {isFinanceNav
-                                                ? 'Buka keuangan'
-                                                : isDocumentationNav
-                                                    ? 'Buka dokumentasi'
-                                                    : isNotesNav
-                                                        ? 'Buka catatan'
-                                                        : isOperationalNav
-                                                            ? 'Buka pelaksanaan'
-                                                            : 'Buka detail'}
-                                        </span>
+                                        <ChevronRight size={18} strokeWidth={2.5} />
                                     </button>
                                 ))}
                         </div>
@@ -944,11 +1259,6 @@ function KicapApp() {
 
             {showDetail && (
                 <section className="detail-panel">
-                    <button className="back-button" type="button" onClick={closeLpjDetail}>
-                        <ArrowLeft size={17} strokeWidth={2.5} />
-                        Kembali
-                    </button>
-
                     {isDetailLoading && <div className="empty-state">Memuat detail event...</div>}
 
                     {!isDetailLoading && !selectedLpj && (
@@ -1934,89 +2244,177 @@ function KicapApp() {
                 </section>
             )}
 
-            {activeNav === 'profil' && (
+            {isProfileNav && (
                 <section className="profile-panel">
-                    <form className="profile-form" onSubmit={handleProfileSubmit}>
-                        <div className="profile-hero">
-                            <label className="avatar-picker">
-                                {avatarSource ? (
-                                    <img src={avatarSource} alt="" />
-                                ) : (
-                                    <UserRound size={42} strokeWidth={2.2} />
-                                )}
-                                <span>
-                                    <Camera size={15} strokeWidth={2.4} />
-                                </span>
-                                <input accept="image/*" type="file" onChange={handleProfilePhotoChange} />
-                            </label>
-                            <div>
+                    {profileView === 'home' && (
+                        <>
+                            <div className="profile-hero-card">
+                                <label className="avatar-picker large">
+                                    {avatarSource ? (
+                                        <img src={avatarSource} alt="" />
+                                    ) : (
+                                        <span>{initials(profile.name)}</span>
+                                    )}
+                                    <b>
+                                        <Camera size={15} strokeWidth={2.4} />
+                                    </b>
+                                    <input accept="image/*" type="file" onChange={handleProfilePhotoChange} />
+                                </label>
                                 <h2>{profile.name || 'Pengguna'}</h2>
-                                <p>{profile.email}</p>
-                                <small>@{profile.username}</small>
+                                <p>{profile.role_label || 'Petugas'} {profile.organization_name ? `• ${profile.organization_name}` : ''}</p>
                             </div>
-                        </div>
 
-                        <label className="app-field">
-                            <span>
-                                <UserRound size={15} strokeWidth={2.4} />
-                                Nama
-                            </span>
-                            <input
-                                value={profileForm.name}
-                                onChange={(event) => setProfileForm((value) => ({ ...value, name: event.target.value }))}
-                                required
-                            />
-                        </label>
-
-                        <label className="app-field">
-                            <span>
-                                <Phone size={15} strokeWidth={2.4} />
-                                WhatsApp
-                            </span>
-                            <input
-                                inputMode="tel"
-                                value={profileForm.whatsapp}
-                                onChange={(event) =>
-                                    setProfileForm((value) => ({ ...value, whatsapp: event.target.value }))
-                                }
-                            />
-                        </label>
-
-                        <div className="password-box">
-                            <div className="password-box-title">
-                                <LockKeyhole size={16} strokeWidth={2.4} />
-                                <span>Password</span>
+                            <div className="profile-stats">
+                                <article>
+                                    <span>Events</span>
+                                    <strong>{totals.finished}</strong>
+                                    <small>Completed</small>
+                                </article>
+                                <article>
+                                    <span>Member</span>
+                                    <strong>{profile.member_since || '2024'}</strong>
+                                    <small>Active Tier</small>
+                                </article>
                             </div>
-                            <input
-                                autoComplete="new-password"
-                                placeholder="Password baru"
-                                type="password"
-                                value={profileForm.password}
-                                onChange={(event) =>
-                                    setProfileForm((value) => ({ ...value, password: event.target.value }))
-                                }
-                            />
-                            <input
-                                autoComplete="new-password"
-                                placeholder="Konfirmasi password"
-                                type="password"
-                                value={profileForm.password_confirmation}
-                                onChange={(event) =>
-                                    setProfileForm((value) => ({
-                                        ...value,
-                                        password_confirmation: event.target.value,
-                                    }))
-                                }
-                            />
+
+                            <div className="profile-menu-list">
+                                <button type="button" onClick={() => setProfileView('personal')}>
+                                    <span><UserRound size={18} strokeWidth={2.4} /></span>
+                                    Personal Information
+                                    <ChevronRight size={17} strokeWidth={2.4} />
+                                </button>
+                                <button type="button" onClick={() => setProfileView('history')}>
+                                    <span><History size={18} strokeWidth={2.4} /></span>
+                                    Activity History
+                                    <ChevronRight size={17} strokeWidth={2.4} />
+                                </button>
+                                <button type="button" onClick={() => setProfileView('settings')}>
+                                    <span><Settings size={18} strokeWidth={2.4} /></span>
+                                    Settings
+                                    <ChevronRight size={17} strokeWidth={2.4} />
+                                </button>
+                                <button className="logout-menu-button" type="button" onClick={handleLogout}>
+                                    <span><LogOut size={18} strokeWidth={2.4} /></span>
+                                    Logout
+                                </button>
+                            </div>
+
+                            {profileMessage && <div className="profile-message">{profileMessage}</div>}
+
+                            <p className="app-version">Kicap Event PWA v2.4.1</p>
+                        </>
+                    )}
+
+                    {profileView === 'personal' && (
+                        <form className="profile-form" onSubmit={handleProfileSubmit}>
+                            <label className="app-field">
+                                <span>
+                                    <UserRound size={15} strokeWidth={2.4} />
+                                    Nama
+                                </span>
+                                <input
+                                    value={profileForm.name}
+                                    onChange={(event) => setProfileForm((value) => ({ ...value, name: event.target.value }))}
+                                    onBlur={() => submitProfile()}
+                                    required
+                                />
+                            </label>
+
+                            <label className="app-field">
+                                <span>
+                                    <Phone size={15} strokeWidth={2.4} />
+                                    WhatsApp
+                                </span>
+                                <input
+                                    inputMode="tel"
+                                    value={profileForm.whatsapp}
+                                    onChange={(event) =>
+                                        setProfileForm((value) => ({ ...value, whatsapp: event.target.value }))
+                                    }
+                                    onBlur={() => submitProfile()}
+                                />
+                            </label>
+
+                            <label className="app-field readonly">
+                                <span>
+                                    <Building2 size={15} strokeWidth={2.4} />
+                                    Lembaga
+                                </span>
+                                <input value={profile.organization_name || 'PT. Kazoku Indonesia Center'} readOnly />
+                            </label>
+
+                            <label className="app-field readonly">
+                                <span>
+                                    <UserRound size={15} strokeWidth={2.4} />
+                                    Email / Username
+                                </span>
+                                <input value={`${profile.email || '-'} • @${profile.username || '-'}`} readOnly />
+                            </label>
+
+                            {profileMessage && <div className="profile-message">{profileMessage}</div>}
+                        </form>
+                    )}
+
+                    {profileView === 'settings' && (
+                        <form className="profile-form" onSubmit={(event) => {
+                            event.preventDefault();
+                            submitProfile({ includePassword: true, message: 'Password tersimpan' });
+                        }}>
+                            <div className="password-box">
+                                <div className="password-box-title">
+                                    <LockKeyhole size={16} strokeWidth={2.4} />
+                                    <span>Update password</span>
+                                </div>
+                                <input
+                                    autoComplete="current-password"
+                                    placeholder="Password lama"
+                                    type="password"
+                                    value={profileForm.current_password}
+                                    onChange={(event) =>
+                                        setProfileForm((value) => ({ ...value, current_password: event.target.value }))
+                                    }
+                                />
+                                <input
+                                    autoComplete="new-password"
+                                    placeholder="Password baru"
+                                    type="password"
+                                    value={profileForm.password}
+                                    onChange={(event) =>
+                                        setProfileForm((value) => ({ ...value, password: event.target.value }))
+                                    }
+                                />
+                                <input
+                                    autoComplete="new-password"
+                                    placeholder="Konfirmasi password baru"
+                                    type="password"
+                                    value={profileForm.password_confirmation}
+                                    onChange={(event) =>
+                                        setProfileForm((value) => ({
+                                            ...value,
+                                            password_confirmation: event.target.value,
+                                        }))
+                                    }
+                                />
+                            </div>
+
+                            {profileMessage && <div className="profile-message">{profileMessage}</div>}
+                        </form>
+                    )}
+
+                    {profileView === 'history' && (
+                        <div className="activity-history">
+                            {lpjs.map((lpj) => (
+                                <article key={lpj.id}>
+                                    <span className={`status-pill ${statusClass(lpj.status)}`}>{lpj.status_label}</span>
+                                    <div>
+                                        <strong>{lpj.title}</strong>
+                                        <small>{formatShortDateRange(lpj)} • {lpj.assignment_role}</small>
+                                    </div>
+                                </article>
+                            ))}
+                            {lpjs.length === 0 && <div className="empty-state">Belum ada riwayat event.</div>}
                         </div>
-
-                        {profileMessage && <div className="profile-message">{profileMessage}</div>}
-
-                        <button className="save-profile-button" type="submit" disabled={isSavingProfile}>
-                            <Save size={17} strokeWidth={2.5} />
-                            {isSavingProfile ? 'Menyimpan' : 'Simpan Profil'}
-                        </button>
-                    </form>
+                    )}
                 </section>
             )}
 

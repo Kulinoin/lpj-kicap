@@ -6,6 +6,7 @@ use App\Models\Lpj;
 use App\Models\LpjFinancialTransaction;
 use App\Models\LpjReportSnapshot;
 use App\Models\LpjType;
+use App\Models\OrganizationProfile;
 use App\Models\User;
 use App\Services\ActivityExecutionService;
 use App\Services\ActivityNoteService;
@@ -178,21 +179,54 @@ Route::middleware('auth')->group(function (): void {
 
         $lpjs = Lpj::query()
             ->visibleToAssignedUser($user)
-            ->with(['type:id,name', 'personInCharge:id,name'])
+            ->with([
+                'assignedUsers' => fn ($query) => $query
+                    ->where('user_id', $user->id)
+                    ->select('id', 'lpj_id', 'user_id', 'role_label'),
+                'financialTransactions' => fn ($query) => $query
+                    ->where('user_id', $user->id)
+                    ->latest()
+                    ->limit(1),
+                'type:id,name',
+                'personInCharge:id,name',
+            ])
+            ->withCount(['participants', 'documentations', 'attachments'])
             ->latest()
             ->get()
-            ->map(fn (Lpj $lpj): array => [
-                'id' => $lpj->id,
-                'code' => $lpj->code,
-                'title' => $lpj->title,
-                'type' => $lpj->type?->name,
-                'status' => $lpj->status,
-                'status_label' => Lpj::statusLabels()[$lpj->status] ?? $lpj->status,
-                'start_date' => $lpj->start_date?->toDateString(),
-                'end_date' => $lpj->end_date?->toDateString(),
-                'location' => $lpj->location,
-                'person_in_charge' => $lpj->personInCharge?->name,
-            ]);
+            ->map(function (Lpj $lpj): array {
+                $latestTransaction = $lpj->financialTransactions->first();
+                $progress = $lpj->status === Lpj::STATUS_FINISH
+                    ? 100
+                    : min(95, 30
+                        + ($lpj->participants_count > 0 ? 20 : 0)
+                        + ($lpj->documentations_count > 0 ? 20 : 0)
+                        + ($lpj->attachments_count > 0 ? 10 : 0)
+                        + ($latestTransaction ? 15 : 0));
+
+                return [
+                    'id' => $lpj->id,
+                    'code' => $lpj->code,
+                    'title' => $lpj->title,
+                    'type' => $lpj->type?->name,
+                    'status' => $lpj->status,
+                    'status_label' => Lpj::statusLabels()[$lpj->status] ?? $lpj->status,
+                    'start_date' => $lpj->start_date?->toDateString(),
+                    'end_date' => $lpj->end_date?->toDateString(),
+                    'location' => $lpj->location,
+                    'person_in_charge' => $lpj->personInCharge?->name,
+                    'assignment_role' => $lpj->assignedUsers->first()?->role_label ?? 'Petugas Lapangan',
+                    'participant_count' => $lpj->participants_count,
+                    'progress_label' => $lpj->status === Lpj::STATUS_FINISH ? 'LPJ Final' : 'Kelengkapan Lapangan',
+                    'progress_percentage' => $progress,
+                    'latest_transaction' => $latestTransaction ? [
+                        'category' => $latestTransaction->category,
+                        'description' => $latestTransaction->description,
+                        'amount' => (float) $latestTransaction->amount,
+                        'status' => $latestTransaction->status,
+                        'status_label' => LpjFinancialTransaction::statusLabels()[$latestTransaction->status] ?? $latestTransaction->status,
+                    ] : null,
+                ];
+            });
 
         return response()->json(['data' => $lpjs]);
     });
@@ -534,6 +568,9 @@ Route::middleware('auth')->group(function (): void {
                 'username' => $user->username,
                 'email' => $user->email,
                 'whatsapp' => $user->whatsapp,
+                'role_label' => 'Petugas Lapangan',
+                'organization_name' => OrganizationProfile::query()->first()?->institution_name ?? 'PT. Kazoku Indonesia Center',
+                'member_since' => $user->created_at?->format('Y'),
                 'avatar_url' => app(AppFileStorageService::class)->url($user->profile_photo_path, $user->profile_photo_disk),
             ],
         ]);
@@ -549,6 +586,7 @@ Route::middleware('auth')->group(function (): void {
             'name' => ['required', 'string', 'max:255'],
             'whatsapp' => ['nullable', 'string', 'max:30'],
             'profile_photo' => ['nullable', 'file', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
+            'current_password' => ['required_with:password', 'current_password'],
             'password' => ['nullable', 'string', 'min:8', 'confirmed'],
         ]);
 
@@ -580,6 +618,9 @@ Route::middleware('auth')->group(function (): void {
                 'username' => $user->username,
                 'email' => $user->email,
                 'whatsapp' => $user->whatsapp,
+                'role_label' => 'Petugas Lapangan',
+                'organization_name' => OrganizationProfile::query()->first()?->institution_name ?? 'PT. Kazoku Indonesia Center',
+                'member_since' => $user->created_at?->format('Y'),
                 'avatar_url' => app(AppFileStorageService::class)->url($user->profile_photo_path, $user->profile_photo_disk),
             ],
         ]);

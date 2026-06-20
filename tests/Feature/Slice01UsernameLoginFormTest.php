@@ -143,6 +143,7 @@ class Slice01UsernameLoginFormTest extends TestCase
                 'name' => 'User Operasional',
                 'whatsapp' => '08123456789',
                 'profile_photo' => UploadedFile::fake()->create('avatar.jpg', 120, 'image/jpeg'),
+                'current_password' => 'password',
                 'password' => 'password-baru',
                 'password_confirmation' => 'password-baru',
             ])

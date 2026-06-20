@@ -2,7 +2,7 @@
 
 ## Status Terakhir
 
-Slice 06 — Generate Dokumen LPJ selesai implementasi dan validasi otomatis fokus PASS pada 20 Juni 2026. Product concept rename ke Kicap Event tetap menjadi vocabulary lock: Event/Kegiatan adalah objek kerja, LPJ adalah output dokumen akhir.
+Slice 07 — MVP Polish & Siap Pakai selesai implementasi User PWA polish, admin dashboard polish, aset resmi aplikasi, dan panduan deploy VPS pada 21 Juni 2026. Product concept rename ke Kicap Event tetap menjadi vocabulary lock: Event/Kegiatan adalah objek kerja, LPJ adalah output dokumen akhir.
 
 ## Baseline Terkunci dari Slice 06
 
@@ -30,21 +30,27 @@ Slice 06 — Generate Dokumen LPJ selesai implementasi dan validasi otomatis fok
 - User menu `Operasional` fokus pada peserta, tim/panitia/pendamping, dan rundown.
 - User menu `Beranda` kembali menjadi layar awal ringkasan/daftar event.
 
-## Next Slice
+## Baseline Terkunci dari Slice 07
 
-Slice 07 — MVP Polish & Siap Pakai.
+- User PWA memakai Beranda mobile-first dengan avatar menuju Profil, sapaan, lembaga, indikator online/offline, statistik Aktif/Selesai/Tugas, Event Aktif, dan transaksi terakhir.
+- User PWA memiliki layar Daftar Event dengan search, filter `Semua/Aktif/Selesai/Tugas`, kartu event, badge status, progress, dan chevron.
+- Profil User memakai avatar besar, statistik, menu Personal Information, Activity History, Settings, dan Logout.
+- Avatar profil langsung upload saat dipilih.
+- Personal Information autosave ringan saat blur/back.
+- Settings password memakai password lama sebelum update.
+- Bottom navigation User berurutan `Beranda`, `Operasional`, `Keuangan`, `Dokumentasi`, `Catatan`.
+- Payload User PWA membawa ringkasan dari data nyata: role penugasan, jumlah peserta, progress, transaksi terakhir, lembaga, role label, dan tahun member.
+- Login memakai logo resmi Kicap dan footer `V2.4.1 © 2026 Kulino`.
+- Admin dashboard memakai dashboard operasional Kicap Event, bukan widget default Filament.
+- Admin `Users` memiliki kolom Avatar/foto profil.
+- Aset aplikasi resmi tersimpan sebagai `public/favicon.ico`, `public/icons/kicap-event-logo.svg`, `public/icons/kicap-event-192.png`, `public/icons/kicap-event-512.png`, dan `public/icons/kicap-event-apple-touch.png`.
+- Panduan deploy VPS domain `lpj.kicap.id` tersedia di `docs/deploy/VPS_LPJ_KICAP_ID_DEPLOY.md`.
 
-## Scope Awal Slice 07
+## Next Step
 
-- Polish UI mobile dan admin setelah review manual Slice 06.
-- PWA installable sanity check.
-- Validasi end-to-end dari Admin setup event/kegiatan sampai PDF LPJ final.
-- Perbaikan bug kecil yang ditemukan dari review manual.
-- Dokumentasi penggunaan MVP.
-- Checklist manual final MVP.
-- Archive final MVP.
+Deploy ke VPS mengikuti `docs/deploy/VPS_LPJ_KICAP_ID_DEPLOY.md`, lalu lakukan smoke check domain `lpj.kicap.id`.
 
-## Guardrail Slice 07
+## Guardrail Berikutnya
 
 - Jangan rename schema/model/route internal `lpj` tanpa slice teknis khusus.
 - Jangan mengubah aturan role Admin/User.
@@ -54,9 +60,11 @@ Slice 07 — MVP Polish & Siap Pakai.
 - Jangan menampilkan transfer saldo atau klaim/reimbursement di LPJ final default.
 - Jangan membiarkan total alokasi dana pegangan user melewati dana masuk event.
 
-## Validasi Rencana Slice 07
+## Validasi Manual Berikutnya
 
-- End-to-end Admin membuat event/kegiatan, assign User, input pelaksanaan/keuangan, review, finalisasi, preview, dan download PDF.
+- Review User PWA Beranda, Daftar Event, Profil, dan bottom navigation sesuai checklist Slice 07.
+- Cek favicon, logo login, apple touch icon, dan install PWA setelah domain produksi aktif.
+- End-to-end Admin membuat event/kegiatan, assign User, input pelaksanaan/keuangan, review, finalisasi, preview, dan download PDF jika user ingin audit final MVP penuh.
 - User hanya melihat event/kegiatan assigned `aktif` dan `finish`.
 - Event/kegiatan `finish` tetap read-only untuk User.
 - PDF LPJ final hanya tersedia untuk event/kegiatan `finish`.

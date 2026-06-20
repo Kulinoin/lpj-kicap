@@ -1,5 +1,29 @@
 # Checklist Manual Aktif
 
+## Slice 07 — MVP Polish User PWA
+
+- [ ] Login sebagai User dari HP/browser mobile.
+- [ ] Pastikan Beranda menampilkan avatar kecil, sapaan, nama lembaga, dan indikator online/offline.
+- [ ] Pastikan statistik `Aktif`, `Selesai`, dan `Tugas` sesuai event yang ditugaskan.
+- [ ] Pastikan Beranda hanya menampilkan ringkasan Event Aktif dan tidak terasa seperti halaman admin/backoffice.
+- [ ] Klik `Lihat Semua` dan pastikan layar `Daftar Event` terbuka.
+- [ ] Cari event lewat input `Cari nama event...`.
+- [ ] Coba filter `Semua`, `Aktif`, `Selesai`, dan `Tugas`.
+- [ ] Pastikan kartu event menampilkan status, tanggal, lokasi, progress, dan chevron.
+- [ ] Klik kartu event dari Daftar Event dan pastikan Detail Event terbuka.
+- [ ] Klik avatar dan pastikan halaman `Profil` terbuka.
+- [ ] Klik avatar besar, pilih foto, dan pastikan foto profil tersimpan.
+- [ ] Buka `Personal Information`, ubah nama/WhatsApp, kembali, dan pastikan perubahan tersimpan.
+- [ ] Buka `Settings`, update password memakai password lama, dan pastikan validasi berjalan.
+- [ ] Klik `Logout` dari Profil dan pastikan kembali ke login.
+- [ ] Pastikan bottom navigation berurutan `Beranda`, `Operasional`, `Keuangan`, `Dokumentasi`, `Catatan`.
+- [ ] Pastikan menu User tetap memakai istilah `Event`, dan `LPJ` hanya muncul untuk konteks cetak/preview dokumen akhir.
+- [ ] Pastikan User tetap tidak bisa membuat event baru atau generate PDF LPJ final.
+- [ ] Pastikan event `finish` tetap read-only untuk input User.
+- [ ] Pastikan favicon browser memakai logo Kicap resmi.
+- [ ] Pastikan logo login tidak gepeng dan memakai logo Kicap resmi tanpa kotak pembungkus.
+- [ ] Install PWA dari browser mobile dan pastikan ikon homescreen memakai logo Kicap resmi.
+
 ## Slice 06 — Generate Dokumen LPJ
 
 - [ ] Login sebagai Admin.

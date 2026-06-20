@@ -11,6 +11,45 @@ LPJ = output akhir/dokumen hasil dari event/kegiatan
 
 Catatan progres lama yang menyebut LPJ sebagai objek kerja dibaca sebagai legacy wording untuk Event/Kegiatan, kecuali konteksnya dokumen final/export/template LPJ.
 
+## Slice 07 — MVP Polish & Siap Pakai
+
+Status: Implementasi User PWA polish, admin dashboard polish, aset resmi aplikasi, dan panduan deploy VPS selesai; validasi otomatis PASS, siap commit/push.
+
+Selesai:
+
+- User PWA Beranda dipoles mengikuti brief/screenshot: sapaan, avatar menuju Profil, lembaga, online/offline indicator, statistik Aktif/Selesai/Tugas, Event Aktif, dan transaksi terakhir.
+- User PWA memiliki layar Daftar Event dengan search, filter `Semua/Aktif/Selesai/Tugas`, kartu event mobile, progress, badge status, dan chevron.
+- User Profil dipoles menjadi layar profil mobile dengan avatar besar, statistik, menu Personal Information, Activity History, Settings, dan Logout.
+- Avatar profil langsung upload saat dipilih.
+- Personal Information autosave ringan saat field blur/back.
+- Settings password memakai password lama sebelum update.
+- Bottom navigation User diurutkan sesuai brief: Beranda, Operasional, Keuangan, Dokumentasi, Catatan.
+- Payload PWA menambahkan data ringkasan berbasis data nyata: role penugasan, jumlah peserta, progress, transaksi terakhir, lembaga, role label, dan tahun member.
+- Login Filament dipoles dengan logo resmi Kicap, field proporsional, footer `V2.4.1 © 2026 Kulino`, dan tanpa frame hitam.
+- Admin dashboard default Filament diganti dengan dashboard operasional Kicap Event.
+- Tabel Admin `Users` menampilkan kolom avatar/foto profil.
+- Favicon dan logo aplikasi diganti memakai aset resmi Kicap dengan nama file `kicap-event-*`.
+- Panduan deploy VPS untuk domain `lpj.kicap.id` tersedia di `docs/deploy/VPS_LPJ_KICAP_ID_DEPLOY.md`.
+- Tidak mengubah guardrail role, status event, transfer saldo, LPJ final, atau schema/model/route internal `lpj`.
+
+Validasi otomatis PASS:
+
+- `npm run build`
+- `php -l routes/web.php`
+- `php artisan test tests/Feature/Slice01UsernameLoginFormTest.php tests/Feature/Slice02LpjDetailMobileInputTest.php tests/Feature/Slice03OperationalFinanceTest.php tests/Feature/Slice04ExecutionDocumentationTest.php` — 28 tests, 126 assertions
+- `php artisan test tests/Feature/Slice05ReviewFinalizationTest.php tests/Feature/Slice06ReportGenerationTest.php` — 7 tests, 53 assertions
+- `php artisan migrate:fresh --seed -n`
+- `php artisan route:list --path=api/app`
+- `php artisan route:list --path=app`
+- `php artisan test tests/Feature/HealthCheckTest.php` — 3 tests, 4 assertions
+- `php artisan test` — 53 tests, 222 assertions
+- `git diff --check`
+
+Catatan runtime:
+
+- Playwright dengan Chrome lokal berhasil login sebagai User dan merender screen Beranda, Daftar Event, dan Profil.
+- PHP local server merespons lambat pada request awal, sehingga bukti final tetap mengandalkan test/build/artisan dan review manual user.
+
 ## Slice 00 — Project Foundation
 
 Status: Implementasi + patch cache + patch timezone + patch PHPUnit tests + validasi otomatis + archive final.

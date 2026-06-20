@@ -7,7 +7,8 @@
     <title>Kicap Event</title>
     <meta name="theme-color" content="#0f766e">
     <link rel="icon" href="/favicon.ico" sizes="any">
-    <link rel="icon" href="/icons/kicap-lpj.svg" type="image/svg+xml">
+    <link rel="icon" href="/icons/kicap-event-logo.svg" type="image/svg+xml">
+    <link rel="apple-touch-icon" href="/icons/kicap-event-apple-touch.png">
     @viteReactRefresh
     @vite(['resources/css/app.css', 'resources/js/app.jsx'])
 </head>
