@@ -424,3 +424,21 @@ Catatan validasi:
 - Batas upload bukti transaksi/revisi dinaikkan menjadi 10MB untuk keamanan upload setelah kompresi.
 - Patch detail riwayat transaksi keuangan ditunda dan tidak masuk commit ini.
 - Tidak ada perubahan database dan tidak menjalankan migrasi.
+
+
+## Patch 2026-06-23 10:01:02 — Patch 1A — API Detail Transaksi Keuangan
+
+- Menambahkan endpoint read-only detail transaksi keuangan untuk PWA.
+- Endpoint hanya dapat diakses User pada event/LPJ yang terlihat/ditugaskan kepadanya.
+- Payload detail mencakup nominal, status, sumber dana, kategori, keterangan, alasan tanpa bukti, catatan Admin, reviewer, klaim dana talangan, dan bukti transaksi jika tersedia.
+- Belum ada perubahan UI PWA pada patch ini.
+- Tidak mengubah struktur database dan tidak menjalankan migrasi.
+
+
+## Patch 2026-06-23 10:03:10 — Patch 1B — Tombol Lihat Detail Riwayat Keuangan
+
+- Menambahkan tombol sederhana `Lihat detail` pada riwayat transaksi keuangan PWA.
+- Tombol mengambil data dari endpoint detail transaksi Patch 1A.
+- Detail sementara ditampilkan menggunakan alert agar risiko UI/modal tetap rendah.
+- Belum menambahkan bottom sheet/modal dan belum menambahkan viewer lampiran fullscreen.
+- Tidak mengubah struktur database dan tidak menjalankan migrasi.

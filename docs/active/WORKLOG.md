@@ -310,3 +310,7 @@
 
 
 - 2026-06-22 18:58:49: Stabilisasi upload kamera/galeri dan kompresi gambar; PWA normal kembali; patch detail keuangan ditunda dan tidak ikut commit.
+
+- 2026-06-23 10:01:02: Patch 1A API detail transaksi keuangan ditambahkan secara backend-only tanpa perubahan database dan tanpa perubahan UI PWA.
+
+- 2026-06-23 10:03:10: Patch 1B tombol Lihat detail riwayat transaksi ditambahkan dengan tampilan alert sederhana; belum modal/viewer.

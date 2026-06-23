@@ -820,6 +820,55 @@ function KicapApp() {
     const isProfileNav = activeNav === 'profil';
     const isNotesNav = activeNav === 'catatan';
     const isOperationalNav = activeNav === 'operasional';
+
+    const handleFinanceDetailPreview = async (transaction) => {
+        if (!selectedLpj?.id || !transaction?.id) {
+            return;
+        }
+
+        setFinanceMessage('Memuat detail transaksi...');
+
+        try {
+            const response = await fetch(
+                `/api/app/lpjs/${selectedLpj.id}/financial-transactions/${transaction.id}`,
+                { headers: { Accept: 'application/json' } }
+            );
+
+            const payload = await response.json().catch(() => ({}));
+
+            if (!response.ok) {
+                const firstMessage = Object.values(payload.errors ?? {})?.[0]?.[0];
+                throw new Error(firstMessage ?? payload.message ?? 'Detail transaksi tidak dapat dibuka.');
+            }
+
+            const detail = payload.data?.transaction ?? transaction;
+
+            const lines = [
+                'Detail Transaksi',
+                `Event: ${selectedLpj?.title ?? '-'}`,
+                `Kategori: ${detail.category ?? '-'}`,
+                `Nominal: ${formatCurrency(detail.amount ?? 0)}`,
+                `Tanggal: ${detail.spent_at ?? '-'}`,
+                `Sumber dana: ${detail.source_label ?? '-'}`,
+                `Status: ${detail.status_label ?? '-'}`,
+                `Pencatat: ${detail.user?.name ?? '-'}`,
+                detail.reviewer?.name ? `Reviewer: ${detail.reviewer.name}` : null,
+                '',
+                `Keterangan: ${detail.description || '-'}`,
+                detail.no_proof_reason ? `Alasan tanpa bukti: ${detail.no_proof_reason}` : null,
+                detail.admin_note ? `Catatan Admin: ${detail.admin_note}` : null,
+                detail.advance_claim ? `Klaim talangan: ${detail.advance_claim.status_label}` : null,
+                detail.proof?.url ? `Bukti: tersedia (${detail.proof.name ?? 'Lampiran'})` : 'Bukti: belum ada',
+            ].filter((line) => line !== null).join('\n');
+
+            window.alert(lines);
+            setFinanceMessage('');
+        } catch (error) {
+            const message = error.message ?? 'Detail transaksi tidak dapat dibuka.';
+            setFinanceMessage(message);
+            window.alert(message);
+        }
+    };
     const isFinanceNav = activeNav === 'keuangan';
     const isDocumentationNav = activeNav === 'dokumentasi';
     const showDetail = (isHomeNav || isEventsNav || isNotesNav || isOperationalNav || isFinanceNav || isDocumentationNav) && selectedLpjId;
@@ -2256,6 +2305,13 @@ function KicapApp() {
                                                 )}
                                             </div>
                                             <b>{formatCurrency(transaction.amount)}</b>
+                                              <button
+                                                  className="finance-history-detail-button"
+                                                  type="button"
+                                                  onClick={() => handleFinanceDetailPreview(transaction)}
+                                              >
+                                                  Lihat detail
+                                              </button>
                                             {transaction.can_submit_revision && (
                                                 <form
                                                     className="revision-form"

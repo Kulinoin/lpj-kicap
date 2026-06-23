@@ -529,6 +529,82 @@ Route::middleware('auth')->group(function (): void {
         ], 201);
     });
 
+
+    Route::get('/api/app/lpjs/{lpj}/financial-transactions/{transaction}', function (Request $request, Lpj $lpj, LpjFinancialTransaction $transaction) {
+        /** @var User $user */
+        $user = $request->user();
+
+        abort_unless($user->isUser(), 403);
+
+        $lpj = Lpj::query()
+            ->visibleToAssignedUser($user)
+            ->findOrFail($lpj->id);
+
+        $transaction = LpjFinancialTransaction::query()
+            ->with(['user', 'reviewer', 'advanceClaim'])
+            ->where('lpj_id', $lpj->id)
+            ->whereKey($transaction->id)
+            ->firstOrFail();
+
+        $statusLabels = LpjFinancialTransaction::statusLabels();
+        $sourceLabels = LpjFinancialTransaction::sourceLabels();
+        $claimStatusLabels = \App\Models\LpjAdvanceClaim::statusLabels();
+
+        $proof = null;
+
+        if ($transaction->proof_path) {
+            $proofDisk = $transaction->proof_disk ?: config('filesystems.default', 'public');
+            $proofUrl = \Illuminate\Support\Facades\Storage::disk($proofDisk)->url($transaction->proof_path);
+            $proofName = \Illuminate\Support\Str::afterLast($transaction->proof_path, '/');
+            $proofExt = strtolower(pathinfo($transaction->proof_path, PATHINFO_EXTENSION));
+
+            $proof = [
+                'url' => $proofUrl,
+                'name' => $proofName ?: 'Bukti transaksi',
+                'type' => $proofExt === 'pdf' ? 'pdf' : 'image',
+                'extension' => $proofExt,
+            ];
+        }
+
+        return response()->json([
+            'data' => [
+                'transaction' => [
+                    'id' => $transaction->id,
+                    'type' => $transaction->type,
+                    'type_label' => 'Pengeluaran',
+                    'source_type' => $transaction->source_type,
+                    'source_label' => $sourceLabels[$transaction->source_type] ?? $transaction->source_type,
+                    'status' => $transaction->status,
+                    'status_label' => $statusLabels[$transaction->status] ?? $transaction->status,
+                    'category' => $transaction->category,
+                    'description' => $transaction->description,
+                    'amount' => (float) $transaction->amount,
+                    'spent_at' => optional($transaction->spent_at)->toDateString(),
+                    'no_proof_reason' => $transaction->no_proof_reason,
+                    'admin_note' => $transaction->admin_note,
+                    'reviewed_at' => optional($transaction->reviewed_at)->toDateTimeString(),
+                    'proof' => $proof,
+                    'user' => $transaction->user ? [
+                        'id' => $transaction->user->id,
+                        'name' => $transaction->user->name,
+                    ] : null,
+                    'reviewer' => $transaction->reviewer ? [
+                        'id' => $transaction->reviewer->id,
+                        'name' => $transaction->reviewer->name,
+                    ] : null,
+                    'advance_claim' => $transaction->advanceClaim ? [
+                        'id' => $transaction->advanceClaim->id,
+                        'amount' => (float) $transaction->advanceClaim->amount,
+                        'status' => $transaction->advanceClaim->status,
+                        'status_label' => $claimStatusLabels[$transaction->advanceClaim->status] ?? $transaction->advanceClaim->status,
+                        'admin_note' => $transaction->advanceClaim->admin_note,
+                        'verified_at' => optional($transaction->advanceClaim->verified_at)->toDateTimeString(),
+                        'paid_at' => optional($transaction->advanceClaim->paid_at)->toDateTimeString(),
+                    ] : null,
+                ],
+            ],
+        ]);
+    });
     Route::post('/api/app/lpjs/{lpj}/financial-transactions/{transaction}/revision', function (Request $request, Lpj $lpj, LpjFinancialTransaction $transaction, LpjReviewService $reviewService, LpjFinanceService $financeService) {
         /** @var User $user */
         $user = $request->user();

@@ -1859,3 +1859,20 @@ h3 {
         font-size: 24px;
     }
 }
+
+/* Patch 1B: tombol detail riwayat keuangan sederhana */
+.finance-history-detail-button {
+    border: 1px solid rgba(120, 72, 24, .18);
+    border-radius: 999px;
+    background: rgba(255, 250, 242, .9);
+    color: #6f461c;
+    padding: .45rem .75rem;
+    font-size: .78rem;
+    font-weight: 800;
+    cursor: pointer;
+    white-space: nowrap;
+}
+
+.finance-history-detail-button:active {
+    transform: translateY(1px);
+}
