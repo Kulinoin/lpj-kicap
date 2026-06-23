@@ -442,3 +442,47 @@ Catatan validasi:
 - Detail sementara ditampilkan menggunakan alert agar risiko UI/modal tetap rendah.
 - Belum menambahkan bottom sheet/modal dan belum menambahkan viewer lampiran fullscreen.
 - Tidak mengubah struktur database dan tidak menjalankan migrasi.
+
+
+## Patch 2026-06-23 10:49:54 — Patch 1C — Dialog Minimal Detail Keuangan
+
+- Mengganti tombol `Lihat detail` menjadi item riwayat yang dapat ditekan langsung.
+- Riwayat keuangan kini menampilkan tanggal, bukan tombol detail.
+- Detail keuangan ditampilkan dalam custom dialog minimal berisi kategori, nominal, tanggal, keterangan, dan bukti.
+- Bukti gambar ditampilkan sebagai preview kecil responsif; PDF/lampiran dibuka melalui tautan.
+- Pola ini menjadi acuan untuk detail operasional dan dokumentasi: tampilkan hanya data inti sesuai form.
+- Tidak mengubah struktur database dan tidak menjalankan migrasi.
+
+
+## Patch 2026-06-23 10:57:47 — Patch 1C FIX — Popup Center dan Bukti Sederhana
+
+- Popup detail keuangan dipusatkan di tengah layar, bukan menempel di bawah.
+- Riwayat terbaru menampilkan format ringkas `Kategori - tanggal`.
+- Preview/buka bukti foto di PWA dihilangkan sementara; popup hanya menampilkan status bukti tersimpan atau belum ada bukti.
+- Detail tetap minimal sesuai data inti form: kategori, nominal, tanggal, keterangan, dan bukti.
+- Tidak mengubah struktur database dan tidak menjalankan migrasi.
+
+
+## Patch 2026-06-23 11:05:21 — Patch 1C FIX v2 — Slash Tanggal dan Preview Bukti Foto
+
+- Format riwayat keuangan diubah menjadi `Kategori / tanggal` agar tidak rancu dengan tanda hubung pada tanggal.
+- Popup detail keuangan menampilkan preview bukti foto langsung di dalam popup.
+- Preview foto tidak dijadikan tombol buka foto; hanya ditampilkan sebagai bukti visual di popup.
+- Lampiran non-gambar tetap ditampilkan sebagai status lampiran tersimpan.
+- Tidak mengubah struktur database dan tidak menjalankan migrasi.
+
+
+## Patch 2026-06-23 11:08:38 — Patch 1C FIX — Preview Bukti via Auth Route
+
+- Menambahkan route khusus untuk menampilkan bukti transaksi melalui Laravel/API yang sudah terautentikasi.
+- Payload detail transaksi kini memakai URL preview API, bukan URL storage publik langsung.
+- Tujuannya agar preview WebP/JPG/PNG tetap tampil di popup PWA meskipun file storage tidak terbuka langsung dari public path.
+- Tidak mengubah struktur database dan tidak menjalankan migrasi.
+
+
+## Patch 2026-06-23 11:38:52 — Patch 1C FIX — Tampilkan Alasan Jika Tidak Ada Bukti
+
+- Popup detail keuangan kini menampilkan `Ada lampiran.` jika bukti transaksi tersedia.
+- Jika bukti tidak tersedia, popup menampilkan isi field `Alasan jika tidak ada bukti` dari transaksi.
+- Preview/buka foto tidak ditampilkan di PWA untuk menjaga tampilan tetap stabil dan sederhana.
+- Tidak mengubah struktur database dan tidak menjalankan migrasi.

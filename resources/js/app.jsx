@@ -321,6 +321,8 @@ function KicapApp() {
     const [isOperationalDirty, setIsOperationalDirty] = useState(false);
     const [profileMessage, setProfileMessage] = useState('');
     const [financeMessage, setFinanceMessage] = useState('');
+    const [financeDetailDialog, setFinanceDetailDialog] = useState(null);
+    const [financeDetailLoadingId, setFinanceDetailLoadingId] = useState(null);
     const [executionMessage, setExecutionMessage] = useState('');
     const [operationalSaveMessage, setOperationalSaveMessage] = useState('');
     const [activeNav, setActiveNav] = useState('beranda');
@@ -826,7 +828,8 @@ function KicapApp() {
             return;
         }
 
-        setFinanceMessage('Memuat detail transaksi...');
+        setFinanceDetailLoadingId(transaction.id);
+        setFinanceMessage('');
 
         try {
             const response = await fetch(
@@ -841,33 +844,19 @@ function KicapApp() {
                 throw new Error(firstMessage ?? payload.message ?? 'Detail transaksi tidak dapat dibuka.');
             }
 
-            const detail = payload.data?.transaction ?? transaction;
-
-            const lines = [
-                'Detail Transaksi',
-                `Event: ${selectedLpj?.title ?? '-'}`,
-                `Kategori: ${detail.category ?? '-'}`,
-                `Nominal: ${formatCurrency(detail.amount ?? 0)}`,
-                `Tanggal: ${detail.spent_at ?? '-'}`,
-                `Sumber dana: ${detail.source_label ?? '-'}`,
-                `Status: ${detail.status_label ?? '-'}`,
-                `Pencatat: ${detail.user?.name ?? '-'}`,
-                detail.reviewer?.name ? `Reviewer: ${detail.reviewer.name}` : null,
-                '',
-                `Keterangan: ${detail.description || '-'}`,
-                detail.no_proof_reason ? `Alasan tanpa bukti: ${detail.no_proof_reason}` : null,
-                detail.admin_note ? `Catatan Admin: ${detail.admin_note}` : null,
-                detail.advance_claim ? `Klaim talangan: ${detail.advance_claim.status_label}` : null,
-                detail.proof?.url ? `Bukti: tersedia (${detail.proof.name ?? 'Lampiran'})` : 'Bukti: belum ada',
-            ].filter((line) => line !== null).join('\n');
-
-            window.alert(lines);
-            setFinanceMessage('');
+            setFinanceDetailDialog(payload.data?.transaction ?? transaction);
         } catch (error) {
             const message = error.message ?? 'Detail transaksi tidak dapat dibuka.';
             setFinanceMessage(message);
             window.alert(message);
+        } finally {
+            setFinanceDetailLoadingId(null);
         }
+    };
+
+    const closeFinanceDetailDialog = () => {
+        setFinanceDetailDialog(null);
+        setFinanceDetailLoadingId(null);
     };
     const isFinanceNav = activeNav === 'keuangan';
     const isDocumentationNav = activeNav === 'dokumentasi';
@@ -2292,26 +2281,88 @@ function KicapApp() {
 
                                 <div className="finance-history">
                                     <h3>Riwayat terbaru</h3>
+
+                                      {financeDetailDialog && (
+                                          <div className="finance-minimal-dialog-backdrop" onClick={closeFinanceDetailDialog}>
+                                              <section
+                                                  className="finance-minimal-dialog"
+                                                  role="dialog"
+                                                  aria-modal="true"
+                                                  onClick={(event) => event.stopPropagation()}
+                                              >
+                                                  <div className="finance-minimal-dialog-header">
+                                                      <div>
+                                                          <small>Detail Keuangan</small>
+                                                          <h3>{financeDetailDialog.category ?? '-'}</h3>
+                                                      </div>
+                                                      <button type="button" onClick={closeFinanceDetailDialog}>
+                                                          Tutup
+                                                      </button>
+                                                  </div>
+
+                                                  <div className="finance-minimal-dialog-list">
+                                                      <div>
+                                                          <span>Kategori</span>
+                                                          <b>{financeDetailDialog.category ?? '-'}</b>
+                                                      </div>
+                                                      <div>
+                                                          <span>Nominal</span>
+                                                          <b>{formatCurrency(financeDetailDialog.amount ?? 0)}</b>
+                                                      </div>
+                                                      <div>
+                                                          <span>Tanggal</span>
+                                                          <b>{financeDetailDialog.spent_at ?? '-'}</b>
+                                                      </div>
+                                                      <div>
+                                                          <span>Keterangan</span>
+                                                          <p>{financeDetailDialog.description || '-'}</p>
+                                                      </div>
+                                                  </div>
+
+                                                  <div className="finance-minimal-proof">
+                                          {financeDetailDialog.proof?.url ? (
+                                              <>
+                                                  <span>Bukti / Lampiran</span>
+                                                  <p>Ada lampiran.</p>
+                                              </>
+                                          ) : (
+                                              <>
+                                                  <span>Alasan jika tidak ada bukti</span>
+                                                  <p>{financeDetailDialog.no_proof_reason || 'Alasan belum diisi.'}</p>
+                                              </>
+                                          )}
+                                      </div>
+                                              </section>
+                                          </div>
+                                      )}
                                     {(selectedLpj.finance?.transactions ?? []).length === 0 && (
                                         <div className="empty-state">Belum ada transaksi keuangan.</div>
                                     )}
                                     {(selectedLpj.finance?.transactions ?? []).map((transaction) => (
-                                        <article key={transaction.id}>
+                                        <article
+                                              key={transaction.id}
+                                              className="finance-history-item-clickable"
+                                              role="button"
+                                              tabIndex={0}
+                                              onClick={() => handleFinanceDetailPreview(transaction)}
+                                              onKeyDown={(event) => {
+                                                  if (event.key === 'Enter' || event.key === ' ') {
+                                                      event.preventDefault();
+                                                      handleFinanceDetailPreview(transaction);
+                                                  }
+                                              }}
+                                          >
                                             <div>
-                                                <strong>{transaction.category}</strong>
+                                                <strong>
+                                                      {transaction.category}
+                                                      {transaction.spent_at ? ` / ${transaction.spent_at}` : ''}
+                                                  </strong>
                                                 <span>{transaction.source_label} · {transaction.status_label}</span>
                                                 {transaction.admin_note && (
                                                     <small>Catatan Admin: {transaction.admin_note}</small>
                                                 )}
                                             </div>
                                             <b>{formatCurrency(transaction.amount)}</b>
-                                              <button
-                                                  className="finance-history-detail-button"
-                                                  type="button"
-                                                  onClick={() => handleFinanceDetailPreview(transaction)}
-                                              >
-                                                  Lihat detail
-                                              </button>
                                             {transaction.can_submit_revision && (
                                                 <form
                                                     className="revision-form"

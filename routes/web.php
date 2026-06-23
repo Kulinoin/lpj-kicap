@@ -530,6 +530,39 @@ Route::middleware('auth')->group(function (): void {
     });
 
 
+
+    Route::get('/api/app/lpjs/{lpj}/financial-transactions/{transaction}/proof', function (Request $request, Lpj $lpj, LpjFinancialTransaction $transaction) {
+        /** @var User $user */
+        $user = $request->user();
+
+        abort_unless($user->isUser(), 403);
+
+        $lpj = Lpj::query()
+            ->visibleToAssignedUser($user)
+            ->findOrFail($lpj->id);
+
+        $transaction = LpjFinancialTransaction::query()
+            ->where('lpj_id', $lpj->id)
+            ->whereKey($transaction->id)
+            ->firstOrFail();
+
+        abort_unless((bool) $transaction->proof_path, 404);
+
+        $proofDisk = $transaction->proof_disk ?: config('filesystems.default', 'public');
+        $storage = \Illuminate\Support\Facades\Storage::disk($proofDisk);
+
+        abort_unless($storage->exists($transaction->proof_path), 404);
+
+        $fileName = \Illuminate\Support\Str::afterLast($transaction->proof_path, '/') ?: 'bukti-transaksi';
+        $mimeType = $storage->mimeType($transaction->proof_path) ?: 'application/octet-stream';
+
+        return response($storage->get($transaction->proof_path), 200, [
+            'Content-Type' => $mimeType,
+            'Content-Disposition' => 'inline; filename="'.$fileName.'"',
+            'Cache-Control' => 'private, max-age=3600',
+            'X-Content-Type-Options' => 'nosniff',
+        ]);
+    });
     Route::get('/api/app/lpjs/{lpj}/financial-transactions/{transaction}', function (Request $request, Lpj $lpj, LpjFinancialTransaction $transaction) {
         /** @var User $user */
         $user = $request->user();
@@ -554,7 +587,7 @@ Route::middleware('auth')->group(function (): void {
 
         if ($transaction->proof_path) {
             $proofDisk = $transaction->proof_disk ?: config('filesystems.default', 'public');
-            $proofUrl = \Illuminate\Support\Facades\Storage::disk($proofDisk)->url($transaction->proof_path);
+            $proofUrl = url('/api/app/lpjs/'.$lpj->id.'/financial-transactions/'.$transaction->id.'/proof');
             $proofName = \Illuminate\Support\Str::afterLast($transaction->proof_path, '/');
             $proofExt = strtolower(pathinfo($transaction->proof_path, PATHINFO_EXTENSION));
 

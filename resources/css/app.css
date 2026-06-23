@@ -1876,3 +1876,234 @@ h3 {
 .finance-history-detail-button:active {
     transform: translateY(1px);
 }
+/* Patch 1C: minimal custom dialog detail keuangan */
+.finance-history-item-clickable {
+    cursor: pointer;
+}
+
+.finance-history-item-clickable:active {
+    transform: translateY(1px);
+}
+
+.finance-history-date {
+    display: block;
+    margin-top: .35rem;
+    color: #8a6239;
+    font-size: .76rem;
+    font-weight: 800;
+    text-align: right;
+    white-space: nowrap;
+}
+
+.finance-history-detail-button {
+    display: none !important;
+}
+
+.finance-minimal-dialog-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 10000;
+    background: rgba(15, 23, 42, .48);
+    backdrop-filter: blur(7px);
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    padding: 14px;
+}
+
+.finance-minimal-dialog {
+    width: min(100%, 390px);
+    max-height: min(76dvh, 620px);
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    border-radius: 28px;
+    background: #fffaf2;
+    box-shadow: 0 24px 80px rgba(15, 23, 42, .35);
+    padding: 1rem;
+}
+
+.finance-minimal-dialog-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: .8rem;
+    margin-bottom: .8rem;
+}
+
+.finance-minimal-dialog-header small,
+.finance-minimal-dialog-list span,
+.finance-minimal-proof span {
+    display: block;
+    color: #8a6239;
+    font-size: .76rem;
+    font-weight: 800;
+}
+
+.finance-minimal-dialog-header h3 {
+    margin: .12rem 0 0;
+    color: #2f1f12;
+    font-size: 1rem;
+}
+
+.finance-minimal-dialog-header button {
+    border: 0;
+    border-radius: 999px;
+    background: #2f1f12;
+    color: #fff;
+    padding: .62rem .9rem;
+    font-size: .82rem;
+    font-weight: 800;
+}
+
+.finance-minimal-dialog-list {
+    display: grid;
+    gap: .55rem;
+}
+
+.finance-minimal-dialog-list > div,
+.finance-minimal-proof {
+    border: 1px solid rgba(120, 72, 24, .12);
+    border-radius: 18px;
+    background: rgba(255, 255, 255, .78);
+    padding: .78rem;
+}
+
+.finance-minimal-dialog-list b {
+    display: block;
+    margin-top: .2rem;
+    color: #2f1f12;
+}
+
+.finance-minimal-dialog-list p,
+.finance-minimal-proof p {
+    margin: .28rem 0 0;
+    color: #2f1f12;
+    line-height: 1.45;
+}
+
+.finance-minimal-proof {
+    margin-top: .65rem;
+}
+
+.finance-minimal-proof a {
+    display: block;
+    margin-top: .55rem;
+    color: #6f461c;
+    text-decoration: none;
+    font-weight: 800;
+}
+
+.finance-minimal-proof img {
+    display: block;
+    width: 100%;
+    max-height: min(34dvh, 260px);
+    object-fit: contain;
+    background: white;
+    border-radius: 16px;
+    border: 1px solid rgba(120, 72, 24, .12);
+}
+
+.finance-minimal-proof small {
+    display: block;
+    margin-top: .38rem;
+    color: #8a6239;
+    font-size: .76rem;
+    text-align: center;
+}
+
+.finance-minimal-proof-link {
+    border-radius: 999px;
+    background: #2f1f12;
+    color: white !important;
+    padding: .65rem .85rem;
+    text-align: center;
+}
+
+@media (min-width: 720px) {
+    .finance-minimal-dialog-backdrop {
+        align-items: center;
+    }
+
+    .finance-minimal-dialog {
+        width: min(430px, calc(100vw - 40px));
+        max-height: min(78dvh, 660px);
+    }
+}
+/* Patch 1C FIX: center popup minimal no photo preview */
+.finance-minimal-dialog-backdrop {
+    align-items: center !important;
+    justify-content: center !important;
+    padding: 18px !important;
+}
+
+.finance-minimal-dialog {
+    width: min(calc(100vw - 34px), 390px) !important;
+    max-height: min(72dvh, 600px) !important;
+    border-radius: 26px !important;
+    padding: .95rem !important;
+}
+
+.finance-minimal-dialog-header {
+    margin-bottom: .65rem !important;
+}
+
+.finance-minimal-dialog-list {
+    gap: .5rem !important;
+}
+
+.finance-minimal-dialog-list > div,
+.finance-minimal-proof {
+    padding: .72rem !important;
+}
+
+.finance-minimal-proof {
+    margin-top: .55rem !important;
+}
+
+.finance-minimal-proof a,
+.finance-minimal-proof img,
+.finance-minimal-proof small {
+    display: none !important;
+}
+
+.finance-history-date {
+    display: none !important;
+}
+/* Patch 1C FIX v2: slash tanggal dan preview bukti foto */
+.finance-minimal-proof img.finance-minimal-proof-image {
+    display: block !important;
+    width: 100% !important;
+    max-height: min(34dvh, 260px) !important;
+    object-fit: contain !important;
+    background: #ffffff !important;
+    border-radius: 16px !important;
+    border: 1px solid rgba(120, 72, 24, .12) !important;
+    margin-top: .55rem !important;
+}
+
+.finance-minimal-proof small {
+    display: block !important;
+    margin-top: .38rem !important;
+    color: #8a6239 !important;
+    font-size: .76rem !important;
+    text-align: center !important;
+    font-weight: 800 !important;
+}
+
+.finance-minimal-proof a {
+    display: none !important;
+}
+/* Patch 1C FIX: tampilkan alasan tanpa bukti */
+.finance-minimal-proof img,
+.finance-minimal-proof a,
+.finance-minimal-proof small,
+.finance-minimal-proof-image {
+    display: none !important;
+}
+
+.finance-minimal-proof p {
+    margin: .28rem 0 0 !important;
+    color: #2f1f12 !important;
+    line-height: 1.45 !important;
+    font-weight: 700 !important;
+}

@@ -314,3 +314,13 @@
 - 2026-06-23 10:01:02: Patch 1A API detail transaksi keuangan ditambahkan secara backend-only tanpa perubahan database dan tanpa perubahan UI PWA.
 
 - 2026-06-23 10:03:10: Patch 1B tombol Lihat detail riwayat transaksi ditambahkan dengan tampilan alert sederhana; belum modal/viewer.
+
+- 2026-06-23 10:49:54: Patch 1C dialog minimal detail keuangan diterapkan; riwayat diklik langsung dan menampilkan data inti + preview bukti.
+
+- 2026-06-23 10:57:47: Patch 1C FIX popup center; preview/buka foto di PWA dihilangkan; riwayat memakai format kategori - tanggal.
+
+- 2026-06-23 11:05:21: Patch 1C FIX v2 slash tanggal dan preview bukti foto di popup detail keuangan.
+
+- 2026-06-23 11:08:38: Patch 1C FIX preview bukti via auth route agar bukti WebP/gambar tampil di popup PWA.
+
+- 2026-06-23 11:38:52: Patch 1C FIX tampilkan status lampiran atau alasan jika tidak ada bukti pada popup detail keuangan.
