@@ -5,6 +5,7 @@ namespace App\Filament\Resources\LpjFinancialTransactions;
 use App\Filament\Resources\LpjFinancialTransactions\Pages\ListLpjFinancialTransactions;
 use App\Models\LpjFinancialTransaction;
 use App\Services\LpjReviewService;
+use App\Services\AppFileStorageService;
 use BackedEnum;
 use Filament\Actions\Action;
 use Filament\Actions\BulkActionGroup;
@@ -77,6 +78,7 @@ class LpjFinancialTransactionResource extends Resource
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->defaultSort('spent_at', 'desc')
+              ->recordUrl(fn (LpjFinancialTransaction $record): string => route('admin.lpj-financial-transactions.detail', $record))
             ->recordActions([
                 Action::make('markValid')
                     ->label('Valid')

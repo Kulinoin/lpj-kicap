@@ -486,3 +486,37 @@ Catatan validasi:
 - Jika bukti tidak tersedia, popup menampilkan isi field `Alasan jika tidak ada bukti` dari transaksi.
 - Preview/buka foto tidak ditampilkan di PWA untuk menjaga tampilan tetap stabil dan sederhana.
 - Tidak mengubah struktur database dan tidak menjalankan migrasi.
+
+
+## Patch 2026-06-23 11:55:31 — Patch Admin — Detail Transaksi dan Lampiran
+
+- Menambahkan detail transaksi lengkap di Admin melalui row-click pada tabel Transaksi Event.
+- Detail Admin menampilkan event, user, kategori, nominal, tanggal, sumber dana, status, keterangan, alasan tanpa bukti, catatan Admin, klaim talangan, dan lampiran jika tersedia.
+- URL lampiran diperbaiki agar memakai AppFileStorageService, bukan akses Storage::disk mentah.
+- Tujuannya agar bukti/lampiran yang sudah diupload dapat dibuka oleh Admin tanpa error konfigurasi R2 kosong.
+- Tidak mengubah struktur database dan tidak menjalankan migrasi.
+
+
+## Patch 2026-06-23 12:06:43 — Patch Admin v2 — Row Click Detail Transaksi
+
+- Menyelesaikan row-click detail transaksi Admin setelah patch sebelumnya berhenti di marker Resource.
+- Baris transaksi pada tabel Admin kini diarahkan ke halaman detail transaksi.
+- Halaman detail menampilkan data lengkap transaksi dan lampiran jika URL tersedia.
+- Tidak mengubah struktur database dan tidak menjalankan migrasi.
+
+
+## Patch 2026-06-23 12:11:27 — Patch Admin — Detail Transaksi Popup
+
+- Mengubah detail transaksi Admin dari halaman terpisah menjadi popup/modal dari klik baris tabel.
+- Baris tabel Transaksi Event dapat diklik langsung untuk membuka detail, tanpa tombol Detail khusus.
+- Popup Admin tetap menampilkan informasi lengkap dan preview lampiran jika tersedia.
+- Halaman detail terpisah tetap dibiarkan sebagai fallback.
+- Tidak mengubah struktur database dan tidak menjalankan migrasi.
+
+
+## Patch 2026-06-23 16:19:32 — Patch Admin FIX — Kembali ke Halaman Detail Transaksi
+
+- Modal popup Admin dibatalkan karena menyebabkan error load page di Filament.
+- Admin Transaksi Event dikembalikan ke pola stabil: klik baris tabel membuka halaman detail transaksi.
+- Halaman detail tetap menampilkan informasi lengkap dan lampiran jika tersedia.
+- Tidak mengubah struktur database dan tidak menjalankan migrasi.

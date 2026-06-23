@@ -85,7 +85,20 @@ class AppFileStorageService
             $this->configureR2($this->settings());
         }
 
-        return Storage::disk($disk)->url($path);
+        // KICAP_SAFE_R2_PUBLIC_URL
+        if ($disk === 'r2') {
+            $settings = $this->settings();
+
+            if (filled($settings->r2_public_url)) {
+                return rtrim($settings->r2_public_url, '/').'/'.ltrim($path, '/');
+            }
+        }
+
+        try {
+            return Storage::disk($disk)->url($path);
+        } catch (\Throwable $exception) {
+            return null;
+        }
     }
 
     public function path(?string $path, ?string $disk = null): ?string

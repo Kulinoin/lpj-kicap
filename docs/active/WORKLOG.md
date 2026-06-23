@@ -324,3 +324,11 @@
 - 2026-06-23 11:08:38: Patch 1C FIX preview bukti via auth route agar bukti WebP/gambar tampil di popup PWA.
 
 - 2026-06-23 11:38:52: Patch 1C FIX tampilkan status lampiran atau alasan jika tidak ada bukti pada popup detail keuangan.
+
+- 2026-06-23 11:55:31: Patch Admin detail transaksi dan lampiran; row-click modal + URL lampiran via AppFileStorageService.
+
+- 2026-06-23 12:06:43: Patch Admin v2 row-click detail transaksi diselesaikan; halaman detail Admin dibuat.
+
+- 2026-06-23 12:11:27: Patch Admin detail transaksi popup/modal dari klik baris tabel; halaman detail lama tetap fallback.
+
+- 2026-06-23 16:19:32: Patch Admin FIX kembali ke halaman detail transaksi; modal popup dibatalkan karena error Filament.

@@ -51,7 +51,32 @@ Route::get('/health', function () {
 });
 
 Route::middleware('auth')->group(function (): void {
-    Route::get('/admin/reports/lpjs/{lpj}/print', function (Request $request, Lpj $lpj, LpjReportService $reportService) {
+    
+Route::get('/admin/lpj-financial-transactions/{transaction}/detail', function (Request $request, LpjFinancialTransaction $transaction) {
+    $user = $request->user();
+
+    abort_unless($user && (
+        (method_exists($user, 'isAdmin') && $user->isAdmin())
+        || (($user->role ?? null) === 'admin')
+    ), 403);
+
+    $transaction->loadMissing(['lpj', 'user', 'reviewer', 'advanceClaim']);
+
+    $proofUrl = null;
+
+    if (filled($transaction->proof_path)) {
+        $proofUrl = app(\App\Services\AppFileStorageService::class)->url($transaction->proof_path, $transaction->proof_disk);
+    }
+
+    return view('admin.lpj-financial-transaction-detail', [
+        'record' => $transaction,
+        'proofUrl' => $proofUrl,
+        'statusLabels' => LpjFinancialTransaction::statusLabels(),
+        'sourceLabels' => LpjFinancialTransaction::sourceLabels(),
+        'claimStatusLabels' => \App\Models\LpjAdvanceClaim::statusLabels(),
+    ]);
+})->middleware('auth')->name('admin.lpj-financial-transactions.detail');
+Route::get('/admin/reports/lpjs/{lpj}/print', function (Request $request, Lpj $lpj, LpjReportService $reportService) {
         /** @var User $user */
         $user = $request->user();
 
@@ -548,20 +573,11 @@ Route::middleware('auth')->group(function (): void {
 
         abort_unless((bool) $transaction->proof_path, 404);
 
-        $proofDisk = $transaction->proof_disk ?: config('filesystems.default', 'public');
-        $storage = \Illuminate\Support\Facades\Storage::disk($proofDisk);
+        $url = app(\App\Services\AppFileStorageService::class)->url($transaction->proof_path, $transaction->proof_disk);
 
-        abort_unless($storage->exists($transaction->proof_path), 404);
+        abort_unless(filled($url), 404);
 
-        $fileName = \Illuminate\Support\Str::afterLast($transaction->proof_path, '/') ?: 'bukti-transaksi';
-        $mimeType = $storage->mimeType($transaction->proof_path) ?: 'application/octet-stream';
-
-        return response($storage->get($transaction->proof_path), 200, [
-            'Content-Type' => $mimeType,
-            'Content-Disposition' => 'inline; filename="'.$fileName.'"',
-            'Cache-Control' => 'private, max-age=3600',
-            'X-Content-Type-Options' => 'nosniff',
-        ]);
+        return redirect()->away($url);
     });
     Route::get('/api/app/lpjs/{lpj}/financial-transactions/{transaction}', function (Request $request, Lpj $lpj, LpjFinancialTransaction $transaction) {
         /** @var User $user */
@@ -587,7 +603,7 @@ Route::middleware('auth')->group(function (): void {
 
         if ($transaction->proof_path) {
             $proofDisk = $transaction->proof_disk ?: config('filesystems.default', 'public');
-            $proofUrl = url('/api/app/lpjs/'.$lpj->id.'/financial-transactions/'.$transaction->id.'/proof');
+            $proofUrl = app(\App\Services\AppFileStorageService::class)->url($transaction->proof_path, $proofDisk);
             $proofName = \Illuminate\Support\Str::afterLast($transaction->proof_path, '/');
             $proofExt = strtolower(pathinfo($transaction->proof_path, PATHINFO_EXTENSION));
 
