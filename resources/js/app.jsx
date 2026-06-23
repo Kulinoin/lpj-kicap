@@ -80,6 +80,97 @@ const emptyFinanceForms = {
     },
 };
 
+const IMAGE_UPLOAD_MAX_EDGE = 1800;
+const IMAGE_UPLOAD_QUALITY = 0.82;
+const IMAGE_UPLOAD_SKIP_BELOW_BYTES = 700 * 1024;
+
+function readFileAsDataUrl(file) {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = () => reject(reader.error ?? new Error('Gagal membaca file gambar.'));
+        reader.readAsDataURL(file);
+    });
+}
+
+function loadImageFromDataUrl(dataUrl) {
+    return new Promise((resolve, reject) => {
+        const image = new Image();
+
+        image.onload = () => resolve(image);
+        image.onerror = () => reject(new Error('Gagal memproses gambar.'));
+        image.src = dataUrl;
+    });
+}
+
+async function compressImageFileForUpload(file) {
+    if (!file || typeof File === 'undefined' || !(file instanceof File)) {
+        return file;
+    }
+
+    const mime = file.type || '';
+
+    if (!mime.startsWith('image/') || mime === 'image/gif' || mime === 'image/svg+xml') {
+        return file;
+    }
+
+    if (file.size <= IMAGE_UPLOAD_SKIP_BELOW_BYTES) {
+        return file;
+    }
+
+    const dataUrl = await readFileAsDataUrl(file);
+    const image = await loadImageFromDataUrl(dataUrl);
+
+    const originalWidth = image.naturalWidth || image.width;
+    const originalHeight = image.naturalHeight || image.height;
+    const maxSide = Math.max(originalWidth, originalHeight);
+
+    if (!originalWidth || !originalHeight || !maxSide) {
+        return file;
+    }
+
+    const scale = Math.min(1, IMAGE_UPLOAD_MAX_EDGE / maxSide);
+    const targetWidth = Math.max(1, Math.round(originalWidth * scale));
+    const targetHeight = Math.max(1, Math.round(originalHeight * scale));
+
+    const canvas = document.createElement('canvas');
+    canvas.width = targetWidth;
+    canvas.height = targetHeight;
+
+    const context = canvas.getContext('2d', { alpha: false });
+    context.fillStyle = '#ffffff';
+    context.fillRect(0, 0, targetWidth, targetHeight);
+    context.drawImage(image, 0, 0, targetWidth, targetHeight);
+
+    const blob = await new Promise((resolve) => {
+        canvas.toBlob(resolve, 'image/jpeg', IMAGE_UPLOAD_QUALITY);
+    });
+
+    if (!blob || blob.size >= file.size) {
+        return file;
+    }
+
+    const baseName = (file.name || 'upload')
+        .replace(/\.[^.]+$/, '')
+        .replace(/[^\w.-]+/g, '-')
+        .replace(/-+$/, '') || 'upload';
+
+    return new File([blob], `${baseName}-compressed.jpg`, {
+        type: 'image/jpeg',
+        lastModified: Date.now(),
+    });
+}
+
+async function normalizeImageUploadFile(file) {
+    try {
+        return await compressImageFileForUpload(file);
+    } catch (error) {
+        console.warn('Image compression failed, using original file.', error);
+        return file;
+    }
+}
+
 function buildRevisionForms(transactions = []) {
     return Object.fromEntries(
         transactions.map((transaction) => [
@@ -533,7 +624,11 @@ function KicapApp() {
         setProfileView('home');
     };
 
-    const updateFinanceForm = (formKey, field, value) => {
+    const updateFinanceForm = async (formKey, field, value) => {
+        if ((field === 'proof' || field === 'file' || field === 'photo' || field === 'profile_photo') && typeof File !== 'undefined' && value instanceof File) {
+            value = await normalizeImageUploadFile(value);
+        }
+
         setFinanceForms((current) => ({
             ...current,
             [formKey]: {
@@ -557,7 +652,7 @@ function KicapApp() {
 
         Object.entries(form).forEach(([key, value]) => {
             if (value !== null && value !== '') {
-                formData.append(key, value);
+                formData.append(key, typeof value === 'boolean' ? (value ? '1' : '0') : value);
             }
         });
 
@@ -642,7 +737,11 @@ function KicapApp() {
             });
     };
 
-    const updateRevisionForm = (transactionId, field, value) => {
+    const updateRevisionForm = async (transactionId, field, value) => {
+        if ((field === 'proof' || field === 'file' || field === 'photo' || field === 'profile_photo') && typeof File !== 'undefined' && value instanceof File) {
+            value = await normalizeImageUploadFile(value);
+        }
+
         setRevisionForms((current) => ({
             ...current,
             [transactionId]: {
@@ -666,7 +765,7 @@ function KicapApp() {
 
         Object.entries(form).forEach(([key, value]) => {
             if (value !== null && value !== '') {
-                formData.append(key, value);
+                formData.append(key, typeof value === 'boolean' ? (value ? '1' : '0') : value);
             }
         });
 
@@ -876,7 +975,11 @@ function KicapApp() {
         }));
     };
 
-    const updateExecutionUploadForm = (section, field, value) => {
+    const updateExecutionUploadForm = async (section, field, value) => {
+        if ((field === 'proof' || field === 'file' || field === 'photo' || field === 'profile_photo') && typeof File !== 'undefined' && value instanceof File) {
+            value = await normalizeImageUploadFile(value);
+        }
+
         setExecutionForms((current) => ({
             ...current,
             [section]: {
@@ -959,7 +1062,7 @@ function KicapApp() {
         const formData = new FormData();
         Object.entries(form).forEach(([key, value]) => {
             if (value !== null && value !== '') {
-                formData.append(key, value);
+                formData.append(key, typeof value === 'boolean' ? (value ? '1' : '0') : value);
             }
         });
 

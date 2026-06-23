@@ -413,3 +413,14 @@ Validasi follow-up PASS:
 Catatan validasi:
 
 - `composer dump-autoload --no-scripts --no-interaction` timeout pada fase `Generating optimized autoload files`, tetapi autoload sudah dapat membaca S3 adapter dan service aplikasi.
+
+
+
+## Patch 2026-06-22 18:58:49 — Stabilisasi Upload Kamera dan Kompresi Gambar
+
+- PWA sudah dipulihkan ke kondisi normal setelah percobaan patch detail keuangan dibatalkan.
+- Fitur upload dari kamera/galeri tetap aman dan aktif.
+- File gambar besar dikompresi di frontend sebelum upload menggunakan canvas dan output JPEG agar upload dari kamera HP lebih ringan.
+- Batas upload bukti transaksi/revisi dinaikkan menjadi 10MB untuk keamanan upload setelah kompresi.
+- Patch detail riwayat transaksi keuangan ditunda dan tidak masuk commit ini.
+- Tidak ada perubahan database dan tidak menjalankan migrasi.

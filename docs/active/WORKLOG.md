@@ -307,3 +307,6 @@
 - Validasi PASS: `php artisan test`.
 - Validasi PASS: `php artisan migrate:fresh --seed -n`.
 - Validasi PASS: `npm run build`.
+
+
+- 2026-06-22 18:58:49: Stabilisasi upload kamera/galeri dan kompresi gambar; PWA normal kembali; patch detail keuangan ditunda dan tidak ikut commit.

@@ -459,7 +459,7 @@ Route::middleware('auth')->group(function (): void {
             'description' => ['required', 'string', 'max:5000'],
             'amount' => ['required', 'numeric', 'min:1'],
             'spent_at' => ['required', 'date'],
-            'proof' => ['nullable', 'file', 'mimes:jpg,jpeg,png,webp,pdf', 'max:4096'],
+            'proof' => ['nullable', 'file', 'mimes:jpg,jpeg,png,webp,pdf', 'max:10240'],
             'no_proof_reason' => ['required_without:proof', 'nullable', 'string', 'max:1000'],
         ]);
 
@@ -488,7 +488,7 @@ Route::middleware('auth')->group(function (): void {
             'description' => ['required', 'string', 'max:5000'],
             'amount' => ['required', 'numeric', 'min:1'],
             'spent_at' => ['required', 'date'],
-            'proof' => ['nullable', 'file', 'mimes:jpg,jpeg,png,webp,pdf', 'max:4096'],
+            'proof' => ['nullable', 'file', 'mimes:jpg,jpeg,png,webp,pdf', 'max:10240'],
             'no_proof_reason' => ['required_without:proof', 'nullable', 'string', 'max:1000'],
         ]);
 
@@ -543,7 +543,7 @@ Route::middleware('auth')->group(function (): void {
             'category' => ['required', 'string', Rule::in(array_keys(LpjFinancialTransaction::categoryOptions()))],
             'description' => ['required', 'string', 'max:5000'],
             'spent_at' => ['required', 'date'],
-            'proof' => ['nullable', 'file', 'mimes:jpg,jpeg,png,webp,pdf', 'max:4096'],
+            'proof' => ['nullable', 'file', 'mimes:jpg,jpeg,png,webp,pdf', 'max:10240'],
             'no_proof_reason' => ['required_without:proof', 'nullable', 'string', 'max:1000'],
         ]);
 
