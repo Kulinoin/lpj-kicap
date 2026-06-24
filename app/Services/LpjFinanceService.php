@@ -230,13 +230,16 @@ class LpjFinanceService
         $balance = LpjUserBalance::query()
             ->firstOrCreate(['lpj_id' => $lpj->id, 'user_id' => $user->id], ['balance' => 0]);
 
-        $transactions = LpjFinancialTransaction::query()
+        // KICAP_TRANSFER_HISTORY_IN_FINANCE_PAYLOAD
+        $expenseTransactions = LpjFinancialTransaction::query()
             ->where('lpj_id', $lpj->id)
             ->where('user_id', $user->id)
             ->latest()
             ->get()
             ->map(fn (LpjFinancialTransaction $transaction): array => [
                 'id' => $transaction->id,
+                'history_id' => 'transaction-'.$transaction->id,
+                'history_type' => 'transaction',
                 'category' => $transaction->category,
                 'description' => $transaction->description,
                 'amount' => (float) $transaction->amount,
@@ -245,6 +248,7 @@ class LpjFinanceService
                 'status' => $transaction->status,
                 'status_label' => LpjFinancialTransaction::statusLabels()[$transaction->status] ?? $transaction->status,
                 'spent_at' => $transaction->spent_at?->toDateString(),
+                'sort_at' => $transaction->spent_at?->toDateString().' '.($transaction->created_at?->format('H:i:s') ?? '00:00:00'),
                 'has_proof' => filled($transaction->proof_path),
                 'no_proof_reason' => $transaction->no_proof_reason,
                 'admin_note' => $transaction->admin_note,
@@ -254,6 +258,56 @@ class LpjFinanceService
                 ], true),
             ]);
 
+        $transferMutations = LpjBalanceMutation::query()
+            ->with(['relatedUser'])
+            ->where('lpj_id', $lpj->id)
+            ->where('user_id', $user->id)
+            ->whereIn('type', [
+                LpjBalanceMutation::TYPE_TRANSFER_OUT,
+                LpjBalanceMutation::TYPE_TRANSFER_IN,
+            ])
+            ->latest('occurred_at')
+            ->latest('id')
+            ->get()
+            ->map(function (LpjBalanceMutation $mutation): array {
+                $isOut = $mutation->type === LpjBalanceMutation::TYPE_TRANSFER_OUT;
+                $relatedName = $mutation->relatedUser?->name ?? 'User lain';
+                $directionText = $isOut ? 'Ke '.$relatedName : 'Dari '.$relatedName;
+                $note = trim((string) $mutation->note);
+
+                return [
+                    'id' => 'transfer-'.$mutation->id,
+                    'mutation_id' => $mutation->id,
+                    'history_id' => 'transfer-'.$mutation->id,
+                    'history_type' => 'transfer',
+                    'is_transfer' => true,
+                    'category' => $isOut ? 'Transfer Saldo Keluar' : 'Transfer Saldo Masuk',
+                    'description' => $note !== '' ? $directionText."\n".$note : $directionText,
+                    'amount' => (float) $mutation->amount,
+                    'source_type' => 'transfer',
+                    'source_label' => $isOut ? 'Transfer Keluar' : 'Transfer Masuk',
+                    'status' => 'berhasil',
+                    'status_label' => 'Berhasil',
+                    'spent_at' => $mutation->occurred_at?->toDateString(),
+                    'sort_at' => $mutation->occurred_at?->toDateTimeString() ?? $mutation->created_at?->toDateTimeString() ?? '',
+                    'has_proof' => false,
+                    'no_proof_reason' => 'Transfer saldo tidak membutuhkan bukti.',
+                    'admin_note' => null,
+                    'can_submit_revision' => false,
+                    'direction' => $mutation->direction,
+                    'related_user_name' => $relatedName,
+                ];
+            });
+
+        $transactions = $expenseTransactions
+            ->concat($transferMutations)
+            ->sortByDesc('sort_at')
+            ->values()
+            ->map(function (array $item): array {
+                unset($item['sort_at']);
+
+                return $item;
+            });
         $claims = LpjAdvanceClaim::query()
             ->where('lpj_id', $lpj->id)
             ->where('user_id', $user->id)

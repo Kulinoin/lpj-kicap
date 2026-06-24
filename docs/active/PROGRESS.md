@@ -445,3 +445,11 @@ Catatan validasi:
 - Mengubah visual tombol Lihat semua pada Riwayat terbaru menjadi label/link ringan seperti pola Beranda.
 - Fungsi tetap sama: toggle 10 terakhir dan semua riwayat.
 - Tidak mengubah backend, database, maupun endpoint.
+
+
+## Patch 2026-06-24 13:13:37 — Patch PWA — Transfer Saldo in Finance History
+
+- Transfer saldo kini muncul di Riwayat terbaru/Semua riwayat PWA Keuangan.
+- Transfer tetap dicatat sebagai mutasi saldo internal, bukan transaksi LPJ final.
+- Detail transfer di PWA dibuka secara lokal tanpa memanggil endpoint detail transaksi pengeluaran.
+- Tidak mengubah struktur database dan tidak menjalankan migrasi.

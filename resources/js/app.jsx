@@ -833,6 +833,17 @@ function KicapApp() {
         setFinanceDetailLoadingId(transaction.id);
         setFinanceMessage('');
 
+        // KICAP_TRANSFER_HISTORY_LOCAL_DETAIL
+        if (transaction.history_type === 'transfer' || transaction.is_transfer) {
+            setFinanceDetailDialog({
+                ...transaction,
+                proof: null,
+                no_proof_reason: transaction.no_proof_reason || 'Transfer saldo tidak membutuhkan bukti.',
+            });
+            setFinanceDetailLoadingId(null);
+            return;
+        }
+
         try {
             const response = await fetch(
                 `/api/app/lpjs/${selectedLpj.id}/financial-transactions/${transaction.id}`,
