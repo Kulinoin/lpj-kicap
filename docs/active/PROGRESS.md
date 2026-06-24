@@ -415,108 +415,33 @@ Catatan validasi:
 - `composer dump-autoload --no-scripts --no-interaction` timeout pada fase `Generating optimized autoload files`, tetapi autoload sudah dapat membaca S3 adapter dan service aplikasi.
 
 
+## Patch 2026-06-23 16:54:58 — Patch PWA — Unified Finance Form
 
-## Patch 2026-06-22 18:58:49 — Stabilisasi Upload Kamera dan Kompresi Gambar
-
-- PWA sudah dipulihkan ke kondisi normal setelah percobaan patch detail keuangan dibatalkan.
-- Fitur upload dari kamera/galeri tetap aman dan aktif.
-- File gambar besar dikompresi di frontend sebelum upload menggunakan canvas dan output JPEG agar upload dari kamera HP lebih ringan.
-- Batas upload bukti transaksi/revisi dinaikkan menjadi 10MB untuk keamanan upload setelah kompresi.
-- Patch detail riwayat transaksi keuangan ditunda dan tidak masuk commit ini.
-- Tidak ada perubahan database dan tidak menjalankan migrasi.
-
-
-## Patch 2026-06-23 10:01:02 — Patch 1A — API Detail Transaksi Keuangan
-
-- Menambahkan endpoint read-only detail transaksi keuangan untuk PWA.
-- Endpoint hanya dapat diakses User pada event/LPJ yang terlihat/ditugaskan kepadanya.
-- Payload detail mencakup nominal, status, sumber dana, kategori, keterangan, alasan tanpa bukti, catatan Admin, reviewer, klaim dana talangan, dan bukti transaksi jika tersedia.
-- Belum ada perubahan UI PWA pada patch ini.
+- Menggabungkan 3 form PWA Keuangan menjadi 1 form dinamis Catat Keuangan.
+- Jenis catatan: Pengeluaran Saldo Pegangan, Pengeluaran Dana Talangan/Dana Pribadi, Transfer Saldo.
+- Endpoint backend tetap memakai flow lama: expenses, advance-expenses, balance-transfers.
+- Upload bukti tetap memakai normalisasi/kompresi gambar yang sudah stabil.
 - Tidak mengubah struktur database dan tidak menjalankan migrasi.
 
 
-## Patch 2026-06-23 10:03:10 — Patch 1B — Tombol Lihat Detail Riwayat Keuangan
+## Patch 2026-06-23 17:07:02 — Patch PWA — Finance History Latest 10
 
-- Menambahkan tombol sederhana `Lihat detail` pada riwayat transaksi keuangan PWA.
-- Tombol mengambil data dari endpoint detail transaksi Patch 1A.
-- Detail sementara ditampilkan menggunakan alert agar risiko UI/modal tetap rendah.
-- Belum menambahkan bottom sheet/modal dan belum menambahkan viewer lampiran fullscreen.
+- Riwayat terbaru pada PWA Keuangan dibatasi menjadi 10 transaksi terakhir.
+- Menambahkan tombol Lihat semua sejajar dengan judul Riwayat terbaru.
+- Mode Semua riwayat menampilkan seluruh transaksi dan tetap bisa klik baris untuk detail minimal.
+- Tidak mengubah backend, database, maupun endpoint.
+
+
+## Patch 2026-06-23 17:12:31 — Patch PWA — Finance History Latest 10 + See All
+
+- Riwayat terbaru PWA Keuangan tampil maksimal 10 transaksi terakhir.
+- Tombol Lihat semua ditambahkan sejajar dengan judul Riwayat terbaru.
+- Backend finance payload dipastikan tidak membatasi transaksi hanya 10 agar semua riwayat bisa ditampilkan saat diminta.
 - Tidak mengubah struktur database dan tidak menjalankan migrasi.
 
 
-## Patch 2026-06-23 10:49:54 — Patch 1C — Dialog Minimal Detail Keuangan
+## Patch 2026-06-23 17:17:06 — Patch PWA — Finance History See All Link Look
 
-- Mengganti tombol `Lihat detail` menjadi item riwayat yang dapat ditekan langsung.
-- Riwayat keuangan kini menampilkan tanggal, bukan tombol detail.
-- Detail keuangan ditampilkan dalam custom dialog minimal berisi kategori, nominal, tanggal, keterangan, dan bukti.
-- Bukti gambar ditampilkan sebagai preview kecil responsif; PDF/lampiran dibuka melalui tautan.
-- Pola ini menjadi acuan untuk detail operasional dan dokumentasi: tampilkan hanya data inti sesuai form.
-- Tidak mengubah struktur database dan tidak menjalankan migrasi.
-
-
-## Patch 2026-06-23 10:57:47 — Patch 1C FIX — Popup Center dan Bukti Sederhana
-
-- Popup detail keuangan dipusatkan di tengah layar, bukan menempel di bawah.
-- Riwayat terbaru menampilkan format ringkas `Kategori - tanggal`.
-- Preview/buka bukti foto di PWA dihilangkan sementara; popup hanya menampilkan status bukti tersimpan atau belum ada bukti.
-- Detail tetap minimal sesuai data inti form: kategori, nominal, tanggal, keterangan, dan bukti.
-- Tidak mengubah struktur database dan tidak menjalankan migrasi.
-
-
-## Patch 2026-06-23 11:05:21 — Patch 1C FIX v2 — Slash Tanggal dan Preview Bukti Foto
-
-- Format riwayat keuangan diubah menjadi `Kategori / tanggal` agar tidak rancu dengan tanda hubung pada tanggal.
-- Popup detail keuangan menampilkan preview bukti foto langsung di dalam popup.
-- Preview foto tidak dijadikan tombol buka foto; hanya ditampilkan sebagai bukti visual di popup.
-- Lampiran non-gambar tetap ditampilkan sebagai status lampiran tersimpan.
-- Tidak mengubah struktur database dan tidak menjalankan migrasi.
-
-
-## Patch 2026-06-23 11:08:38 — Patch 1C FIX — Preview Bukti via Auth Route
-
-- Menambahkan route khusus untuk menampilkan bukti transaksi melalui Laravel/API yang sudah terautentikasi.
-- Payload detail transaksi kini memakai URL preview API, bukan URL storage publik langsung.
-- Tujuannya agar preview WebP/JPG/PNG tetap tampil di popup PWA meskipun file storage tidak terbuka langsung dari public path.
-- Tidak mengubah struktur database dan tidak menjalankan migrasi.
-
-
-## Patch 2026-06-23 11:38:52 — Patch 1C FIX — Tampilkan Alasan Jika Tidak Ada Bukti
-
-- Popup detail keuangan kini menampilkan `Ada lampiran.` jika bukti transaksi tersedia.
-- Jika bukti tidak tersedia, popup menampilkan isi field `Alasan jika tidak ada bukti` dari transaksi.
-- Preview/buka foto tidak ditampilkan di PWA untuk menjaga tampilan tetap stabil dan sederhana.
-- Tidak mengubah struktur database dan tidak menjalankan migrasi.
-
-
-## Patch 2026-06-23 11:55:31 — Patch Admin — Detail Transaksi dan Lampiran
-
-- Menambahkan detail transaksi lengkap di Admin melalui row-click pada tabel Transaksi Event.
-- Detail Admin menampilkan event, user, kategori, nominal, tanggal, sumber dana, status, keterangan, alasan tanpa bukti, catatan Admin, klaim talangan, dan lampiran jika tersedia.
-- URL lampiran diperbaiki agar memakai AppFileStorageService, bukan akses Storage::disk mentah.
-- Tujuannya agar bukti/lampiran yang sudah diupload dapat dibuka oleh Admin tanpa error konfigurasi R2 kosong.
-- Tidak mengubah struktur database dan tidak menjalankan migrasi.
-
-
-## Patch 2026-06-23 12:06:43 — Patch Admin v2 — Row Click Detail Transaksi
-
-- Menyelesaikan row-click detail transaksi Admin setelah patch sebelumnya berhenti di marker Resource.
-- Baris transaksi pada tabel Admin kini diarahkan ke halaman detail transaksi.
-- Halaman detail menampilkan data lengkap transaksi dan lampiran jika URL tersedia.
-- Tidak mengubah struktur database dan tidak menjalankan migrasi.
-
-
-## Patch 2026-06-23 12:11:27 — Patch Admin — Detail Transaksi Popup
-
-- Mengubah detail transaksi Admin dari halaman terpisah menjadi popup/modal dari klik baris tabel.
-- Baris tabel Transaksi Event dapat diklik langsung untuk membuka detail, tanpa tombol Detail khusus.
-- Popup Admin tetap menampilkan informasi lengkap dan preview lampiran jika tersedia.
-- Halaman detail terpisah tetap dibiarkan sebagai fallback.
-- Tidak mengubah struktur database dan tidak menjalankan migrasi.
-
-
-## Patch 2026-06-23 16:19:32 — Patch Admin FIX — Kembali ke Halaman Detail Transaksi
-
-- Modal popup Admin dibatalkan karena menyebabkan error load page di Filament.
-- Admin Transaksi Event dikembalikan ke pola stabil: klik baris tabel membuka halaman detail transaksi.
-- Halaman detail tetap menampilkan informasi lengkap dan lampiran jika tersedia.
-- Tidak mengubah struktur database dan tidak menjalankan migrasi.
+- Mengubah visual tombol Lihat semua pada Riwayat terbaru menjadi label/link ringan seperti pola Beranda.
+- Fungsi tetap sama: toggle 10 terakhir dan semua riwayat.
+- Tidak mengubah backend, database, maupun endpoint.

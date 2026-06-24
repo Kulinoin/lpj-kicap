@@ -234,7 +234,6 @@ class LpjFinanceService
             ->where('lpj_id', $lpj->id)
             ->where('user_id', $user->id)
             ->latest()
-            ->limit(10)
             ->get()
             ->map(fn (LpjFinancialTransaction $transaction): array => [
                 'id' => $transaction->id,
@@ -259,7 +258,6 @@ class LpjFinanceService
             ->where('lpj_id', $lpj->id)
             ->where('user_id', $user->id)
             ->latest()
-            ->limit(10)
             ->get()
             ->map(fn (LpjAdvanceClaim $claim): array => [
                 'id' => $claim->id,

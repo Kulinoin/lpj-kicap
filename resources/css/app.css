@@ -2107,3 +2107,107 @@ h3 {
     line-height: 1.45 !important;
     font-weight: 700 !important;
 }
+/* KICAP_UNIFIED_FINANCE_FORM */
+.finance-form-unified {
+    position: relative;
+}
+
+.finance-field-label {
+    display: grid;
+    gap: 7px;
+    font-size: 0.78rem;
+    font-weight: 800;
+    color: rgba(71, 85, 105, 0.9);
+}
+
+.finance-field-label span {
+    padding-left: 2px;
+}
+
+.finance-mode-hint {
+    border-radius: 16px;
+    padding: 11px 12px;
+    background: rgba(245, 158, 11, 0.12);
+    border: 1px solid rgba(245, 158, 11, 0.22);
+    color: #92400e;
+    font-size: 0.82rem;
+    font-weight: 700;
+}
+
+@media (prefers-color-scheme: dark) {
+    .finance-field-label {
+        color: rgba(226, 232, 240, 0.84);
+    }
+
+    .finance-mode-hint {
+        color: #fde68a;
+        background: rgba(245, 158, 11, 0.14);
+        border-color: rgba(245, 158, 11, 0.28);
+    }
+}
+/* KICAP_FINANCE_HISTORY_SEE_ALL */
+.finance-history-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 12px;
+}
+
+.finance-history-header h3 {
+    margin: 0;
+}
+
+.finance-history-see-all {
+    border: 0;
+    background: rgba(245, 158, 11, 0.12);
+    color: #92400e;
+    font-size: 0.78rem;
+    font-weight: 900;
+    border-radius: 999px;
+    padding: 8px 11px;
+    white-space: nowrap;
+}
+
+.finance-history-see-all:active {
+    transform: scale(0.98);
+}
+
+@media (prefers-color-scheme: dark) {
+    .finance-history-see-all {
+        background: rgba(245, 158, 11, 0.16);
+        color: #fde68a;
+    }
+}
+/* KICAP_FINANCE_HISTORY_SEE_ALL_LINK_LOOK */
+.finance-history-see-all {
+    appearance: none !important;
+    border: 0 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+    border-radius: 0 !important;
+    color: #f97316 !important;
+    font-size: 0.82rem !important;
+    font-weight: 900 !important;
+    line-height: 1.2 !important;
+    opacity: 0.88;
+    cursor: pointer;
+}
+
+.finance-history-see-all:hover,
+.finance-history-see-all:focus {
+    opacity: 1;
+    text-decoration: underline;
+}
+
+.finance-history-see-all:active {
+    transform: none !important;
+    opacity: 0.72;
+}
+
+@media (prefers-color-scheme: dark) {
+    .finance-history-see-all {
+        color: #fbbf24 !important;
+    }
+}

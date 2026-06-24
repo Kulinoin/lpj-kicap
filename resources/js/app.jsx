@@ -311,6 +311,7 @@ function KicapApp() {
         password_confirmation: '',
     });
     const [financeForms, setFinanceForms] = useState(emptyFinanceForms);
+    const [financeEntryMode, setFinanceEntryMode] = useState('expense');
     const [revisionForms, setRevisionForms] = useState({});
     const [executionForms, setExecutionForms] = useState(emptyExecutionForms);
     const [profilePhoto, setProfilePhoto] = useState(null);
@@ -323,6 +324,7 @@ function KicapApp() {
     const [financeMessage, setFinanceMessage] = useState('');
     const [financeDetailDialog, setFinanceDetailDialog] = useState(null);
     const [financeDetailLoadingId, setFinanceDetailLoadingId] = useState(null);
+    const [showAllFinanceHistory, setShowAllFinanceHistory] = useState(false);
     const [executionMessage, setExecutionMessage] = useState('');
     const [operationalSaveMessage, setOperationalSaveMessage] = useState('');
     const [activeNav, setActiveNav] = useState('beranda');
@@ -856,6 +858,7 @@ function KicapApp() {
 
     const closeFinanceDetailDialog = () => {
         setFinanceDetailDialog(null);
+        setShowAllFinanceHistory(false);
         setFinanceDetailLoadingId(null);
     };
     const isFinanceNav = activeNav === 'keuangan';
@@ -2052,235 +2055,205 @@ function KicapApp() {
 
                                 {financeMessage && <div className="profile-message">{financeMessage}</div>}
 
-                                <form
-                                    className="finance-form"
-                                    onSubmit={(event) => handleFinanceSubmit(event, 'expense', 'expenses')}
-                                >
-                                    <div className="finance-form-title">
-                                        <ReceiptText size={16} strokeWidth={2.4} />
-                                        <span>Catat pengeluaran</span>
-                                    </div>
-                                    <select
-                                        disabled={!selectedLpj.finance?.can_input_finance}
-                                        value={financeForms.expense.category}
-                                        onChange={(event) =>
-                                            updateFinanceForm('expense', 'category', event.target.value)
-                                        }
-                                        required
-                                    >
-                                        <option value="">Pilih kategori</option>
-                                        {(selectedLpj.finance_category_options ?? []).map((category) => (
-                                            <option value={category} key={category}>
-                                                {category}
-                                            </option>
-                                        ))}
-                                    </select>
-                                    <input
-                                        disabled={!selectedLpj.finance?.can_input_finance}
-                                        inputMode="decimal"
-                                        placeholder="Nominal"
-                                        type="number"
-                                        min="1"
-                                        value={financeForms.expense.amount}
-                                        onChange={(event) => updateFinanceForm('expense', 'amount', event.target.value)}
-                                        required
-                                    />
-                                    <input
-                                        disabled={!selectedLpj.finance?.can_input_finance}
-                                        type="date"
-                                        value={financeForms.expense.spent_at}
-                                        onChange={(event) =>
-                                            updateFinanceForm('expense', 'spent_at', event.target.value)
-                                        }
-                                        required
-                                    />
-                                    <textarea
-                                        disabled={!selectedLpj.finance?.can_input_finance}
-                                        placeholder="Keterangan pengeluaran"
-                                        value={financeForms.expense.description}
-                                        onChange={(event) =>
-                                            updateFinanceForm('expense', 'description', event.target.value)
-                                        }
-                                        required
-                                    />
-                                    <input
-                                        disabled={!selectedLpj.finance?.can_input_finance}
-                                        placeholder="Alasan jika tidak ada bukti"
-                                        value={financeForms.expense.no_proof_reason}
-                                        onChange={(event) =>
-                                            updateFinanceForm('expense', 'no_proof_reason', event.target.value)
-                                        }
-                                    />
-                                    <label className="file-button">
-                                        <UploadCloud size={15} strokeWidth={2.4} />
-                                        <span>{financeForms.expense.proof?.name ?? 'Upload bukti'}</span>
-                                        <input
-                                            disabled={!selectedLpj.finance?.can_input_finance}
-                                            accept="image/*,.pdf"
-                                            type="file"
-                                            onChange={(event) =>
-                                                updateFinanceForm('expense', 'proof', event.target.files?.[0] ?? null)
-                                            }
-                                        />
-                                    </label>
-                                    <button
-                                        className="save-profile-button"
-                                        type="submit"
-                                        disabled={!selectedLpj.finance?.can_input_finance}
-                                    >
-                                        <Save size={17} strokeWidth={2.5} />
-                                        Simpan Pengeluaran
-                                    </button>
-                                </form>
+                                {(() => {
+                                    const selectedFinanceMode = financeEntryMode === 'transfer'
+                                        ? 'transfer'
+                                        : financeEntryMode === 'advance'
+                                            ? 'advance'
+                                            : 'expense';
 
-                                <form
-                                    className="finance-form"
-                                    onSubmit={(event) =>
-                                        handleFinanceSubmit(event, 'transfer', 'balance-transfers')
-                                    }
-                                >
-                                    <div className="finance-form-title">
-                                        <Send size={16} strokeWidth={2.4} />
-                                        <span>Transfer saldo</span>
-                                    </div>
-                                    <select
-                                        disabled={
-                                            !selectedLpj.finance?.can_input_finance ||
-                                            !selectedLpj.finance?.can_transfer_balance
-                                        }
-                                        value={financeForms.transfer.recipient_user_id}
-                                        onChange={(event) =>
-                                            updateFinanceForm('transfer', 'recipient_user_id', event.target.value)
-                                        }
-                                        required
-                                    >
-                                        <option value="">Pilih penerima</option>
-                                        {(selectedLpj.finance?.transfer_targets ?? []).map((target) => (
-                                            <option value={target.id} key={target.id}>
-                                                {target.name}
-                                            </option>
-                                        ))}
-                                    </select>
-                                    <input
-                                        disabled={
-                                            !selectedLpj.finance?.can_input_finance ||
-                                            !selectedLpj.finance?.can_transfer_balance
-                                        }
-                                        inputMode="decimal"
-                                        placeholder="Nominal"
-                                        type="number"
-                                        min="1"
-                                        value={financeForms.transfer.amount}
-                                        onChange={(event) => updateFinanceForm('transfer', 'amount', event.target.value)}
-                                        required
-                                    />
-                                    <input
-                                        disabled={
-                                            !selectedLpj.finance?.can_input_finance ||
-                                            !selectedLpj.finance?.can_transfer_balance
-                                        }
-                                        placeholder="Catatan transfer"
-                                        value={financeForms.transfer.note}
-                                        onChange={(event) => updateFinanceForm('transfer', 'note', event.target.value)}
-                                    />
-                                    <button
-                                        className="save-profile-button"
-                                        type="submit"
-                                        disabled={
-                                            !selectedLpj.finance?.can_input_finance ||
-                                            !selectedLpj.finance?.can_transfer_balance
-                                        }
-                                    >
-                                        <Send size={17} strokeWidth={2.5} />
-                                        Transfer Sekarang
-                                    </button>
-                                </form>
+                                    const isTransferMode = selectedFinanceMode === 'transfer';
+                                    const isAdvanceMode = selectedFinanceMode === 'advance';
+                                    const activeFinanceForm = financeForms[selectedFinanceMode];
+                                    const financeEndpoint = isTransferMode
+                                        ? 'balance-transfers'
+                                        : isAdvanceMode
+                                            ? 'advance-expenses'
+                                            : 'expenses';
+                                    const canUseFinanceForm = Boolean(selectedLpj.finance?.can_input_finance);
+                                    const canSubmitFinanceForm = canUseFinanceForm && (!isTransferMode || selectedLpj.finance?.can_transfer_balance);
 
-                                <form
-                                    className="finance-form"
-                                    onSubmit={(event) =>
-                                        handleFinanceSubmit(event, 'advance', 'advance-expenses')
-                                    }
-                                >
-                                    <div className="finance-form-title">
-                                        <Banknote size={16} strokeWidth={2.4} />
-                                        <span>Dana talangan</span>
-                                    </div>
-                                    <select
-                                        disabled={!selectedLpj.finance?.can_input_finance}
-                                        value={financeForms.advance.category}
-                                        onChange={(event) =>
-                                            updateFinanceForm('advance', 'category', event.target.value)
-                                        }
-                                        required
-                                    >
-                                        <option value="">Pilih kategori</option>
-                                        {(selectedLpj.finance_category_options ?? []).map((category) => (
-                                            <option value={category} key={category}>
-                                                {category}
-                                            </option>
-                                        ))}
-                                    </select>
-                                    <input
-                                        disabled={!selectedLpj.finance?.can_input_finance}
-                                        inputMode="decimal"
-                                        placeholder="Nominal"
-                                        type="number"
-                                        min="1"
-                                        value={financeForms.advance.amount}
-                                        onChange={(event) => updateFinanceForm('advance', 'amount', event.target.value)}
-                                        required
-                                    />
-                                    <input
-                                        disabled={!selectedLpj.finance?.can_input_finance}
-                                        type="date"
-                                        value={financeForms.advance.spent_at}
-                                        onChange={(event) =>
-                                            updateFinanceForm('advance', 'spent_at', event.target.value)
-                                        }
-                                        required
-                                    />
-                                    <textarea
-                                        disabled={!selectedLpj.finance?.can_input_finance}
-                                        placeholder="Keterangan dana talangan"
-                                        value={financeForms.advance.description}
-                                        onChange={(event) =>
-                                            updateFinanceForm('advance', 'description', event.target.value)
-                                        }
-                                        required
-                                    />
-                                    <input
-                                        disabled={!selectedLpj.finance?.can_input_finance}
-                                        placeholder="Alasan jika tidak ada bukti"
-                                        value={financeForms.advance.no_proof_reason}
-                                        onChange={(event) =>
-                                            updateFinanceForm('advance', 'no_proof_reason', event.target.value)
-                                        }
-                                    />
-                                    <label className="file-button">
-                                        <UploadCloud size={15} strokeWidth={2.4} />
-                                        <span>{financeForms.advance.proof?.name ?? 'Upload bukti'}</span>
-                                        <input
-                                            disabled={!selectedLpj.finance?.can_input_finance}
-                                            accept="image/*,.pdf"
-                                            type="file"
-                                            onChange={(event) =>
-                                                updateFinanceForm('advance', 'proof', event.target.files?.[0] ?? null)
-                                            }
-                                        />
-                                    </label>
-                                    <button
-                                        className="save-profile-button"
-                                        type="submit"
-                                        disabled={!selectedLpj.finance?.can_input_finance}
-                                    >
-                                        <Save size={17} strokeWidth={2.5} />
-                                        Simpan Talangan
-                                    </button>
-                                </form>
+                                    return (
+                                        <form
+                                            className="finance-form finance-form-unified"
+                                            onSubmit={(event) => handleFinanceSubmit(event, selectedFinanceMode, financeEndpoint)}
+                                        >
+                                            <div className="finance-form-title">
+                                                {isTransferMode ? (
+                                                    <Send size={16} strokeWidth={2.4} />
+                                                ) : isAdvanceMode ? (
+                                                    <Banknote size={16} strokeWidth={2.4} />
+                                                ) : (
+                                                    <ReceiptText size={16} strokeWidth={2.4} />
+                                                )}
+                                                <span>Catat keuangan</span>
+                                            </div>
 
+                                            <label className="finance-field-label">
+                                                <span>Jenis catatan</span>
+                                                <select
+                                                    disabled={!canUseFinanceForm}
+                                                    value={selectedFinanceMode}
+                                                    onChange={(event) => setFinanceEntryMode(event.target.value)}
+                                                    required
+                                                >
+                                                    <option value="expense">Pengeluaran dari Saldo Pegangan</option>
+                                                    <option value="advance">Pengeluaran Dana Talangan / Dana Pribadi</option>
+                                                    <option value="transfer">Transfer Saldo ke User Lain</option>
+                                                </select>
+                                            </label>
+
+                                            {isTransferMode && !selectedLpj.finance?.can_transfer_balance && (
+                                                <div className="finance-mode-hint">
+                                                    Transfer saldo belum aktif untuk akun ini.
+                                                </div>
+                                            )}
+
+                                            {!isTransferMode && (
+                                                <>
+                                                    <select
+                                                        disabled={!canUseFinanceForm}
+                                                        value={activeFinanceForm.category}
+                                                        onChange={(event) =>
+                                                            updateFinanceForm(selectedFinanceMode, 'category', event.target.value)
+                                                        }
+                                                        required
+                                                    >
+                                                        <option value="">Pilih kategori</option>
+                                                        {(selectedLpj.finance_category_options ?? []).map((category) => (
+                                                            <option value={category} key={category}>
+                                                                {category}
+                                                            </option>
+                                                        ))}
+                                                    </select>
+
+                                                    <input
+                                                        disabled={!canUseFinanceForm}
+                                                        inputMode="decimal"
+                                                        placeholder="Nominal"
+                                                        type="number"
+                                                        min="1"
+                                                        value={activeFinanceForm.amount}
+                                                        onChange={(event) =>
+                                                            updateFinanceForm(selectedFinanceMode, 'amount', event.target.value)
+                                                        }
+                                                        required
+                                                    />
+
+                                                    <input
+                                                        disabled={!canUseFinanceForm}
+                                                        type="date"
+                                                        value={activeFinanceForm.spent_at}
+                                                        onChange={(event) =>
+                                                            updateFinanceForm(selectedFinanceMode, 'spent_at', event.target.value)
+                                                        }
+                                                        required
+                                                    />
+
+                                                    <textarea
+                                                        disabled={!canUseFinanceForm}
+                                                        placeholder={isAdvanceMode ? 'Keterangan dana talangan / dana pribadi' : 'Keterangan pengeluaran'}
+                                                        value={activeFinanceForm.description}
+                                                        onChange={(event) =>
+                                                            updateFinanceForm(selectedFinanceMode, 'description', event.target.value)
+                                                        }
+                                                        required
+                                                    />
+
+                                                    <input
+                                                        disabled={!canUseFinanceForm}
+                                                        placeholder="Alasan jika tidak ada bukti"
+                                                        value={activeFinanceForm.no_proof_reason}
+                                                        onChange={(event) =>
+                                                            updateFinanceForm(selectedFinanceMode, 'no_proof_reason', event.target.value)
+                                                        }
+                                                    />
+
+                                                    <label className="file-button">
+                                                        <UploadCloud size={15} strokeWidth={2.4} />
+                                                        <span>{activeFinanceForm.proof?.name ?? 'Upload bukti'}</span>
+                                                        <input
+                                                            disabled={!canUseFinanceForm}
+                                                            accept="image/*,.pdf"
+                                                            type="file"
+                                                            onChange={(event) =>
+                                                                updateFinanceForm(selectedFinanceMode, 'proof', event.target.files?.[0] ?? null)
+                                                            }
+                                                        />
+                                                    </label>
+                                                </>
+                                            )}
+
+                                            {isTransferMode && (
+                                                <>
+                                                    <select
+                                                        disabled={!canSubmitFinanceForm}
+                                                        value={activeFinanceForm.recipient_user_id}
+                                                        onChange={(event) =>
+                                                            updateFinanceForm('transfer', 'recipient_user_id', event.target.value)
+                                                        }
+                                                        required
+                                                    >
+                                                        <option value="">Pilih penerima</option>
+                                                        {(selectedLpj.finance?.transfer_targets ?? []).map((target) => (
+                                                            <option value={target.id} key={target.id}>
+                                                                {target.name}
+                                                            </option>
+                                                        ))}
+                                                    </select>
+
+                                                    <input
+                                                        disabled={!canSubmitFinanceForm}
+                                                        inputMode="decimal"
+                                                        placeholder="Nominal"
+                                                        type="number"
+                                                        min="1"
+                                                        value={activeFinanceForm.amount}
+                                                        onChange={(event) => updateFinanceForm('transfer', 'amount', event.target.value)}
+                                                        required
+                                                    />
+
+                                                    <input
+                                                        disabled={!canSubmitFinanceForm}
+                                                        placeholder="Catatan transfer"
+                                                        value={activeFinanceForm.note}
+                                                        onChange={(event) => updateFinanceForm('transfer', 'note', event.target.value)}
+                                                    />
+                                                </>
+                                            )}
+
+                                            <button
+                                                className="save-profile-button"
+                                                type="submit"
+                                                disabled={!canSubmitFinanceForm}
+                                            >
+                                                {isTransferMode ? (
+                                                    <Send size={17} strokeWidth={2.5} />
+                                                ) : (
+                                                    <Save size={17} strokeWidth={2.5} />
+                                                )}
+                                                {isTransferMode
+                                                    ? 'Transfer Sekarang'
+                                                    : isAdvanceMode
+                                                        ? 'Simpan Talangan'
+                                                        : 'Simpan Pengeluaran'}
+                                            </button>
+                                        </form>
+                                    );
+                                })()}
                                 <div className="finance-history">
-                                    <h3>Riwayat terbaru</h3>
+                                    <div className="finance-history-header">
+                                        <h3>{showAllFinanceHistory ? 'Semua riwayat' : 'Riwayat terbaru'}</h3>
+                                        {(selectedLpj.finance?.transactions ?? []).length > 10 && (
+                                            <button
+                                                type="button"
+                                                className="finance-history-see-all"
+                                                onClick={() => setShowAllFinanceHistory((current) => !current)}
+                                            >
+                                                {showAllFinanceHistory ? 'Tampilkan 10 terakhir' : 'Lihat semua'}
+                                            </button>
+                                        )}
+                                    </div>
 
                                       {financeDetailDialog && (
                                           <div className="finance-minimal-dialog-backdrop" onClick={closeFinanceDetailDialog}>
@@ -2338,7 +2311,7 @@ function KicapApp() {
                                     {(selectedLpj.finance?.transactions ?? []).length === 0 && (
                                         <div className="empty-state">Belum ada transaksi keuangan.</div>
                                     )}
-                                    {(selectedLpj.finance?.transactions ?? []).map((transaction) => (
+                                    {((selectedLpj.finance?.transactions ?? []).slice(0, showAllFinanceHistory ? undefined : 10)).map((transaction) => (
                                         <article
                                               key={transaction.id}
                                               className="finance-history-item-clickable"
