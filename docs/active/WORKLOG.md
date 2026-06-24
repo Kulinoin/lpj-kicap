@@ -11,3 +11,5 @@
 - 2026-06-23 17:17:06: Patch PWA finance history see all link look; Lihat semua dibuat seperti label/link natural.
 
 - 2026-06-24 13:13:37: Patch PWA transfer saldo in finance history; transfer mutations digabung ke riwayat Keuangan PWA.
+
+- 2026-06-24 13:22:51: Patch Admin transaction detail v2; layout detail transaksi menjadi template baku dan tombol kembali kontekstual.

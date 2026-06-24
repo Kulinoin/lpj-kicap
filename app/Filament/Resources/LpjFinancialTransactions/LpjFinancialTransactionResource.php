@@ -78,7 +78,11 @@ class LpjFinancialTransactionResource extends Resource
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->defaultSort('spent_at', 'desc')
-              ->recordUrl(fn (LpjFinancialTransaction $record): string => route('admin.lpj-financial-transactions.detail', $record))
+              ->recordUrl(fn (LpjFinancialTransaction $record): string => route('admin.lpj-financial-transactions.detail', [
+                  'transaction' => $record,
+                  'back_url' => '/admin/lpj-financial-transactions',
+                  'back_label' => 'Daftar transaksi',
+              ]))
             ->recordActions([
                 Action::make('markValid')
                     ->label('Valid')

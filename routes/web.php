@@ -52,6 +52,7 @@ Route::get('/health', function () {
 
 Route::middleware('auth')->group(function (): void {
     
+
 Route::get('/admin/lpj-financial-transactions/{transaction}/detail', function (Request $request, LpjFinancialTransaction $transaction) {
     $user = $request->user();
 
@@ -68,9 +69,20 @@ Route::get('/admin/lpj-financial-transactions/{transaction}/detail', function (R
         $proofUrl = app(\App\Services\AppFileStorageService::class)->url($transaction->proof_path, $transaction->proof_disk);
     }
 
+    // KICAP_TRANSACTION_DETAIL_CONTEXT_BACK
+    $rawBackUrl = (string) $request->query('back_url', '');
+    $backUrl = str_starts_with($rawBackUrl, '/admin/')
+        ? url($rawBackUrl)
+        : url('/admin/lpj-financial-transactions');
+
+    $backLabel = trim((string) $request->query('back_label', 'Daftar transaksi'));
+    $backLabel = $backLabel !== '' ? $backLabel : 'Daftar transaksi';
+
     return view('admin.lpj-financial-transaction-detail', [
         'record' => $transaction,
         'proofUrl' => $proofUrl,
+        'backUrl' => $backUrl,
+        'backLabel' => $backLabel,
         'statusLabels' => LpjFinancialTransaction::statusLabels(),
         'sourceLabels' => LpjFinancialTransaction::sourceLabels(),
         'claimStatusLabels' => \App\Models\LpjAdvanceClaim::statusLabels(),

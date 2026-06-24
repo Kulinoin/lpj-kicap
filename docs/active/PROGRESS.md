@@ -453,3 +453,11 @@ Catatan validasi:
 - Transfer tetap dicatat sebagai mutasi saldo internal, bukan transaksi LPJ final.
 - Detail transfer di PWA dibuka secara lokal tanpa memanggil endpoint detail transaksi pengeluaran.
 - Tidak mengubah struktur database dan tidak menjalankan migrasi.
+
+
+## Patch 2026-06-24 13:22:51 — Patch Admin — Transaction Detail v2
+
+- Merapikan halaman detail transaksi Admin sebagai pola baku detail modul.
+- Menambahkan tombol kembali kontekstual melalui back_url/back_label.
+- Preview bukti/lampiran tetap memakai AppFileStorageService dan URL publik storage.
+- Tidak mengubah struktur database dan tidak menjalankan migrasi.
