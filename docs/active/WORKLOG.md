@@ -19,3 +19,7 @@
 - 2026-06-24 13:41:13: Register dokumentasi lampiran resource ke AdminPanelProvider agar menu Data Pelaksanaan muncul.
 
 - 2026-06-25 01:24:41: Register dokumentasi lampiran resource ke AdminPanelProvider agar menu Data Pelaksanaan muncul.
+
+- 2026-06-25 01:29:22: Patch Admin catatan event detail; resource list + halaman detail catatan.
+
+- 2026-06-25 01:36:52: Patch Admin catatan event status isi; list menampilkan Terisi/Belum diisi.

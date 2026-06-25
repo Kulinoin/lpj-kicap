@@ -476,3 +476,18 @@ Catatan validasi:
 - Mendaftarkan ActivityDocumentationResource dan ActivityAttachmentResource ke AdminPanelProvider.
 - Menu Data Pelaksanaan menampilkan Dokumentasi Event dan Lampiran Event.
 - Tidak mengubah database dan tidak menjalankan migrasi.
+
+
+## Patch 2026-06-25 01:29:22 — Patch Admin — Catatan Event Detail
+
+- Menambahkan resource Admin Catatan Event di grup Data Pelaksanaan.
+- Admin dapat klik baris catatan untuk membuka detail clean.
+- Detail menampilkan event, user, jenis catatan, isi catatan, status Masuk LPJ/Internal.
+- Tidak mengubah database dan tidak menjalankan migrasi.
+
+
+## Patch 2026-06-25 01:36:52 — Patch Admin — Catatan Event Status Isi
+
+- Menambahkan indikator Terisi/Belum diisi pada daftar Catatan Event Admin.
+- Catatan default kosong tetap bisa dibuka dan tampil tanpa error 500.
+- Tidak mengubah database dan tidak menjalankan migrasi.

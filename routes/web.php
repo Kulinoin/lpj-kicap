@@ -54,6 +54,32 @@ Route::middleware('auth')->group(function (): void {
     
 
 
+
+Route::get('/admin/activity-notes/{note}/detail', function (\Illuminate\Http\Request $request, \App\Models\ActivityNote $note) {
+    $user = $request->user();
+
+    abort_unless($user && (
+        (method_exists($user, 'isAdmin') && $user->isAdmin())
+        || (($user->role ?? null) === 'admin')
+    ), 403);
+
+    $note->loadMissing(['lpj', 'user']);
+
+    $rawBackUrl = (string) $request->query('back_url', '');
+    $backUrl = str_starts_with($rawBackUrl, '/admin/')
+        ? url($rawBackUrl)
+        : url('/admin/activity-notes');
+
+    $backLabel = trim((string) $request->query('back_label', 'Daftar catatan'));
+    $backLabel = $backLabel !== '' ? $backLabel : 'Daftar catatan';
+
+    return view('admin.activity-note-detail', [
+        'record' => $note,
+        'backUrl' => $backUrl,
+        'backLabel' => $backLabel,
+        'typeLabels' => \App\Models\ActivityNote::typeLabels(),
+    ]);
+})->middleware('auth')->name('admin.activity-notes.detail');
 Route::get('/admin/activity-documentations/{documentation}/detail', function (\Illuminate\Http\Request $request, \App\Models\ActivityDocumentation $documentation) {
     $user = $request->user();
 

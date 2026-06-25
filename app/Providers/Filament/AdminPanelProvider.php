@@ -3,6 +3,7 @@
 namespace App\Providers\Filament;
 
 use App\Filament\Pages\Auth\Login;
+use App\Filament\Resources\ActivityNotes\ActivityNoteResource;
 use App\Filament\Resources\ActivityAttachments\ActivityAttachmentResource;
 use App\Filament\Resources\ActivityDocumentations\ActivityDocumentationResource;
 use App\Filament\Resources\LpjAdvanceClaims\LpjAdvanceClaimResource;
@@ -169,6 +170,7 @@ class AdminPanelProvider extends PanelProvider
                 'primary' => Color::Amber,
             ])
             ->resources([
+                ActivityNoteResource::class,
                 ActivityDocumentationResource::class,
                 ActivityAttachmentResource::class,
                 LpjAdvanceClaimResource::class,
