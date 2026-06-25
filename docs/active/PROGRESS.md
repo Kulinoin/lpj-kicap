@@ -491,3 +491,11 @@ Catatan validasi:
 - Menambahkan indikator Terisi/Belum diisi pada daftar Catatan Event Admin.
 - Catatan default kosong tetap bisa dibuka dan tampil tanpa error 500.
 - Tidak mengubah database dan tidak menjalankan migrasi.
+
+
+## Patch 2026-06-25 01:42:04 — Patch Admin — Operasional Event Detail
+
+- Menambahkan resource Admin Peserta Event, Panitia/Pendamping, dan Rundown Event di grup Data Pelaksanaan.
+- Admin dapat klik baris untuk membuka detail clean.
+- Detail mengikuti pola visual detail transaksi/catatan/dokumentasi.
+- Tidak mengubah database dan tidak menjalankan migrasi.

@@ -205,4 +205,19 @@ class Lpj extends Model
     {
         return max(0, (float) $this->total_funds_received - $this->allocatedUserFundTotal());
     }
+
+    public function selectionStages(): HasMany
+    {
+        return $this->hasMany(ActivitySelectionStage::class);
+    }
+
+    public function selectionTests(): HasMany
+    {
+        return $this->hasMany(ActivitySelectionTest::class);
+    }
+
+    public function participantTestResults(): HasMany
+    {
+        return $this->hasMany(ActivityParticipantTestResult::class);
+    }
 }
