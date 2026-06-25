@@ -55,6 +55,124 @@ Route::middleware('auth')->group(function (): void {
 
 
 
+
+Route::get('/admin/activity-participants/{participant}/detail', function (\Illuminate\Http\Request $request, \App\Models\ActivityParticipant $participant) {
+    $user = $request->user();
+
+    abort_unless($user && (
+        (method_exists($user, 'isAdmin') && $user->isAdmin())
+        || (($user->role ?? null) === 'admin')
+    ), 403);
+
+    $participant->loadMissing(['lpj', 'creator']);
+
+    $rawBackUrl = (string) $request->query('back_url', '');
+    $backUrl = str_starts_with($rawBackUrl, '/admin/')
+        ? url($rawBackUrl)
+        : url('/admin/activity-participants');
+
+    $backLabel = trim((string) $request->query('back_label', 'Daftar peserta'));
+    $backLabel = $backLabel !== '' ? $backLabel : 'Daftar peserta';
+
+    return view('admin.activity-operational-detail', [
+        'kind' => 'participant',
+        'record' => $participant,
+        'backUrl' => $backUrl,
+        'backLabel' => $backLabel,
+        'title' => $participant->name ?: 'Peserta Event',
+        'subtitle' => 'Peserta Event',
+        'primaryLabel' => 'Nama Peserta',
+        'primaryValue' => $participant->name,
+        'secondaryLabel' => 'Asal',
+        'secondaryValue' => $participant->origin,
+        'items' => [
+            ['label' => 'Nomor Peserta', 'value' => $participant->participant_number],
+            ['label' => 'Kehadiran', 'value' => \App\Models\ActivityParticipant::attendanceOptions()[$participant->attendance_status] ?? $participant->attendance_status],
+            ['label' => 'Hasil', 'value' => $participant->result_status],
+            ['label' => 'Input Oleh', 'value' => $participant->creator?->name],
+        ],
+        'noteLabel' => 'Catatan',
+        'noteValue' => $participant->note,
+    ]);
+})->middleware('auth')->name('admin.activity-participants.detail');
+
+Route::get('/admin/activity-committees/{committee}/detail', function (\Illuminate\Http\Request $request, \App\Models\ActivityCommittee $committee) {
+    $user = $request->user();
+
+    abort_unless($user && (
+        (method_exists($user, 'isAdmin') && $user->isAdmin())
+        || (($user->role ?? null) === 'admin')
+    ), 403);
+
+    $committee->loadMissing(['lpj', 'creator']);
+
+    $rawBackUrl = (string) $request->query('back_url', '');
+    $backUrl = str_starts_with($rawBackUrl, '/admin/')
+        ? url($rawBackUrl)
+        : url('/admin/activity-committees');
+
+    $backLabel = trim((string) $request->query('back_label', 'Daftar panitia/pendamping'));
+    $backLabel = $backLabel !== '' ? $backLabel : 'Daftar panitia/pendamping';
+
+    return view('admin.activity-operational-detail', [
+        'kind' => 'committee',
+        'record' => $committee,
+        'backUrl' => $backUrl,
+        'backLabel' => $backLabel,
+        'title' => $committee->name ?: 'Panitia/Pendamping',
+        'subtitle' => 'Panitia/Pendamping',
+        'primaryLabel' => 'Nama',
+        'primaryValue' => $committee->name,
+        'secondaryLabel' => 'Peran',
+        'secondaryValue' => $committee->role,
+        'items' => [
+            ['label' => 'Kontak', 'value' => $committee->contact],
+            ['label' => 'Input Oleh', 'value' => $committee->creator?->name],
+        ],
+        'noteLabel' => 'Tugas',
+        'noteValue' => $committee->task,
+    ]);
+})->middleware('auth')->name('admin.activity-committees.detail');
+
+Route::get('/admin/activity-schedules/{schedule}/detail', function (\Illuminate\Http\Request $request, \App\Models\ActivitySchedule $schedule) {
+    $user = $request->user();
+
+    abort_unless($user && (
+        (method_exists($user, 'isAdmin') && $user->isAdmin())
+        || (($user->role ?? null) === 'admin')
+    ), 403);
+
+    $schedule->loadMissing(['lpj', 'creator']);
+
+    $rawBackUrl = (string) $request->query('back_url', '');
+    $backUrl = str_starts_with($rawBackUrl, '/admin/')
+        ? url($rawBackUrl)
+        : url('/admin/activity-schedules');
+
+    $backLabel = trim((string) $request->query('back_label', 'Daftar rundown'));
+    $backLabel = $backLabel !== '' ? $backLabel : 'Daftar rundown';
+
+    return view('admin.activity-operational-detail', [
+        'kind' => 'schedule',
+        'record' => $schedule,
+        'backUrl' => $backUrl,
+        'backLabel' => $backLabel,
+        'title' => $schedule->activity_name ?: 'Rundown Event',
+        'subtitle' => 'Rundown Event',
+        'primaryLabel' => 'Kegiatan',
+        'primaryValue' => $schedule->activity_name,
+        'secondaryLabel' => 'PIC',
+        'secondaryValue' => $schedule->responsible_person,
+        'items' => [
+            ['label' => 'Mulai', 'value' => optional($schedule->start_time)->format('d/m/Y H:i')],
+            ['label' => 'Selesai', 'value' => optional($schedule->end_time)->format('d/m/Y H:i')],
+            ['label' => 'Urutan', 'value' => $schedule->sort_order],
+            ['label' => 'Input Oleh', 'value' => $schedule->creator?->name],
+        ],
+        'noteLabel' => 'Catatan',
+        'noteValue' => $schedule->note,
+    ]);
+})->middleware('auth')->name('admin.activity-schedules.detail');
 Route::get('/admin/activity-notes/{note}/detail', function (\Illuminate\Http\Request $request, \App\Models\ActivityNote $note) {
     $user = $request->user();
 
@@ -866,3 +984,67 @@ Route::get('/api/master/lpj-types', function () {
         ->active()
         ->get(['id', 'name', 'slug', 'description', 'is_external_event', 'sort_order']);
 });
+
+
+Route::get('/admin/selection/participants/{participant}/detail', function (\Illuminate\Http\Request $request, \App\Models\ActivityParticipant $participant) {
+    $user = $request->user();
+
+    abort_unless($user && (
+        (method_exists($user, 'isAdmin') && $user->isAdmin())
+        || (($user->role ?? null) === 'admin')
+    ), 403);
+
+    $participant->loadMissing([
+        'lpj',
+        'registeredBy',
+        'currentSelectionStage',
+        'eliminatedStage',
+        'eliminatedTest',
+        'testResults.stage',
+        'testResults.test',
+        'testResults.updater',
+    ]);
+
+    $rawBackUrl = (string) $request->query('back_url', '');
+    $backUrl = str_starts_with($rawBackUrl, '/admin/')
+        ? url($rawBackUrl)
+        : url('/admin/activity-participants');
+
+    $backLabel = trim((string) $request->query('back_label', 'Daftar peserta seleksi'));
+    $backLabel = $backLabel !== '' ? $backLabel : 'Daftar peserta seleksi';
+
+    $photoUrl = null;
+
+    if (filled($participant->photo_path)) {
+        try {
+            $storage = app(\App\Services\AppFileStorageService::class);
+            $method = new \ReflectionMethod($storage, 'url');
+
+            $photoUrl = $method->getNumberOfParameters() >= 2
+                ? $storage->url($participant->photo_path, $participant->photo_disk)
+                : $storage->url($participant->photo_path);
+        } catch (\Throwable $e) {
+            try {
+                $photoUrl = \Illuminate\Support\Facades\Storage::disk($participant->photo_disk ?: config('filesystems.default'))
+                    ->url($participant->photo_path);
+            } catch (\Throwable $ignored) {
+                $photoUrl = null;
+            }
+        }
+    }
+
+    $stages = \App\Models\ActivitySelectionStage::query()
+        ->where('lpj_id', $participant->lpj_id)
+        ->with(['tests' => fn ($query) => $query->orderBy('sort_order')])
+        ->orderBy('sort_order')
+        ->get();
+
+    return view('admin.selection-participant-detail', [
+        'participant' => $participant,
+        'stages' => $stages,
+        'resultsByTestId' => $participant->testResults->keyBy('activity_selection_test_id'),
+        'photoUrl' => $photoUrl,
+        'backUrl' => $backUrl,
+        'backLabel' => $backLabel,
+    ]);
+})->middleware('auth')->name('admin.selection.participants.detail');

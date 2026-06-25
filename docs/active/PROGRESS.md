@@ -499,3 +499,8 @@ Catatan validasi:
 - Admin dapat klik baris untuk membuka detail clean.
 - Detail mengikuti pola visual detail transaksi/catatan/dokumentasi.
 - Tidak mengubah database dan tidak menjalankan migrasi.
+## Patch 2026-06-25 02:20:00 — Admin Monitoring Seleksi
+
+- Menambahkan menu Admin Operasional Seleksi: Peserta Seleksi, Tahapan Seleksi, Item Tes Seleksi, dan Hasil Tes Peserta.
+- Detail peserta menampilkan nomor peserta, WhatsApp, foto, catatan peserta, status registrasi, status seleksi, tahap gugur, dan hasil tes per tahap.
+- Patch code-only: tidak migration dan tidak mengubah isi database.

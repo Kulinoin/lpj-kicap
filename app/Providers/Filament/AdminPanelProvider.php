@@ -3,6 +3,12 @@
 namespace App\Providers\Filament;
 
 use App\Filament\Pages\Auth\Login;
+use App\Filament\Resources\ActivitySelectionStages\ActivitySelectionStageResource;
+use App\Filament\Resources\ActivitySelectionTests\ActivitySelectionTestResource;
+use App\Filament\Resources\ActivityParticipantTestResults\ActivityParticipantTestResultResource;
+use App\Filament\Resources\ActivityParticipants\ActivityParticipantResource;
+use App\Filament\Resources\ActivityCommittees\ActivityCommitteeResource;
+use App\Filament\Resources\ActivitySchedules\ActivityScheduleResource;
 use App\Filament\Resources\ActivityNotes\ActivityNoteResource;
 use App\Filament\Resources\ActivityAttachments\ActivityAttachmentResource;
 use App\Filament\Resources\ActivityDocumentations\ActivityDocumentationResource;
@@ -170,6 +176,12 @@ class AdminPanelProvider extends PanelProvider
                 'primary' => Color::Amber,
             ])
             ->resources([
+                ActivitySelectionStageResource::class,
+                ActivitySelectionTestResource::class,
+                ActivityParticipantTestResultResource::class,
+                ActivityScheduleResource::class,
+                ActivityCommitteeResource::class,
+                ActivityParticipantResource::class,
                 ActivityNoteResource::class,
                 ActivityDocumentationResource::class,
                 ActivityAttachmentResource::class,

@@ -25,3 +25,5 @@
 - 2026-06-25 01:36:52: Patch Admin catatan event status isi; list menampilkan Terisi/Belum diisi.
 
 - 2026-06-25 01:42:04: Patch Admin operasional event detail; resource peserta, panitia, rundown + halaman detail.
+
+- 2026-06-25 02:20:00: Admin Monitoring Seleksi; resource list dan detail peserta seleksi lengkap.
