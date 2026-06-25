@@ -3941,3 +3941,187 @@ body,
     }
 }
 
+/* KICAP_PWA_RUNDOWN_QUICK_STATUS_01 */
+.selection-rundown-card .rundown-list {
+    display: grid;
+    gap: .75rem;
+}
+
+.selection-rundown-card .rundown-item-polished {
+    border: 1px solid rgba(15, 23, 42, .08);
+    border-radius: 24px;
+    background:
+        radial-gradient(circle at 8% 0%, rgba(20, 184, 166, .10), transparent 34%),
+        linear-gradient(180deg, #ffffff, #f8fafc);
+    box-shadow: 0 14px 36px rgba(15, 23, 42, .08);
+    padding: .85rem;
+    display: grid;
+    gap: .72rem;
+}
+
+.selection-rundown-card .rundown-main-row {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: .75rem;
+    align-items: start;
+}
+
+.selection-rundown-card .rundown-time-chip {
+    min-width: 76px;
+    text-align: center;
+    border-radius: 18px;
+    padding: .62rem .58rem;
+    background: rgba(15, 23, 42, .05);
+    color: #0f172a;
+    font-weight: 950;
+    font-size: .82rem;
+    line-height: 1.15;
+    border: 1px solid rgba(15, 23, 42, .07);
+}
+
+.selection-rundown-card .rundown-info {
+    min-width: 0;
+    display: grid;
+    gap: .22rem;
+}
+
+.selection-rundown-card .rundown-info strong {
+    color: #0f172a;
+    font-size: .98rem;
+    line-height: 1.22;
+}
+
+.selection-rundown-card .rundown-info small {
+    color: #64748b;
+    font-weight: 800;
+}
+
+.selection-rundown-card .rundown-info p {
+    margin: .15rem 0 0;
+    color: #475569;
+    font-size: .82rem;
+    line-height: 1.45;
+}
+
+.selection-rundown-card .rundown-status-pill {
+    justify-self: start;
+    border-radius: 999px;
+    padding: .42rem .68rem;
+    font-size: .76rem;
+    font-weight: 950;
+    border: 1px solid rgba(15, 23, 42, .08);
+}
+
+.selection-rundown-card .rundown-status-pill.is-not-started {
+    background: rgba(100, 116, 139, .12);
+    color: #475569;
+}
+
+.selection-rundown-card .rundown-status-pill.is-progress {
+    background: rgba(245, 158, 11, .14);
+    color: #b45309;
+}
+
+.selection-rundown-card .rundown-status-pill.is-done {
+    background: rgba(20, 184, 166, .14);
+    color: #0f766e;
+}
+
+.selection-rundown-card .rundown-quick-actions {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: .45rem;
+}
+
+.selection-rundown-card .rundown-status-action {
+    min-height: 44px;
+    border: 1px solid rgba(15, 23, 42, .09);
+    border-radius: 16px;
+    background: #ffffff;
+    color: #334155;
+    font-size: .78rem;
+    font-weight: 950;
+    cursor: pointer;
+    padding: .54rem .45rem;
+}
+
+.selection-rundown-card .rundown-status-action.is-not-started.is-active {
+    background: rgba(100, 116, 139, .13);
+    color: #475569;
+}
+
+.selection-rundown-card .rundown-status-action.is-progress.is-active {
+    background: rgba(245, 158, 11, .15);
+    color: #92400e;
+    border-color: rgba(180, 83, 9, .18);
+}
+
+.selection-rundown-card .rundown-status-action.is-done.is-active {
+    background: rgba(20, 184, 166, .16);
+    color: #0f766e;
+    border-color: rgba(15, 118, 110, .20);
+}
+
+.selection-rundown-card .rundown-status-action:disabled {
+    cursor: default;
+}
+
+@media (max-width: 420px) {
+    .selection-rundown-card .rundown-main-row {
+        grid-template-columns: 1fr;
+    }
+
+    .selection-rundown-card .rundown-time-chip {
+        width: fit-content;
+        min-width: 0;
+    }
+
+    .selection-rundown-card .rundown-quick-actions {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* KICAP_PWA_RUNDOWN_EXPAND_STATUS_02 */
+.selection-rundown-card .rundown-item-polished {
+    transition: border-color .16s ease, box-shadow .16s ease, transform .16s ease;
+}
+
+.selection-rundown-card .rundown-item-polished[role="button"] {
+    cursor: pointer;
+}
+
+.selection-rundown-card .rundown-item-polished.is-selected {
+    border-color: rgba(20, 184, 166, .24);
+    box-shadow: 0 18px 46px rgba(15, 23, 42, .12);
+    transform: translateY(-1px);
+}
+
+.selection-rundown-card .rundown-tap-hint {
+    display: block;
+    margin-top: -.2rem;
+    color: #64748b;
+    font-size: .74rem;
+    font-weight: 850;
+}
+
+.selection-rundown-card .rundown-item-polished.is-selected .rundown-tap-hint {
+    color: #0f766e;
+}
+
+.selection-rundown-card .rundown-quick-actions {
+    animation: rundownStatusIn .16s ease-out;
+    padding-top: .15rem;
+}
+
+@keyframes rundownStatusIn {
+    from {
+        opacity: 0;
+        transform: translateY(-6px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+

@@ -417,6 +417,7 @@ function KicapApp() {
         note: '',
     });
     const [rundownStatusForms, setRundownStatusForms] = useState({});
+    const [expandedRundownStatusId, setExpandedRundownStatusId] = useState(null);
     const [editingSelectionTestResult, setEditingSelectionTestResult] = useState(null);
     const [selectionTestResultForms, setSelectionTestResultForms] = useState({});
 
@@ -1256,6 +1257,124 @@ function KicapApp() {
             loadOperationalSchedules();
         }
     }, [activeNav, selectedLpj?.id]);
+
+
+    const rundownStatusOptions = [
+        { value: 'belum_mulai', label: 'Belum Dilaksanakan' },
+        { value: 'sedang_berlangsung', label: 'Proses' },
+        { value: 'selesai', label: 'Selesai' },
+    ];
+
+    const rundownStatusLabel = (status) => {
+        if (status === 'selesai') return 'Selesai';
+        if (status === 'sedang_berlangsung') return 'Proses';
+        return 'Belum Dilaksanakan';
+    };
+
+    const rundownStatusClass = (status) => {
+        if (status === 'selesai') return 'is-done';
+        if (status === 'sedang_berlangsung') return 'is-progress';
+        return 'is-not-started';
+    };
+
+    const rundownMinutes = (value) => {
+        const match = String(value ?? '').match(/(\d{1,2}):(\d{2})/);
+
+        if (!match) {
+            return Number.MAX_SAFE_INTEGER;
+        }
+
+        return Number(match[1]) * 60 + Number(match[2]);
+    };
+
+    const formatRundownTime = (value) => {
+        const match = String(value ?? '').match(/(\d{1,2}):(\d{2})/);
+
+        if (!match) {
+            return '-';
+        }
+
+        return match[1].padStart(2, '0') + ':' + match[2];
+    };
+
+    const formatRundownRange = (item) => {
+        const start = formatRundownTime(item.start_time);
+        const end = formatRundownTime(item.end_time);
+
+        if (start === '-' && end === '-') {
+            return 'Jam belum diisi';
+        }
+
+        if (end === '-') {
+            return start;
+        }
+
+        return start + ' – ' + end;
+    };
+
+    const sortRundownSchedules = (schedules = []) => {
+        return [...schedules].sort((a, b) => {
+            const startDiff = rundownMinutes(a.start_time) - rundownMinutes(b.start_time);
+
+            if (startDiff !== 0) {
+                return startDiff;
+            }
+
+            const orderDiff = Number(a.sort_order ?? 999999) - Number(b.sort_order ?? 999999);
+
+            if (orderDiff !== 0) {
+                return orderDiff;
+            }
+
+            return String(a.activity_name ?? '').localeCompare(String(b.activity_name ?? ''), 'id-ID', {
+                numeric: true,
+                sensitivity: 'base',
+            });
+        });
+    };
+
+    const handleQuickUpdateRundownStatus = (item, status) => {
+        if (!selectedLpj?.id || !rundownData?.can_manage_rundown) {
+            return;
+        }
+
+        if ((item.status ?? 'belum_mulai') === status) {
+            return;
+        }
+
+        setRundownMessage('Menyimpan status rundown...');
+
+        const formData = new FormData();
+        formData.append('status', status);
+
+        fetch('/api/app/lpjs/' + selectedLpj.id + '/operational-schedules/' + item.id + '/status', {
+            method: 'POST',
+            headers: {
+                Accept: 'application/json',
+                'X-CSRF-TOKEN': getCsrfToken(),
+            },
+            body: formData,
+        })
+            .then(async (response) => {
+                const payload = await response.json().catch(() => ({}));
+
+                if (!response.ok) {
+                    const firstMessage = Object.values(payload.errors ?? {})?.[0]?.[0];
+                    throw new Error(firstMessage ?? payload.message ?? 'Status rundown belum tersimpan.');
+                }
+
+                return payload;
+            })
+            .then((payload) => {
+                setRundownData(payload.data ?? { can_manage_rundown: true, schedules: [] });
+                setRundownStatusForms((payload.data?.schedules ?? []).reduce((forms, item) => ({ ...forms, [item.id]: { status: item.status ?? 'belum_mulai', status_note: item.status_note ?? '' } }), {}));
+                setExpandedRundownStatusId(null);
+                setRundownMessage('Status rundown tersimpan.');
+            })
+            .catch((error) => {
+                setRundownMessage(error.message ?? 'Status rundown belum tersimpan.');
+            });
+    };
 
     const updateRundownForm = (field, value) => {
         setRundownForm((current) => ({
@@ -2633,33 +2752,57 @@ function KicapApp() {
                                         {(rundownData?.schedules ?? []).length === 0 ? (
                                             <div className="empty-card">Belum ada rundown.</div>
                                         ) : (
-                                            (rundownData?.schedules ?? []).map((item) => (
-                                                <article className="rundown-item" key={item.id}>
-                                                    <div>
-                                                        <strong>{item.activity_name}</strong>
-                                                        <span>{item.start_time || '-'}{item.end_time ? ' — ' + item.end_time : ''}</span>
-                                                        <small>PIC: {item.responsible_person || '-'} · Input: {item.created_by || '-'}</small>
+                                            sortRundownSchedules(rundownData?.schedules ?? []).map((item) => (
+                                                <article
+                                                    className={'rundown-item rundown-item-polished ' + rundownStatusClass(item.status) + (expandedRundownStatusId === item.id ? ' is-selected' : '')}
+                                                    key={item.id}
+                                                    role={rundownData?.can_manage_rundown ? 'button' : undefined}
+                                                    tabIndex={rundownData?.can_manage_rundown ? 0 : undefined}
+                                                    onClick={() => rundownData?.can_manage_rundown && setExpandedRundownStatusId(expandedRundownStatusId === item.id ? null : item.id)}
+                                                    onKeyDown={(event) => {
+                                                        if (!rundownData?.can_manage_rundown) return;
+                                                        if (event.key === 'Enter' || event.key === ' ') {
+                                                            event.preventDefault();
+                                                            setExpandedRundownStatusId(expandedRundownStatusId === item.id ? null : item.id);
+                                                        }
+                                                    }}
+                                                >
+                                                    <div className="rundown-main-row">
+                                                        <div className="rundown-time-chip">{formatRundownRange(item)}</div>
+                                                        <div className="rundown-info">
+                                                            <strong>{item.activity_name}</strong>
+                                                            {item.responsible_person && <small>PIC: {item.responsible_person}</small>}
+                                                            {item.note && <p>{item.note}</p>}
+                                                        </div>
                                                     </div>
-                                                    {item.note && <p>{item.note}</p>}
-                                                    <div className="rundown-status-pill">{item.status_label ?? 'Belum mulai'}</div>
+
+                                                    <div className={'rundown-status-pill ' + rundownStatusClass(item.status)}>
+                                                        {rundownStatusLabel(item.status)}
+                                                    </div>
+
                                                     {rundownData?.can_manage_rundown && (
-                                                        <form className="rundown-status-form" onSubmit={(event) => handleUpdateRundownStatus(event, item)}>
-                                                            <select
-                                                                value={rundownStatusForms[item.id]?.status ?? item.status ?? 'belum_mulai'}
-                                                                onChange={(event) => updateRundownStatusForm(item.id, 'status', event.target.value)}
-                                                            >
-                                                                <option value="belum_mulai">Belum mulai</option>
-                                                                <option value="sedang_berlangsung">Sedang berlangsung</option>
-                                                                <option value="selesai">Selesai</option>
-                                                                <option value="terkendala">Terkendala</option>
-                                                            </select>
-                                                            <textarea
-                                                                value={rundownStatusForms[item.id]?.status_note ?? ''}
-                                                                onChange={(event) => updateRundownStatusForm(item.id, 'status_note', event.target.value)}
-                                                                placeholder="Catatan status jika ada"
-                                                            />
-                                                            <button type="submit" className="ghost-button">Update Status</button>
-                                                        </form>
+                                                        <small className="rundown-tap-hint">
+                                                            {expandedRundownStatusId === item.id ? 'Pilih status baru' : 'Ketuk rundown untuk ubah status'}
+                                                        </small>
+                                                    )}
+
+                                                    {rundownData?.can_manage_rundown && expandedRundownStatusId === item.id && (
+                                                        <div className="rundown-quick-actions" aria-label="Update status rundown">
+                                                            {rundownStatusOptions.map((option) => (
+                                                                <button
+                                                                    type="button"
+                                                                    key={option.value}
+                                                                    className={'rundown-status-action ' + (item.status === option.value ? 'is-active ' : '') + rundownStatusClass(option.value)}
+                                                                    onClick={(event) => {
+                                                                        event.stopPropagation();
+                                                                        handleQuickUpdateRundownStatus(item, option.value);
+                                                                    }}
+                                                                    disabled={item.status === option.value}
+                                                                >
+                                                                    {option.label}
+                                                                </button>
+                                                            ))}
+                                                        </div>
                                                     )}
                                                 </article>
                                             ))
