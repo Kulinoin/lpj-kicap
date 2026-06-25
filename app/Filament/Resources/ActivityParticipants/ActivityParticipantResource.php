@@ -5,6 +5,7 @@ namespace App\Filament\Resources\ActivityParticipants;
 use App\Filament\Resources\ActivityParticipants\Pages\ListActivityParticipants;
 use App\Filament\Resources\ActivityParticipants\Pages\CreateActivityParticipant;
 use App\Filament\Resources\ActivityParticipants\Pages\ViewActivityParticipant;
+use App\Filament\Resources\ActivityParticipants\Pages\EditActivityParticipant;
 use App\Models\ActivityParticipant;
 use App\Models\Lpj;
 use Filament\Forms\Components\Select;
@@ -228,6 +229,7 @@ class ActivityParticipantResource extends Resource
             'index' => ListActivityParticipants::route('/'),
             'create' => CreateActivityParticipant::route('/create'),
             'view' => ViewActivityParticipant::route('/{record}'),
+            'edit' => EditActivityParticipant::route('/{record}/edit'),
         ];
     }
 }

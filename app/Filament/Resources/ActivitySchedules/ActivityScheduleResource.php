@@ -5,6 +5,7 @@ namespace App\Filament\Resources\ActivitySchedules;
 use App\Filament\Resources\ActivitySchedules\Pages\ListActivitySchedules;
 use App\Filament\Resources\ActivitySchedules\Pages\CreateActivitySchedule;
 use App\Filament\Resources\ActivitySchedules\Pages\ViewActivitySchedule;
+use App\Filament\Resources\ActivitySchedules\Pages\EditActivitySchedule;
 use App\Models\ActivitySchedule;
 use App\Models\Lpj;
 use Filament\Forms\Components\DateTimePicker;
@@ -181,6 +182,7 @@ class ActivityScheduleResource extends Resource
             'index' => ListActivitySchedules::route('/'),
             'create' => CreateActivitySchedule::route('/create'),
             'view' => ViewActivitySchedule::route('/{record}'),
+            'edit' => EditActivitySchedule::route('/{record}/edit'),
         ];
     }
 }

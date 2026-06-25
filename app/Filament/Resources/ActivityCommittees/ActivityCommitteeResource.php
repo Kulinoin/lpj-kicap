@@ -5,6 +5,7 @@ namespace App\Filament\Resources\ActivityCommittees;
 use App\Filament\Resources\ActivityCommittees\Pages\ListActivityCommittees;
 use App\Filament\Resources\ActivityCommittees\Pages\CreateActivityCommittee;
 use App\Filament\Resources\ActivityCommittees\Pages\ViewActivityCommittee;
+use App\Filament\Resources\ActivityCommittees\Pages\EditActivityCommittee;
 use App\Models\ActivityCommittee;
 use App\Models\Lpj;
 use Filament\Forms\Components\Select;
@@ -134,6 +135,7 @@ class ActivityCommitteeResource extends Resource
             'index' => ListActivityCommittees::route('/'),
             'create' => CreateActivityCommittee::route('/create'),
             'view' => ViewActivityCommittee::route('/{record}'),
+            'edit' => EditActivityCommittee::route('/{record}/edit'),
         ];
     }
 }
