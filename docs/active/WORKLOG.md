@@ -13,3 +13,9 @@
 - 2026-06-24 13:13:37: Patch PWA transfer saldo in finance history; transfer mutations digabung ke riwayat Keuangan PWA.
 
 - 2026-06-24 13:22:51: Patch Admin transaction detail v2; layout detail transaksi menjadi template baku dan tombol kembali kontekstual.
+
+- 2026-06-24 13:29:35: Patch Admin dokumentasi lampiran detail; resource list + halaman detail file.
+
+- 2026-06-24 13:41:13: Register dokumentasi lampiran resource ke AdminPanelProvider agar menu Data Pelaksanaan muncul.
+
+- 2026-06-25 01:24:41: Register dokumentasi lampiran resource ke AdminPanelProvider agar menu Data Pelaksanaan muncul.

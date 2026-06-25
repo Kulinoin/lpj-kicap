@@ -461,3 +461,18 @@ Catatan validasi:
 - Menambahkan tombol kembali kontekstual melalui back_url/back_label.
 - Preview bukti/lampiran tetap memakai AppFileStorageService dan URL publik storage.
 - Tidak mengubah struktur database dan tidak menjalankan migrasi.
+
+
+## Patch 2026-06-24 13:29:35 — Patch Admin — Dokumentasi Lampiran Detail
+
+- Menambahkan resource Admin Dokumentasi Event dan Lampiran Event di grup Data Pelaksanaan.
+- Admin dapat klik baris untuk membuka halaman detail file dengan preview gambar/file.
+- Detail memakai pola visual yang sama dengan detail transaksi Admin.
+- Tidak mengubah struktur database dan tidak menjalankan migrasi.
+
+
+## Patch 2026-06-24 13:41:13 — Patch Admin — Register Dokumentasi Lampiran Resource
+
+- Mendaftarkan ActivityDocumentationResource dan ActivityAttachmentResource ke AdminPanelProvider.
+- Menu Data Pelaksanaan menampilkan Dokumentasi Event dan Lampiran Event.
+- Tidak mengubah database dan tidak menjalankan migrasi.

@@ -3,6 +3,8 @@
 namespace App\Providers\Filament;
 
 use App\Filament\Pages\Auth\Login;
+use App\Filament\Resources\ActivityAttachments\ActivityAttachmentResource;
+use App\Filament\Resources\ActivityDocumentations\ActivityDocumentationResource;
 use App\Filament\Resources\LpjAdvanceClaims\LpjAdvanceClaimResource;
 use App\Filament\Resources\LpjBalanceMutations\LpjBalanceMutationResource;
 use App\Filament\Resources\LpjFinancialTransactions\LpjFinancialTransactionResource;
@@ -167,6 +169,8 @@ class AdminPanelProvider extends PanelProvider
                 'primary' => Color::Amber,
             ])
             ->resources([
+                ActivityDocumentationResource::class,
+                ActivityAttachmentResource::class,
                 LpjAdvanceClaimResource::class,
                 LpjBalanceMutationResource::class,
                 LpjFinancialTransactionResource::class,

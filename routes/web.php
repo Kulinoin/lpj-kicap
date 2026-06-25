@@ -53,6 +53,76 @@ Route::get('/health', function () {
 Route::middleware('auth')->group(function (): void {
     
 
+
+Route::get('/admin/activity-documentations/{documentation}/detail', function (\Illuminate\Http\Request $request, \App\Models\ActivityDocumentation $documentation) {
+    $user = $request->user();
+
+    abort_unless($user && (
+        (method_exists($user, 'isAdmin') && $user->isAdmin())
+        || (($user->role ?? null) === 'admin')
+    ), 403);
+
+    $documentation->loadMissing(['lpj', 'uploader']);
+
+    $fileUrl = app(\App\Services\AppFileStorageService::class)->url($documentation->file_path, $documentation->file_disk);
+
+    $rawBackUrl = (string) $request->query('back_url', '');
+    $backUrl = str_starts_with($rawBackUrl, '/admin/')
+        ? url($rawBackUrl)
+        : url('/admin/activity-documentations');
+
+    $backLabel = trim((string) $request->query('back_label', 'Daftar dokumentasi'));
+    $backLabel = $backLabel !== '' ? $backLabel : 'Daftar dokumentasi';
+
+    return view('admin.activity-file-detail', [
+        'kind' => 'documentation',
+        'record' => $documentation,
+        'fileUrl' => $fileUrl,
+        'backUrl' => $backUrl,
+        'backLabel' => $backLabel,
+        'title' => $documentation->caption ?: $documentation->original_name ?: 'Dokumentasi Event',
+        'subtitle' => 'Dokumentasi Event',
+        'primaryLabel' => 'Kategori',
+        'primaryValue' => \App\Models\ActivityDocumentation::categoryOptions()[$documentation->category] ?? $documentation->category,
+        'descriptionLabel' => 'Caption',
+        'descriptionValue' => $documentation->caption,
+    ]);
+})->middleware('auth')->name('admin.activity-documentations.detail');
+
+Route::get('/admin/activity-attachments/{attachment}/detail', function (\Illuminate\Http\Request $request, \App\Models\ActivityAttachment $attachment) {
+    $user = $request->user();
+
+    abort_unless($user && (
+        (method_exists($user, 'isAdmin') && $user->isAdmin())
+        || (($user->role ?? null) === 'admin')
+    ), 403);
+
+    $attachment->loadMissing(['lpj', 'uploader']);
+
+    $fileUrl = app(\App\Services\AppFileStorageService::class)->url($attachment->file_path, $attachment->file_disk);
+
+    $rawBackUrl = (string) $request->query('back_url', '');
+    $backUrl = str_starts_with($rawBackUrl, '/admin/')
+        ? url($rawBackUrl)
+        : url('/admin/activity-attachments');
+
+    $backLabel = trim((string) $request->query('back_label', 'Daftar lampiran'));
+    $backLabel = $backLabel !== '' ? $backLabel : 'Daftar lampiran';
+
+    return view('admin.activity-file-detail', [
+        'kind' => 'attachment',
+        'record' => $attachment,
+        'fileUrl' => $fileUrl,
+        'backUrl' => $backUrl,
+        'backLabel' => $backLabel,
+        'title' => $attachment->title ?: $attachment->original_name ?: 'Lampiran Event',
+        'subtitle' => 'Lampiran Event',
+        'primaryLabel' => 'Judul',
+        'primaryValue' => $attachment->title,
+        'descriptionLabel' => 'Keterangan',
+        'descriptionValue' => $attachment->description,
+    ]);
+})->middleware('auth')->name('admin.activity-attachments.detail');
 Route::get('/admin/lpj-financial-transactions/{transaction}/detail', function (Request $request, LpjFinancialTransaction $transaction) {
     $user = $request->user();
 
