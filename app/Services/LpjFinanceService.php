@@ -233,7 +233,6 @@ class LpjFinanceService
         // KICAP_TRANSFER_HISTORY_IN_FINANCE_PAYLOAD
         $expenseTransactions = LpjFinancialTransaction::query()
             ->where('lpj_id', $lpj->id)
-            ->where('user_id', $user->id)
             ->latest()
             ->get()
             ->map(fn (LpjFinancialTransaction $transaction): array => [

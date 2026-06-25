@@ -2211,3 +2211,726 @@ h3 {
         color: #fbbf24 !important;
     }
 }
+
+/* KICAP_SELECTION_REGISTRATION_01 */
+.selection-panel{display:grid;gap:1rem}
+.selection-hero,.selection-form-card,.selection-participant-card,.selection-summary-card,.empty-card{border:1px solid rgba(148,163,184,.22);background:rgba(15,23,42,.72);border-radius:24px;padding:1rem;box-shadow:0 18px 50px rgba(15,23,42,.18)}
+.selection-hero{display:flex;align-items:flex-start;justify-content:space-between;gap:1rem}
+.selection-hero h2,.selection-form-title h3,.selection-tests-preview h4{margin:.15rem 0}
+.selection-hero p,.selection-participant-head small,.selection-tests-preview p{margin:.25rem 0 0;color:rgba(226,232,240,.68)}
+.selection-summary-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:.7rem}
+.selection-summary-card{padding:.85rem}
+.selection-summary-card span{display:block;color:rgba(226,232,240,.68);font-size:.76rem;font-weight:800}
+.selection-summary-card strong{display:block;margin-top:.25rem;font-size:1.35rem}
+.selection-form-card{display:grid;gap:.8rem}
+.selection-form-card label,.selection-participant-body label{display:grid;gap:.35rem;color:rgba(226,232,240,.78);font-size:.82rem;font-weight:850}
+.selection-form-card input,.selection-form-card textarea,.selection-toolbar input,.selection-participant-body input,.selection-participant-body textarea{width:100%;border:1px solid rgba(148,163,184,.22);border-radius:16px;background:rgba(15,23,42,.92);color:#f8fafc;padding:.8rem .9rem;outline:none}
+.selection-form-card textarea,.selection-participant-body textarea{min-height:90px;resize:vertical}
+.selection-toolbar input{min-height:44px}
+.selection-list{display:grid;gap:.8rem}
+.selection-participant-card{padding:0;overflow:hidden}
+.selection-participant-head{width:100%;display:grid;grid-template-columns:54px minmax(0,1fr) auto;gap:.8rem;align-items:center;border:0;background:transparent;color:inherit;padding:.9rem;text-align:left}
+.participant-photo{width:54px;height:54px;border-radius:18px;overflow:hidden;background:rgba(245,158,11,.18);display:grid;place-items:center;color:#fbbf24;font-weight:950}
+.participant-photo img{width:100%;height:100%;object-fit:cover}
+.participant-main{display:grid;gap:.16rem;min-width:0}
+.participant-main strong,.participant-main span,.participant-main small{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.participant-main span{color:rgba(226,232,240,.78);font-size:.82rem}
+.participant-badges{display:flex;flex-direction:column;align-items:flex-end;gap:.35rem}
+.mini-badge{display:inline-flex;align-items:center;justify-content:center;border:1px solid rgba(148,163,184,.24);border-radius:999px;padding:.28rem .55rem;font-size:.68rem;font-weight:900;color:rgba(226,232,240,.82);background:rgba(255,255,255,.04);white-space:nowrap}
+.mini-badge.is-active{color:#38bdf8;border-color:rgba(56,189,248,.35)}
+.mini-badge.is-pass{color:#22c55e;border-color:rgba(34,197,94,.35)}
+.mini-badge.is-fail{color:#fb7185;border-color:rgba(251,113,133,.35)}
+.selection-participant-body{border-top:1px solid rgba(148,163,184,.16);padding:.95rem;display:grid;gap:.9rem}
+.selection-participant-body form{display:grid;gap:.8rem}
+.selection-meta-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:.65rem}
+.selection-meta-grid div{border:1px solid rgba(148,163,184,.16);border-radius:16px;padding:.7rem;background:rgba(255,255,255,.03)}
+.selection-meta-grid span{display:block;color:rgba(226,232,240,.62);font-size:.72rem;font-weight:850}
+.selection-meta-grid strong{display:block;margin-top:.18rem;font-size:.86rem}
+.selection-tests-preview{border-top:1px dashed rgba(148,163,184,.2);padding-top:.85rem}
+.selection-test-list{display:grid;gap:.5rem}
+.selection-test-row{display:flex;align-items:center;justify-content:space-between;gap:.8rem;border:1px solid rgba(148,163,184,.16);border-radius:16px;padding:.65rem;background:rgba(255,255,255,.03)}
+.selection-test-row div{display:grid;gap:.12rem}
+.selection-test-row span{color:rgba(226,232,240,.62);font-size:.75rem}
+.selection-test-row em{font-style:normal;font-size:.75rem;font-weight:900;color:rgba(226,232,240,.82)}
+@media(max-width:520px){.selection-hero{display:grid}.selection-summary-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.selection-participant-head{grid-template-columns:48px minmax(0,1fr)}.participant-badges{grid-column:1/-1;flex-direction:row;align-items:flex-start;justify-content:flex-start;flex-wrap:wrap}.selection-meta-grid{grid-template-columns:1fr}.selection-test-row{align-items:flex-start;flex-direction:column}}
+
+
+/* KICAP_SELECTION_RUNDOWN_01 */
+.selection-rundown-card {
+    border: 1px solid rgba(148, 163, 184, .22);
+    background: rgba(15, 23, 42, .72);
+    border-radius: 24px;
+    padding: 1rem;
+    display: grid;
+    gap: .9rem;
+    box-shadow: 0 18px 50px rgba(15,23,42,.18);
+}
+
+.selection-form-title {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: .8rem;
+}
+
+.selection-form-title p {
+    margin: .2rem 0 0;
+    color: rgba(226, 232, 240, .66);
+}
+
+.rundown-form {
+    display: grid;
+    gap: .8rem;
+}
+
+.rundown-form label {
+    display: grid;
+    gap: .35rem;
+    color: rgba(226, 232, 240, .78);
+    font-size: .82rem;
+    font-weight: 850;
+}
+
+.rundown-form input,
+.rundown-form textarea {
+    width: 100%;
+    border: 1px solid rgba(148, 163, 184, .22);
+    border-radius: 16px;
+    background: rgba(15, 23, 42, .92);
+    color: #f8fafc;
+    padding: .8rem .9rem;
+    outline: none;
+}
+
+.rundown-form textarea {
+    min-height: 90px;
+    resize: vertical;
+}
+
+.rundown-two-col {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: .7rem;
+}
+
+.rundown-list {
+    display: grid;
+    gap: .65rem;
+}
+
+.rundown-item {
+    border: 1px solid rgba(148, 163, 184, .16);
+    border-radius: 18px;
+    background: rgba(255,255,255,.035);
+    padding: .8rem;
+    display: grid;
+    gap: .35rem;
+}
+
+.rundown-item strong,
+.rundown-item span,
+.rundown-item small {
+    display: block;
+}
+
+.rundown-item span,
+.rundown-item small,
+.rundown-item p {
+    color: rgba(226, 232, 240, .66);
+    margin: .18rem 0 0;
+}
+
+@media (max-width: 520px) {
+    .selection-form-title {
+        display: grid;
+    }
+
+    .rundown-two-col {
+        grid-template-columns: 1fr;
+    }
+}
+
+
+/* KICAP_OPERATIONAL_CORRECT_FLOW_01 */
+.rundown-status-pill {
+    display: inline-flex;
+    width: fit-content;
+    border: 1px solid rgba(56, 189, 248, .35);
+    color: #38bdf8;
+    border-radius: 999px;
+    padding: .28rem .6rem;
+    font-size: .72rem;
+    font-weight: 900;
+    margin-top: .45rem;
+    background: rgba(56, 189, 248, .08);
+}
+
+.rundown-status-form {
+    display: grid;
+    gap: .5rem;
+    margin-top: .7rem;
+    border-top: 1px dashed rgba(148, 163, 184, .2);
+    padding-top: .7rem;
+}
+
+.rundown-status-form select,
+.rundown-status-form textarea {
+    width: 100%;
+    border: 1px solid rgba(148, 163, 184, .22);
+    border-radius: 14px;
+    background: rgba(15, 23, 42, .92);
+    color: #f8fafc;
+    padding: .7rem .8rem;
+}
+
+.rundown-status-form textarea {
+    min-height: 70px;
+    resize: vertical;
+}
+
+/* KICAP_PWA_OPERATIONAL_POLISH_02 */
+.selection-panel {
+    color: #0f172a;
+}
+
+.selection-panel .selection-hero,
+.selection-panel .selection-form-card,
+.selection-panel .selection-rundown-card,
+.selection-panel .selection-participant-card,
+.selection-panel .selection-summary-card,
+.selection-panel .empty-card {
+    background: rgba(255, 255, 255, .96) !important;
+    color: #0f172a !important;
+    border: 1px solid rgba(15, 23, 42, .08) !important;
+    box-shadow: 0 14px 34px rgba(15, 23, 42, .08) !important;
+}
+
+.selection-panel .selection-hero,
+.selection-panel .selection-rundown-card {
+    border-radius: 24px;
+}
+
+.selection-panel .selection-hero p,
+.selection-panel .selection-form-title p,
+.selection-panel .selection-participant-head small,
+.selection-panel .selection-tests-preview p,
+.selection-panel .rundown-item span,
+.selection-panel .rundown-item small,
+.selection-panel .rundown-item p,
+.selection-panel .selection-summary-card span {
+    color: #64748b !important;
+}
+
+.selection-panel .section-kicker {
+    color: #0f766e !important;
+    font-weight: 900;
+}
+
+.selection-panel h2,
+.selection-panel h3,
+.selection-panel strong,
+.selection-panel .selection-summary-card strong,
+.selection-panel .participant-main strong {
+    color: #0f172a !important;
+}
+
+.selection-panel .selection-summary-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+/* Sembunyikan Belum Registrasi + Sudah Registrasi dari ringkasan PWA */
+.selection-panel .selection-summary-grid .selection-summary-card:nth-child(2),
+.selection-panel .selection-summary-grid .selection-summary-card:nth-child(3) {
+    display: none !important;
+}
+
+.selection-panel .selection-summary-card {
+    min-height: 86px;
+    border-radius: 22px;
+}
+
+.selection-panel .selection-toolbar input,
+.selection-panel .selection-form-card input,
+.selection-panel .selection-form-card textarea,
+.selection-panel .selection-participant-body input,
+.selection-panel .selection-participant-body textarea,
+.selection-panel .rundown-form input,
+.selection-panel .rundown-form textarea,
+.selection-panel .rundown-status-form select,
+.selection-panel .rundown-status-form textarea {
+    background: #f8fafc !important;
+    color: #0f172a !important;
+    border: 1px solid rgba(15, 23, 42, .12) !important;
+}
+
+.selection-panel input::placeholder,
+.selection-panel textarea::placeholder {
+    color: #94a3b8 !important;
+}
+
+.selection-panel .ghost-button,
+.selection-panel .primary-button,
+.selection-panel button[type="submit"] {
+    border-radius: 999px !important;
+    min-height: 42px;
+    border: 0 !important;
+    background: linear-gradient(135deg, #14b8a6, #0f766e) !important;
+    color: #ffffff !important;
+    font-weight: 900 !important;
+    box-shadow: 0 10px 24px rgba(15, 118, 110, .22);
+}
+
+.selection-panel .selection-hero .ghost-button,
+.selection-panel .selection-form-title .ghost-button {
+    background: #ecfeff !important;
+    color: #0f766e !important;
+    border: 1px solid rgba(20, 184, 166, .22) !important;
+    box-shadow: none;
+}
+
+.selection-panel .rundown-item {
+    background: #f8fafc !important;
+    border: 1px solid rgba(15, 23, 42, .08) !important;
+}
+
+.selection-panel .rundown-status-pill {
+    background: #ecfdf5 !important;
+    color: #047857 !important;
+    border-color: rgba(16, 185, 129, .24) !important;
+}
+
+.selection-panel .mini-badge {
+    background: #f8fafc !important;
+    color: #334155 !important;
+    border-color: rgba(15, 23, 42, .1) !important;
+}
+
+.selection-panel .mini-badge.is-active {
+    color: #0369a1 !important;
+    border-color: rgba(3, 105, 161, .22) !important;
+    background: #f0f9ff !important;
+}
+
+.selection-panel .mini-badge.is-pass {
+    color: #047857 !important;
+    border-color: rgba(4, 120, 87, .22) !important;
+    background: #ecfdf5 !important;
+}
+
+.selection-panel .mini-badge.is-fail {
+    color: #be123c !important;
+    border-color: rgba(190, 18, 60, .22) !important;
+    background: #fff1f2 !important;
+}
+
+.selection-panel .selection-meta-grid div,
+.selection-panel .selection-test-row {
+    background: #f8fafc !important;
+    border-color: rgba(15, 23, 42, .08) !important;
+}
+
+.selection-panel .selection-meta-grid span,
+.selection-panel .selection-test-row span {
+    color: #64748b !important;
+}
+
+@media (max-width: 520px) {
+    .selection-panel .selection-summary-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+
+/* KICAP_OPERATIONAL_APP_POLISH_03 */
+.selection-panel {
+    gap: 0.85rem !important;
+}
+
+.selection-panel .selection-hero,
+.selection-panel .selection-rundown-card {
+    background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%) !important;
+    border-radius: 26px !important;
+    padding: 1rem !important;
+}
+
+.selection-panel .selection-hero h2,
+.selection-panel .selection-rundown-card h3 {
+    font-size: 1.22rem !important;
+    letter-spacing: -0.02em;
+}
+
+.selection-panel .selection-hero p,
+.selection-panel .selection-rundown-card p {
+    font-size: .88rem !important;
+    line-height: 1.45 !important;
+}
+
+.selection-panel .selection-summary-grid {
+    gap: .65rem !important;
+}
+
+.selection-panel .selection-summary-card {
+    min-height: 78px !important;
+    border-radius: 20px !important;
+    padding: .85rem !important;
+}
+
+.selection-panel .selection-summary-card strong {
+    font-size: 1.25rem !important;
+}
+
+.selection-panel .rundown-item {
+    border-radius: 20px !important;
+    padding: .9rem !important;
+}
+
+.selection-panel .rundown-status-form {
+    background: #ffffff !important;
+    border: 1px solid rgba(15, 23, 42, .07) !important;
+    border-radius: 18px !important;
+    padding: .75rem !important;
+}
+
+.selection-panel .selection-toolbar input {
+    background: #ffffff !important;
+    box-shadow: 0 10px 24px rgba(15, 23, 42, .06);
+}
+
+/* KICAP_DOCUMENTATION_HISTORY_RESTORE_01 */
+.documentation-panel-v2 {
+    display: grid;
+    gap: .9rem;
+}
+
+.documentation-hero-v2,
+.documentation-upload-card-v2,
+.documentation-history-card-v2,
+.documentation-panel-v2 .empty-card {
+    background: rgba(255, 255, 255, .96);
+    color: #0f172a;
+    border: 1px solid rgba(15, 23, 42, .08);
+    border-radius: 24px;
+    padding: 1rem;
+    box-shadow: 0 14px 34px rgba(15, 23, 42, .08);
+}
+
+.documentation-hero-v2 {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: .8rem;
+}
+
+.documentation-hero-v2 h2,
+.documentation-upload-card-v2 h3 {
+    color: #0f172a;
+    margin: .15rem 0;
+}
+
+.documentation-hero-v2 p {
+    color: #64748b;
+    margin: .2rem 0 0;
+    line-height: 1.45;
+}
+
+.documentation-upload-card-v2 {
+    display: grid;
+    gap: .8rem;
+}
+
+.documentation-upload-card-v2 label {
+    display: grid;
+    gap: .35rem;
+    color: #334155;
+    font-size: .82rem;
+    font-weight: 850;
+}
+
+.documentation-upload-card-v2 select,
+.documentation-upload-card-v2 textarea,
+.documentation-upload-card-v2 input[type="file"] {
+    width: 100%;
+    border: 1px solid rgba(15, 23, 42, .12);
+    border-radius: 16px;
+    background: #f8fafc;
+    color: #0f172a;
+    padding: .8rem .9rem;
+    outline: none;
+}
+
+.documentation-upload-card-v2 textarea {
+    min-height: 86px;
+    resize: vertical;
+}
+
+.documentation-file-v2 {
+    border: 1px dashed rgba(20, 184, 166, .35);
+    background: #ecfeff;
+    border-radius: 18px;
+    padding: .8rem;
+}
+
+.documentation-history-grid-v2 {
+    display: grid;
+    gap: .8rem;
+}
+
+.documentation-history-card-v2 {
+    padding: .75rem;
+    overflow: hidden;
+    display: grid;
+    grid-template-columns: 92px minmax(0, 1fr);
+    gap: .8rem;
+    align-items: stretch;
+}
+
+.documentation-thumb-v2 {
+    border: 0;
+    padding: 0;
+    background: #e2e8f0;
+    border-radius: 18px;
+    overflow: hidden;
+    min-height: 92px;
+}
+
+.documentation-thumb-v2 img {
+    width: 100%;
+    height: 100%;
+    min-height: 92px;
+    object-fit: cover;
+    display: block;
+}
+
+.documentation-file-preview-v2 {
+    min-height: 92px;
+    border-radius: 18px;
+    background: #f1f5f9;
+    color: #0f766e;
+    display: grid;
+    place-items: center;
+    text-decoration: none;
+    font-weight: 900;
+}
+
+.documentation-history-body-v2 {
+    display: grid;
+    align-content: center;
+    gap: .2rem;
+    min-width: 0;
+}
+
+.documentation-history-body-v2 span {
+    color: #0f766e;
+    font-size: .72rem;
+    font-weight: 950;
+    text-transform: uppercase;
+    letter-spacing: .04em;
+}
+
+.documentation-history-body-v2 strong {
+    color: #0f172a;
+    line-height: 1.3;
+}
+
+.documentation-history-body-v2 small {
+    color: #64748b;
+}
+
+.documentation-history-body-v2 a {
+    color: #0f766e;
+    font-weight: 900;
+    text-decoration: none;
+    font-size: .82rem;
+    margin-top: .25rem;
+}
+
+@media (max-width: 520px) {
+    .documentation-hero-v2 {
+        display: grid;
+    }
+
+    .documentation-history-card-v2 {
+        grid-template-columns: 84px minmax(0, 1fr);
+    }
+}
+
+
+/* KICAP_PULL_TO_REFRESH_01 */
+html,
+body {
+    overscroll-behavior-y: auto;
+}
+
+/* Refresh manual disembunyikan agar PWA terasa seperti aplikasi native.
+   Refresh dilakukan dengan tarik ke bawah pada halaman aktif. */
+.selection-hero > .ghost-button,
+.documentation-hero-v2 > .ghost-button,
+.selection-form-title > .ghost-button {
+    display: none !important;
+}
+
+.documentation-hero-v2,
+.selection-hero {
+    padding-bottom: 1.15rem !important;
+}
+
+.documentation-panel-v2::before,
+.selection-panel::before {
+    content: "Tarik ke bawah untuk memperbarui";
+    display: block;
+    margin: 0 auto -0.25rem;
+    width: fit-content;
+    color: #94a3b8;
+    font-size: .72rem;
+    font-weight: 800;
+}
+
+
+/* KICAP_CLEAN_OPERATIONAL_DOCS_EDIT_01 */
+
+/* Judul clean seperti halaman Keuangan */
+.selection-panel::before,
+.documentation-panel-v2::before {
+    display: none !important;
+    content: none !important;
+}
+
+.selection-panel .selection-hero,
+.documentation-hero-v2 {
+    background: transparent !important;
+    border: 0 !important;
+    box-shadow: none !important;
+    border-radius: 0 !important;
+    padding: .25rem .15rem .35rem !important;
+}
+
+.selection-panel .selection-hero p,
+.documentation-hero-v2 p,
+.selection-panel .selection-rundown-card > .selection-form-title p {
+    display: none !important;
+}
+
+.selection-panel .selection-hero .section-kicker,
+.documentation-hero-v2 .section-kicker,
+.selection-panel .selection-rundown-card .section-kicker {
+    color: #64748b !important;
+    font-size: .75rem !important;
+    letter-spacing: .04em;
+}
+
+.selection-panel .selection-hero h2,
+.documentation-hero-v2 h2,
+.selection-panel .selection-rundown-card h3 {
+    font-size: 1.45rem !important;
+    line-height: 1.1 !important;
+    margin-top: .2rem !important;
+}
+
+.selection-panel .selection-rundown-card {
+    border-radius: 24px !important;
+    padding: 1rem !important;
+}
+
+.documentation-actions-v2 {
+    display: flex;
+    align-items: center;
+    gap: .45rem;
+    flex-wrap: wrap;
+    margin-top: .4rem;
+}
+
+.documentation-actions-v2 a,
+.documentation-actions-v2 button {
+    border: 0;
+    border-radius: 999px;
+    background: #ecfeff;
+    color: #0f766e;
+    font-size: .78rem;
+    font-weight: 900;
+    padding: .38rem .7rem;
+    text-decoration: none;
+}
+
+.documentation-actions-v2 button {
+    cursor: pointer;
+}
+
+.documentation-edit-form-v2 {
+    display: grid;
+    gap: .5rem;
+    margin-top: .7rem;
+    padding-top: .7rem;
+    border-top: 1px dashed rgba(15, 23, 42, .1);
+}
+
+.documentation-edit-form-v2 select,
+.documentation-edit-form-v2 textarea,
+.documentation-edit-form-v2 input[type="file"] {
+    width: 100%;
+    border: 1px solid rgba(15, 23, 42, .12);
+    border-radius: 14px;
+    background: #f8fafc;
+    color: #0f172a;
+    padding: .7rem .8rem;
+}
+
+.documentation-edit-form-v2 textarea {
+    min-height: 76px;
+    resize: vertical;
+}
+
+.documentation-edit-file-v2 {
+    display: grid;
+    gap: .35rem;
+    color: #475569;
+    font-size: .78rem;
+    font-weight: 850;
+}
+
+.documentation-edit-form-v2 button[type="submit"] {
+    border: 0;
+    border-radius: 999px;
+    min-height: 38px;
+    background: linear-gradient(135deg, #14b8a6, #0f766e);
+    color: #fff;
+    font-weight: 900;
+}
+
+.documentation-upload-card-v2 {
+    border-radius: 24px !important;
+}
+
+
+/* KICAP_PULL_TO_REFRESH_02 */
+html,
+body {
+    overscroll-behavior-y: auto;
+}
+
+/* Pull-to-refresh v2 berjalan tanpa tombol dan tanpa helper text visual. */
+.documentation-panel-v2::before,
+.selection-panel::before {
+    display: none !important;
+    content: none !important;
+}
+
+
+/* KICAP_PULL_TO_REFRESH_KEEP_PAGE_01 */
+html,
+body {
+    overscroll-behavior-y: contain !important;
+}
+
+.mobile-shell {
+    overscroll-behavior-y: auto;
+}
+
+
+/* KICAP_NATIVE_REFRESH_KEEP_PAGE_01 */
+/* Gunakan native pull-to-refresh Android/Chrome agar stabil.
+   Halaman terakhir tetap dipulihkan lewat sessionStorage. */
+html,
+body,
+.mobile-shell {
+    overscroll-behavior-y: auto !important;
+}

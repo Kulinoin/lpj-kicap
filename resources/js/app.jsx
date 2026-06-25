@@ -332,7 +332,89 @@ function KicapApp() {
     const [isOnline, setIsOnline] = useState(navigator.onLine);
     const [eventSearch, setEventSearch] = useState('');
     const [eventFilter, setEventFilter] = useState('tugas');
+    const emptySelectionParticipantForm = {
+        name: '',
+        origin: '',
+        participant_number: '',
+        whatsapp: '',
+        note: '',
+    };
+
+    const buildSelectionRegistrationForms = (participants = []) => {
+        return (participants ?? []).reduce((forms, participant) => {
+            forms[participant.id] = {
+                participant_number: participant.participant_number ?? '',
+                whatsapp: participant.whatsapp ?? '',
+                note: participant.note ?? '',
+                photo: null,
+            };
+
+            return forms;
+        }, {});
+    };
+
+    const selectionStatusClass = (status) => {
+        if (status === 'lulus') return 'is-pass';
+        if (status === 'gugur' || status === 'tidak_hadir') return 'is-fail';
+        if (status === 'aktif') return 'is-active';
+        return '';
+    };
+
+    // KICAP_SELECTION_REGISTRATION_01
+
     const [profileView, setProfileView] = useState('home');
+    const [selectionData, setSelectionData] = useState(null);
+    const [selectionLoading, setSelectionLoading] = useState(false);
+    const [selectionMessage, setSelectionMessage] = useState('');
+    const [selectionSearch, setSelectionSearch] = useState('');
+    const [selectionParticipantForm, setSelectionParticipantForm] = useState(emptySelectionParticipantForm);
+    const [selectionRegistrationForms, setSelectionRegistrationForms] = useState({});
+    const [expandedSelectionParticipantId, setExpandedSelectionParticipantId] = useState(null);
+    const [documentationMessage, setDocumentationMessage] = useState('');
+    const [editingDocumentationId, setEditingDocumentationId] = useState(null);
+    const [documentationEditForms, setDocumentationEditForms] = useState({});
+    const documentationCategoryOptions = useMemo(() => {
+        const raw = selectedLpj?.execution?.documentation_categories;
+
+        if (Array.isArray(raw)) {
+            return raw.map((item) => {
+                if (typeof item === 'string') {
+                    return { value: item, label: item };
+                }
+
+                return {
+                    value: item.value ?? item.key ?? item.id ?? '',
+                    label: item.label ?? item.name ?? item.value ?? item.key ?? '',
+                };
+            }).filter((item) => item.value);
+        }
+
+        if (raw && typeof raw === 'object') {
+            return Object.entries(raw).map(([value, label]) => ({
+                value,
+                label: String(label),
+            }));
+        }
+
+        return [
+            { value: 'pelaksanaan', label: 'Pelaksanaan' },
+            { value: 'briefing', label: 'Briefing' },
+            { value: 'lainnya', label: 'Lainnya' },
+        ];
+    }, [selectedLpj?.execution?.documentation_categories]);
+
+    // KICAP_FIX_DOCUMENTATION_BLANK_CATEGORIES_01
+    const [rundownData, setRundownData] = useState({ can_manage_rundown: false, schedules: [] });
+    const [rundownLoading, setRundownLoading] = useState(false);
+    const [rundownMessage, setRundownMessage] = useState('');
+    const [rundownForm, setRundownForm] = useState({
+        activity_name: '',
+        start_time: '',
+        end_time: '',
+        responsible_person: '',
+        note: '',
+    });
+    const [rundownStatusForms, setRundownStatusForms] = useState({});
 
     useEffect(() => {
         let isMounted = true;
@@ -808,6 +890,542 @@ function KicapApp() {
             });
     };
 
+    const loadSelectionData = () => {
+        if (!selectedLpj?.id) {
+            return;
+        }
+
+        setSelectionLoading(true);
+        setSelectionMessage('');
+
+        fetch('/api/app/lpjs/' + selectedLpj.id + '/selection', {
+            headers: { Accept: 'application/json' },
+        })
+            .then(async (response) => {
+                const payload = await response.json().catch(() => ({}));
+
+                if (!response.ok) {
+                    const firstMessage = Object.values(payload.errors ?? {})?.[0]?.[0];
+                    throw new Error(firstMessage ?? payload.message ?? 'Data seleksi tidak bisa dimuat.');
+                }
+
+                return payload;
+            })
+            .then((payload) => {
+                const selection = payload.data?.selection ?? null;
+                setSelectionData(selection);
+                setSelectionRegistrationForms(buildSelectionRegistrationForms(selection?.participants ?? []));
+            })
+            .catch((error) => {
+                setSelectionMessage(error.message ?? 'Data seleksi tidak bisa dimuat.');
+            })
+            .finally(() => {
+                setSelectionLoading(false);
+            });
+    };
+
+    useEffect(() => {
+        if (activeNav === 'operasional' && selectedLpj?.id) {
+            loadSelectionData();
+        }
+    }, [activeNav, selectedLpj?.id]);
+
+    const updateSelectionParticipantForm = (field, value) => {
+        setSelectionParticipantForm((current) => ({
+            ...current,
+            [field]: value,
+        }));
+    };
+
+    const updateSelectionRegistrationForm = async (participantId, field, value) => {
+        if (field === 'photo' && typeof File !== 'undefined' && value instanceof File && typeof normalizeImageUploadFile === 'function') {
+            value = await normalizeImageUploadFile(value);
+        }
+
+        setSelectionRegistrationForms((current) => ({
+            ...current,
+            [participantId]: {
+                ...(current[participantId] ?? {}),
+                [field]: value,
+            },
+        }));
+    };
+
+    const handleCreateSelectionParticipant = (event) => {
+        event.preventDefault();
+
+        if (!selectedLpj?.id || !selectionData?.can_manage_selection) {
+            return;
+        }
+
+        setSelectionMessage('Menyimpan peserta...');
+
+        const formData = new FormData();
+
+        Object.entries(selectionParticipantForm).forEach(([key, value]) => {
+            if (value !== null && value !== '') {
+                formData.append(key, value);
+            }
+        });
+
+        fetch('/api/app/lpjs/' + selectedLpj.id + '/selection/participants', {
+            method: 'POST',
+            headers: {
+                Accept: 'application/json',
+                'X-CSRF-TOKEN': getCsrfToken(),
+            },
+            body: formData,
+        })
+            .then(async (response) => {
+                const payload = await response.json().catch(() => ({}));
+
+                if (!response.ok) {
+                    const firstMessage = Object.values(payload.errors ?? {})?.[0]?.[0];
+                    throw new Error(firstMessage ?? payload.message ?? 'Peserta belum tersimpan.');
+                }
+
+                return payload;
+            })
+            .then((payload) => {
+                const selection = payload.data?.selection ?? null;
+                setSelectionData(selection);
+                setSelectionRegistrationForms(buildSelectionRegistrationForms(selection?.participants ?? []));
+                setSelectionParticipantForm(emptySelectionParticipantForm);
+                setSelectionMessage('Peserta tersimpan.');
+            })
+            .catch((error) => {
+                setSelectionMessage(error.message ?? 'Peserta belum tersimpan.');
+            });
+    };
+
+    const handleSelectionRegistrationSubmit = (event, participant) => {
+        event.preventDefault();
+
+        if (!selectedLpj?.id || !selectionData?.can_manage_selection) {
+            return;
+        }
+
+        setSelectionMessage('Menyimpan registrasi peserta...');
+
+        const form = selectionRegistrationForms[participant.id] ?? {};
+        const formData = new FormData();
+
+        Object.entries(form).forEach(([key, value]) => {
+            if (value !== null && value !== '') {
+                formData.append(key, value);
+            }
+        });
+
+        fetch('/api/app/lpjs/' + selectedLpj.id + '/selection/participants/' + participant.id + '/registration', {
+            method: 'POST',
+            headers: {
+                Accept: 'application/json',
+                'X-CSRF-TOKEN': getCsrfToken(),
+            },
+            body: formData,
+        })
+            .then(async (response) => {
+                const payload = await response.json().catch(() => ({}));
+
+                if (!response.ok) {
+                    const firstMessage = Object.values(payload.errors ?? {})?.[0]?.[0];
+                    throw new Error(firstMessage ?? payload.message ?? 'Registrasi belum tersimpan.');
+                }
+
+                return payload;
+            })
+            .then((payload) => {
+                const selection = payload.data?.selection ?? null;
+                setSelectionData(selection);
+                setSelectionRegistrationForms(buildSelectionRegistrationForms(selection?.participants ?? []));
+                setSelectionMessage('Registrasi peserta tersimpan.');
+            })
+            .catch((error) => {
+                setSelectionMessage(error.message ?? 'Registrasi belum tersimpan.');
+            });
+    };
+
+    const loadOperationalSchedules = () => {
+        if (!selectedLpj?.id) {
+            return;
+        }
+
+        setRundownLoading(true);
+        setRundownMessage('');
+
+        fetch('/api/app/lpjs/' + selectedLpj.id + '/operational-schedules', {
+            headers: { Accept: 'application/json' },
+        })
+            .then(async (response) => {
+                const payload = await response.json().catch(() => ({}));
+
+                if (!response.ok) {
+                    const firstMessage = Object.values(payload.errors ?? {})?.[0]?.[0];
+                    throw new Error(firstMessage ?? payload.message ?? 'Rundown tidak bisa dimuat.');
+                }
+
+                return payload;
+            })
+            .then((payload) => {
+                setRundownData(payload.data ?? { can_manage_rundown: false, schedules: [] });
+                setRundownStatusForms((payload.data?.schedules ?? []).reduce((forms, item) => ({ ...forms, [item.id]: { status: item.status ?? 'belum_mulai', status_note: item.status_note ?? '' } }), {}));
+            })
+            .catch((error) => {
+                setRundownMessage(error.message ?? 'Rundown tidak bisa dimuat.');
+            })
+            .finally(() => {
+                setRundownLoading(false);
+            });
+    };
+
+    useEffect(() => {
+        if (activeNav === 'operasional' && selectedLpj?.id) {
+            loadOperationalSchedules();
+        }
+    }, [activeNav, selectedLpj?.id]);
+
+    const updateRundownForm = (field, value) => {
+        setRundownForm((current) => ({
+            ...current,
+            [field]: value,
+        }));
+    };
+
+    const updateRundownStatusForm = (scheduleId, field, value) => {
+        setRundownStatusForms((current) => ({
+            ...current,
+            [scheduleId]: {
+                ...(current[scheduleId] ?? {}),
+                [field]: value,
+            },
+        }));
+    };
+
+    const handleUpdateRundownStatus = (event, item) => {
+        event.preventDefault();
+
+        if (!selectedLpj?.id || !rundownData?.can_manage_rundown) {
+            return;
+        }
+
+        setRundownMessage('Menyimpan status rundown...');
+
+        const form = rundownStatusForms[item.id] ?? {};
+        const formData = new FormData();
+
+        formData.append('status', form.status ?? item.status ?? 'belum_mulai');
+
+        if (form.status_note) {
+            formData.append('status_note', form.status_note);
+        }
+
+        fetch('/api/app/lpjs/' + selectedLpj.id + '/operational-schedules/' + item.id + '/status', {
+            method: 'POST',
+            headers: {
+                Accept: 'application/json',
+                'X-CSRF-TOKEN': getCsrfToken(),
+            },
+            body: formData,
+        })
+            .then(async (response) => {
+                const payload = await response.json().catch(() => ({}));
+
+                if (!response.ok) {
+                    const firstMessage = Object.values(payload.errors ?? {})?.[0]?.[0];
+                    throw new Error(firstMessage ?? payload.message ?? 'Status rundown belum tersimpan.');
+                }
+
+                return payload;
+            })
+            .then((payload) => {
+                setRundownData(payload.data ?? { can_manage_rundown: true, schedules: [] });
+                setRundownStatusForms((payload.data?.schedules ?? []).reduce((forms, item) => ({ ...forms, [item.id]: { status: item.status ?? 'belum_mulai', status_note: item.status_note ?? '' } }), {}));
+                setRundownMessage('Status rundown tersimpan.');
+            })
+            .catch((error) => {
+                setRundownMessage(error.message ?? 'Status rundown belum tersimpan.');
+            });
+    };
+
+    // KICAP_OPERATIONAL_CORRECT_FLOW_01
+
+    const handleCreateRundown = (event) => {
+        event.preventDefault();
+
+        if (!selectedLpj?.id || !rundownData?.can_manage_rundown) {
+            return;
+        }
+
+        setRundownMessage('Menyimpan rundown...');
+
+        const formData = new FormData();
+
+        Object.entries(rundownForm).forEach(([key, value]) => {
+            if (value !== null && value !== '') {
+                formData.append(key, value);
+            }
+        });
+
+        fetch('/api/app/lpjs/' + selectedLpj.id + '/operational-schedules', {
+            method: 'POST',
+            headers: {
+                Accept: 'application/json',
+                'X-CSRF-TOKEN': getCsrfToken(),
+            },
+            body: formData,
+        })
+            .then(async (response) => {
+                const payload = await response.json().catch(() => ({}));
+
+                if (!response.ok) {
+                    const firstMessage = Object.values(payload.errors ?? {})?.[0]?.[0];
+                    throw new Error(firstMessage ?? payload.message ?? 'Rundown belum tersimpan.');
+                }
+
+                return payload;
+            })
+            .then((payload) => {
+                setRundownData(payload.data ?? { can_manage_rundown: true, schedules: [] });
+                setRundownForm({
+                    activity_name: '',
+                    start_time: '',
+                    end_time: '',
+                    responsible_person: '',
+                    note: '',
+                });
+                setRundownMessage('Rundown tersimpan.');
+            })
+            .catch((error) => {
+                setRundownMessage(error.message ?? 'Rundown belum tersimpan.');
+            });
+    };
+
+    // KICAP_SELECTION_RUNDOWN_01
+
+    const reloadSelectedLpjDetail = () => {
+        if (!selectedLpj?.id) {
+            return Promise.resolve();
+        }
+
+        return fetch('/api/app/lpjs/' + selectedLpj.id, {
+            headers: { Accept: 'application/json' },
+        })
+            .then(async (response) => {
+                const payload = await response.json().catch(() => ({}));
+
+                if (!response.ok) {
+                    const firstMessage = Object.values(payload.errors ?? {})?.[0]?.[0];
+                    throw new Error(firstMessage ?? payload.message ?? 'Detail event belum bisa dimuat ulang.');
+                }
+
+                return payload;
+            })
+            .then((payload) => {
+                setSelectedLpj(payload.data ?? null);
+            });
+    };
+
+    const openDocumentationEdit = (item) => {
+        setEditingDocumentationId((current) => current === item.id ? null : item.id);
+        setDocumentationEditForms((current) => ({
+            ...current,
+            [item.id]: {
+                category: item.category ?? 'pelaksanaan',
+                caption: item.caption ?? '',
+                include_in_report: item.include_in_report !== false,
+                file: null,
+            },
+        }));
+    };
+
+    const updateDocumentationEditForm = async (id, field, value) => {
+        if (field === 'file' && typeof File !== 'undefined' && value instanceof File && typeof normalizeImageUploadFile === 'function') {
+            value = await normalizeImageUploadFile(value);
+        }
+
+        setDocumentationEditForms((current) => ({
+            ...current,
+            [id]: {
+                ...(current[id] ?? {}),
+                [field]: value,
+            },
+        }));
+    };
+
+    const handleDocumentationEditSubmit = (event, item) => {
+        event.preventDefault();
+
+        if (!selectedLpj?.id) {
+            return;
+        }
+
+        const form = documentationEditForms[item.id] ?? {};
+        const formData = new FormData();
+
+        formData.append('category', form.category ?? item.category ?? 'pelaksanaan');
+        formData.append('caption', form.caption ?? '');
+        formData.append('include_in_report', form.include_in_report === false ? '0' : '1');
+
+        if (form.file) {
+            formData.append('file', form.file);
+        }
+
+        setDocumentationMessage('Menyimpan koreksi dokumentasi...');
+
+        fetch('/api/app/lpjs/' + selectedLpj.id + '/documentations/' + item.id + '/update', {
+            method: 'POST',
+            headers: {
+                Accept: 'application/json',
+                'X-CSRF-TOKEN': getCsrfToken(),
+            },
+            body: formData,
+        })
+            .then(async (response) => {
+                const payload = await response.json().catch(() => ({}));
+
+                if (!response.ok) {
+                    const firstMessage = Object.values(payload.errors ?? {})?.[0]?.[0];
+                    throw new Error(firstMessage ?? payload.message ?? 'Koreksi dokumentasi belum tersimpan.');
+                }
+
+                return payload;
+            })
+            .then((payload) => {
+                setSelectedLpj((current) => current ? {
+                    ...current,
+                    execution: payload.data?.execution ?? current.execution,
+                } : current);
+                setEditingDocumentationId(null);
+                setDocumentationMessage('Koreksi dokumentasi tersimpan.');
+            })
+            .catch((error) => {
+                setDocumentationMessage(error.message ?? 'Koreksi dokumentasi belum tersimpan.');
+            });
+    };
+
+    // KICAP_CLEAN_OPERATIONAL_DOCS_EDIT_01
+
+    const handleDocumentationUpload = async (event) => {
+        event.preventDefault();
+
+        if (!selectedLpj?.id || !selectedLpj?.execution?.can_upload_documentation) {
+            return;
+        }
+
+        setDocumentationMessage('Mengunggah dokumentasi...');
+
+        const form = event.currentTarget;
+        const formData = new FormData(form);
+        const file = formData.get('file');
+
+        if (file && typeof File !== 'undefined' && file instanceof File && typeof normalizeImageUploadFile === 'function') {
+            const compressed = await normalizeImageUploadFile(file);
+            formData.set('file', compressed);
+        }
+
+        fetch('/api/app/lpjs/' + selectedLpj.id + '/documentations', {
+            method: 'POST',
+            headers: {
+                Accept: 'application/json',
+                'X-CSRF-TOKEN': getCsrfToken(),
+            },
+            body: formData,
+        })
+            .then(async (response) => {
+                const payload = await response.json().catch(() => ({}));
+
+                if (!response.ok) {
+                    const firstMessage = Object.values(payload.errors ?? {})?.[0]?.[0];
+                    throw new Error(firstMessage ?? payload.message ?? 'Dokumentasi belum tersimpan.');
+                }
+
+                return payload;
+            })
+            .then(() => reloadSelectedLpjDetail())
+            .then(() => {
+                form.reset();
+                setDocumentationMessage('Dokumentasi tersimpan.');
+            })
+            .catch((error) => {
+                setDocumentationMessage(error.message ?? 'Dokumentasi belum tersimpan.');
+            });
+    };
+
+    // KICAP_DOCUMENTATION_HISTORY_RESTORE_01
+
+    useEffect(() => {
+        try {
+            const storedNav = window.sessionStorage.getItem('kicap:pwa:activeNav');
+            const storedLpjId = window.sessionStorage.getItem('kicap:pwa:selectedLpjId');
+
+            if (storedLpjId && !selectedLpjId) {
+                const parsedId = Number(storedLpjId);
+
+                if (Number.isFinite(parsedId) && parsedId > 0) {
+                    setSelectedLpjId(parsedId);
+                }
+            }
+
+            if (storedNav && storedNav !== activeNav) {
+                setActiveNav(storedNav);
+            }
+        } catch (error) {
+            // Abaikan jika sessionStorage tidak tersedia.
+        }
+    }, []);
+
+    useEffect(() => {
+        try {
+            window.sessionStorage.setItem('kicap:pwa:activeNav', activeNav);
+
+            if (selectedLpjId) {
+                window.sessionStorage.setItem('kicap:pwa:selectedLpjId', String(selectedLpjId));
+            } else {
+                window.sessionStorage.removeItem('kicap:pwa:selectedLpjId');
+            }
+        } catch (error) {
+            // Abaikan storage error.
+        }
+    }, [activeNav, selectedLpjId]);
+
+    const refreshCurrentPwaView = () => {
+        if (!selectedLpj?.id) {
+            return;
+        }
+
+        try {
+            window.sessionStorage.setItem('kicap:pwa:activeNav', activeNav);
+            window.sessionStorage.setItem('kicap:pwa:selectedLpjId', String(selectedLpj.id));
+        } catch (error) {
+            // Abaikan storage error.
+        }
+
+        if (activeNav === 'operasional') {
+            if (typeof loadSelectionData === 'function') {
+                loadSelectionData();
+            }
+
+            if (typeof loadOperationalSchedules === 'function') {
+                loadOperationalSchedules();
+            }
+
+            return;
+        }
+
+        if (
+            activeNav === 'dokumentasi'
+            || activeNav === 'keuangan'
+            || activeNav === 'catatan'
+            || activeNav === 'beranda'
+        ) {
+            if (typeof reloadSelectedLpjDetail === 'function') {
+                reloadSelectedLpjDetail();
+            }
+        }
+    };
+
+    // KICAP_NATIVE_REFRESH_KEEP_PAGE_01
+
     const totals = useMemo(() => {
         return {
             active: lpjs.filter((lpj) => lpj.status === 'aktif').length,
@@ -824,6 +1442,25 @@ function KicapApp() {
     const isProfileNav = activeNav === 'profil';
     const isNotesNav = activeNav === 'catatan';
     const isOperationalNav = activeNav === 'operasional';
+    const selectionParticipants = useMemo(() => {
+        const keyword = selectionSearch.trim().toLowerCase();
+        const participants = selectionData?.participants ?? [];
+
+        if (!keyword) {
+            return participants;
+        }
+
+        return participants.filter((participant) => {
+            return [
+                participant.name,
+                participant.origin,
+                participant.participant_number,
+                participant.whatsapp,
+                participant.registration_status_label,
+                participant.selection_status_label,
+            ].filter(Boolean).join(' ').toLowerCase().includes(keyword);
+        });
+    }, [selectionData, selectionSearch]);
 
     const handleFinanceDetailPreview = async (transaction) => {
         if (!selectedLpj?.id || !transaction?.id) {
@@ -1534,6 +2171,133 @@ function KicapApp() {
                                 </section>
                             )}
 
+                            {isDocumentationNav && <section className="documentation-panel-v2">
+                                <div className="documentation-hero-v2">
+                                    <div>
+                                        <p className="section-kicker">Dokumentasi Event</p>
+                                        <h2>Riwayat Dokumentasi</h2>
+                                        <p></p>
+                                    </div>
+                                    <button type="button" className="ghost-button" onClick={reloadSelectedLpjDetail}>
+                                        Refresh
+                                    </button>
+                                </div>
+
+                                {documentationMessage && <div className="form-message">{documentationMessage}</div>}
+
+                                {selectedLpj?.execution?.can_upload_documentation && (
+                                    <form className="documentation-upload-card-v2" onSubmit={handleDocumentationUpload}>
+                                        <div>
+                                            <p className="section-kicker">Upload Dokumentasi</p>
+                                            <h3>Tambah foto/lampiran kegiatan</h3>
+                                        </div>
+
+                                        <label>
+                                            Kategori
+                                            <select name="category" required defaultValue="pelaksanaan">
+                                                {documentationCategoryOptions.map((category) => (
+                                                    <option
+                                                        key={category.value}
+                                                        value={category.value}
+                                                    >
+                                                        {category.label}
+                                                    </option>
+                                                ))}
+                                            </select>
+                                        </label>
+
+                                        <label>
+                                            Caption / Keterangan
+                                            <textarea name="caption" placeholder="Contoh: Tes fisik lari 2400m" />
+                                        </label>
+
+                                        <label className="documentation-file-v2">
+                                            <span>Pilih Foto/File</span>
+                                            <input name="file" type="file" accept="image/*,.pdf" capture="environment" required />
+                                        </label>
+
+                                        <input type="hidden" name="include_in_report" value="1" />
+
+                                        <button type="submit" className="primary-button">Simpan Dokumentasi</button>
+                                    </form>
+                                )}
+
+                                <div className="documentation-history-grid-v2">
+                                    {(selectedLpj?.execution?.documentations ?? []).length === 0 && (
+                                        <div className="empty-card">Belum ada dokumentasi pada event ini.</div>
+                                    )}
+
+                                    {(selectedLpj?.execution?.documentations ?? []).map((item) => (
+                                        <article className="documentation-history-card-v2" key={item.id}>
+                                            {item.is_image && item.url ? (
+                                                <button
+                                                    type="button"
+                                                    className="documentation-thumb-v2"
+                                                    onClick={() => setGalleryPreview({
+                                                        url: item.url,
+                                                        title: item.caption || item.original_name || 'Dokumentasi',
+                                                    })}
+                                                >
+                                                    <img src={item.url} alt={item.caption || item.original_name || 'Dokumentasi'} />
+                                                </button>
+                                            ) : (
+                                                <a className="documentation-file-preview-v2" href={item.url} target="_blank" rel="noreferrer">
+                                                    Buka File
+                                                </a>
+                                            )}
+
+                                            <div className="documentation-history-body-v2">
+                                                <span>{item.category_label || item.category || 'Dokumentasi'}</span>
+                                                <strong>{item.caption || item.original_name || 'Tanpa caption'}</strong>
+                                                <small>{item.created_at || item.uploaded_at || ''}</small>
+                                                <div className="documentation-actions-v2">
+                                                    {item.url && (
+                                                        <a href={item.url} target="_blank" rel="noreferrer">
+                                                            Lihat
+                                                        </a>
+                                                    )}
+                                                    <button type="button" onClick={() => openDocumentationEdit(item)}>
+                                                        {editingDocumentationId === item.id ? 'Tutup' : 'Edit'}
+                                                    </button>
+                                                </div>
+
+                                                {editingDocumentationId === item.id && (
+                                                    <form className="documentation-edit-form-v2" onSubmit={(event) => handleDocumentationEditSubmit(event, item)}>
+                                                        <select
+                                                            value={documentationEditForms[item.id]?.category ?? item.category ?? 'pelaksanaan'}
+                                                            onChange={(event) => updateDocumentationEditForm(item.id, 'category', event.target.value)}
+                                                        >
+                                                            {documentationCategoryOptions.map((category) => (
+                                                                <option key={category.value} value={category.value}>
+                                                                    {category.label}
+                                                                </option>
+                                                            ))}
+                                                        </select>
+
+                                                        <textarea
+                                                            value={documentationEditForms[item.id]?.caption ?? item.caption ?? ''}
+                                                            onChange={(event) => updateDocumentationEditForm(item.id, 'caption', event.target.value)}
+                                                            placeholder="Koreksi caption/keterangan"
+                                                        />
+
+                                                        <label className="documentation-edit-file-v2">
+                                                            Ganti file jika perlu
+                                                            <input
+                                                                type="file"
+                                                                accept="image/*,.pdf"
+                                                                onChange={(event) => updateDocumentationEditForm(item.id, 'file', event.target.files?.[0] ?? null)}
+                                                            />
+                                                        </label>
+
+                                                        <button type="submit">Simpan Koreksi</button>
+                                                    </form>
+                                                )}
+                                            </div>
+                                        </article>
+                                    ))}
+                                </div>
+                            </section>}
+
                             {isNotesNav && (
                                 <>
                                     <div className="narrative-header">
@@ -1571,473 +2335,257 @@ function KicapApp() {
                                 </>
                             )}
 
-                            {isOperationalNav && (
-                                    <form className="execution-form" onSubmit={handleExecutionSubmit}>
-                                        <div className="narrative-header">
+                                                        {isOperationalNav && <section className="selection-panel">
+                                <div className="selection-hero">
+                                    <div>
+                                        <p className="section-kicker">Operasional Seleksi</p>
+                                        <h2>Registrasi Peserta</h2>
+                                        <p></p>
+                                    </div>
+                                    <button type="button" className="ghost-button" onClick={loadSelectionData} disabled={selectionLoading}>
+                                        {selectionLoading ? 'Memuat...' : 'Refresh'}
+                                    </button>
+                                </div>
+
+                                {selectionMessage && <div className="form-message">{selectionMessage}</div>}
+
+                                <div className="selection-summary-grid">
+                                    <div className="selection-summary-card"><span>Total</span><strong>{selectionData?.summary?.total ?? 0}</strong></div>
+                                    <div className="selection-summary-card"><span>Belum Registrasi</span><strong>{selectionData?.summary?.belum_registrasi ?? 0}</strong></div>
+                                    <div className="selection-summary-card"><span>Sudah Registrasi</span><strong>{selectionData?.summary?.sudah_registrasi ?? 0}</strong></div>
+                                    <div className="selection-summary-card"><span>Masih Lanjut</span><strong>{selectionData?.summary?.aktif ?? 0}</strong></div>
+                                    <div className="selection-summary-card"><span>Gugur</span><strong>{selectionData?.summary?.gugur ?? 0}</strong></div>
+                                    <div className="selection-summary-card"><span>Lulus</span><strong>{selectionData?.summary?.lulus ?? 0}</strong></div>
+                                </div>
+
+                                {false && selectionData?.can_manage_selection && (
+                                    <form className="selection-form-card" onSubmit={handleCreateSelectionParticipant}>
+                                        <div className="selection-form-title">
                                             <div>
-                                                <p className="section-kicker">Pelaksanaan</p>
-                                                <h2>Peserta, tim, dan rundown</h2>
-                                            </div>
-                                            <div className="save-state">
-                                                <UsersRound size={14} strokeWidth={2.4} />
-                                                {selectedLpj.execution?.can_edit_activity_data ? 'Bisa diedit' : 'Hanya baca'}
+                                                <p className="section-kicker">Peserta Seleksi</p>
+                                                <h3>Daftar peserta dari Admin</h3>
                                             </div>
                                         </div>
 
-                                        {executionMessage && <div className="profile-message">{executionMessage}</div>}
+                                        <label>
+                                            Nama Peserta
+                                            <input type="text" value={selectionParticipantForm.name} onChange={(event) => updateSelectionParticipantForm('name', event.target.value)} placeholder="Nama lengkap peserta" required />
+                                        </label>
 
-                                        <section className="execution-card">
-                                            <div className="finance-form-title">
-                                                <UsersRound size={16} strokeWidth={2.4} />
-                                                <span>Data peserta</span>
-                                            </div>
-                                            {executionForms.participants.map((participant, index) => (
-                                                <div className="execution-row" key={`participant-${index}`}>
-                                                    <input
-                                                        disabled={!selectedLpj.execution?.can_edit_activity_data}
-                                                        placeholder="Nama peserta"
-                                                        value={participant.name}
-                                                        onChange={(event) =>
-                                                            updateExecutionRow('participants', index, 'name', event.target.value)
-                                                        }
-                                                    />
-                                                    <input
-                                                        disabled={!selectedLpj.execution?.can_edit_activity_data}
-                                                        placeholder="Asal/kelas/divisi"
-                                                        value={participant.origin ?? ''}
-                                                        onChange={(event) =>
-                                                            updateExecutionRow('participants', index, 'origin', event.target.value)
-                                                        }
-                                                    />
-                                                    <input
-                                                        disabled={!selectedLpj.execution?.can_edit_activity_data}
-                                                        placeholder="Nomor peserta"
-                                                        value={participant.participant_number ?? ''}
-                                                        onChange={(event) =>
-                                                            updateExecutionRow(
-                                                                'participants',
-                                                                index,
-                                                                'participant_number',
-                                                                event.target.value
-                                                            )
-                                                        }
-                                                    />
-                                                    <select
-                                                        disabled={!selectedLpj.execution?.can_edit_activity_data}
-                                                        value={participant.attendance_status ?? 'hadir'}
-                                                        onChange={(event) =>
-                                                            updateExecutionRow(
-                                                                'participants',
-                                                                index,
-                                                                'attendance_status',
-                                                                event.target.value
-                                                            )
-                                                        }
-                                                    >
-                                                        {Object.entries(selectedLpj.execution?.attendance_options ?? {}).map(
-                                                            ([value, label]) => (
-                                                                <option value={value} key={value}>
-                                                                    {label}
-                                                                </option>
-                                                            )
-                                                        )}
-                                                    </select>
-                                                    <input
-                                                        disabled={!selectedLpj.execution?.can_edit_activity_data}
-                                                        placeholder="Hasil/status"
-                                                        value={participant.result_status ?? ''}
-                                                        onChange={(event) =>
-                                                            updateExecutionRow(
-                                                                'participants',
-                                                                index,
-                                                                'result_status',
-                                                                event.target.value
-                                                            )
-                                                        }
-                                                    />
-                                                    <input
-                                                        disabled={!selectedLpj.execution?.can_edit_activity_data}
-                                                        placeholder="Keterangan"
-                                                        value={participant.note ?? ''}
-                                                        onChange={(event) =>
-                                                            updateExecutionRow('participants', index, 'note', event.target.value)
-                                                        }
-                                                    />
-                                                </div>
-                                            ))}
-                                            <button
-                                                className="add-row-button"
-                                                type="button"
-                                                disabled={!selectedLpj.execution?.can_edit_activity_data}
-                                                onClick={() => addExecutionRow('participants', emptyParticipant)}
-                                            >
-                                                <PlusCircle size={16} strokeWidth={2.4} />
-                                                Tambah Peserta
-                                            </button>
-                                        </section>
+                                        <label>
+                                            Asal / Sekolah / Kota
+                                            <input type="text" value={selectionParticipantForm.origin} onChange={(event) => updateSelectionParticipantForm('origin', event.target.value)} placeholder="Contoh: SMKN 6 Surabaya" />
+                                        </label>
 
-                                        <section className="execution-card">
-                                            <div className="finance-form-title">
-                                                <ClipboardList size={16} strokeWidth={2.4} />
-                                                <span>Panitia / pendamping</span>
-                                            </div>
-                                            {executionForms.committees.map((committee, index) => (
-                                                <div className="execution-row two" key={`committee-${index}`}>
-                                                    <input
-                                                        disabled={!selectedLpj.execution?.can_edit_activity_data}
-                                                        placeholder="Nama"
-                                                        value={committee.name}
-                                                        onChange={(event) =>
-                                                            updateExecutionRow('committees', index, 'name', event.target.value)
-                                                        }
-                                                    />
-                                                    <input
-                                                        disabled={!selectedLpj.execution?.can_edit_activity_data}
-                                                        placeholder="Jabatan/peran"
-                                                        value={committee.role ?? ''}
-                                                        onChange={(event) =>
-                                                            updateExecutionRow('committees', index, 'role', event.target.value)
-                                                        }
-                                                    />
-                                                    <input
-                                                        disabled={!selectedLpj.execution?.can_edit_activity_data}
-                                                        placeholder="Tugas"
-                                                        value={committee.task ?? ''}
-                                                        onChange={(event) =>
-                                                            updateExecutionRow('committees', index, 'task', event.target.value)
-                                                        }
-                                                    />
-                                                    <input
-                                                        disabled={!selectedLpj.execution?.can_edit_activity_data}
-                                                        placeholder="Kontak opsional"
-                                                        value={committee.contact ?? ''}
-                                                        onChange={(event) =>
-                                                            updateExecutionRow('committees', index, 'contact', event.target.value)
-                                                        }
-                                                    />
-                                                </div>
-                                            ))}
-                                            <button
-                                                className="add-row-button"
-                                                type="button"
-                                                disabled={!selectedLpj.execution?.can_edit_activity_data}
-                                                onClick={() => addExecutionRow('committees', emptyCommittee)}
-                                            >
-                                                <PlusCircle size={16} strokeWidth={2.4} />
-                                                Tambah Tim
-                                            </button>
-                                        </section>
+                                        <label>
+                                            Catatan Awal
+                                            <textarea value={selectionParticipantForm.note} onChange={(event) => updateSelectionParticipantForm('note', event.target.value)} placeholder="Catatan perhatian/evaluasi awal jika ada" />
+                                        </label>
 
-                                        <section className="execution-card">
-                                            <div className="finance-form-title">
-                                                <Clock3 size={16} strokeWidth={2.4} />
-                                                <span>Rundown</span>
-                                            </div>
-                                            {executionForms.schedules.map((schedule, index) => (
-                                                <div className="execution-row two" key={`schedule-${index}`}>
-                                                    <input
-                                                        disabled={!selectedLpj.execution?.can_edit_activity_data}
-                                                        type="datetime-local"
-                                                        value={schedule.start_time ?? ''}
-                                                        onChange={(event) =>
-                                                            updateExecutionRow('schedules', index, 'start_time', event.target.value)
-                                                        }
-                                                    />
-                                                    <input
-                                                        disabled={!selectedLpj.execution?.can_edit_activity_data}
-                                                        type="datetime-local"
-                                                        value={schedule.end_time ?? ''}
-                                                        onChange={(event) =>
-                                                            updateExecutionRow('schedules', index, 'end_time', event.target.value)
-                                                        }
-                                                    />
-                                                    <input
-                                                        disabled={!selectedLpj.execution?.can_edit_activity_data}
-                                                        placeholder="Nama aktivitas"
-                                                        value={schedule.activity_name}
-                                                        onChange={(event) =>
-                                                            updateExecutionRow(
-                                                                'schedules',
-                                                                index,
-                                                                'activity_name',
-                                                                event.target.value
-                                                            )
-                                                        }
-                                                    />
-                                                    <input
-                                                        disabled={!selectedLpj.execution?.can_edit_activity_data}
-                                                        placeholder="Penanggung jawab"
-                                                        value={schedule.responsible_person ?? ''}
-                                                        onChange={(event) =>
-                                                            updateExecutionRow(
-                                                                'schedules',
-                                                                index,
-                                                                'responsible_person',
-                                                                event.target.value
-                                                            )
-                                                        }
-                                                    />
-                                                    <input
-                                                        disabled={!selectedLpj.execution?.can_edit_activity_data}
-                                                        placeholder="Catatan"
-                                                        value={schedule.note ?? ''}
-                                                        onChange={(event) =>
-                                                            updateExecutionRow('schedules', index, 'note', event.target.value)
-                                                        }
-                                                    />
-                                                </div>
-                                            ))}
-                                            <button
-                                                className="add-row-button"
-                                                type="button"
-                                                disabled={!selectedLpj.execution?.can_edit_activity_data}
-                                                onClick={() => addExecutionRow('schedules', emptySchedule)}
-                                            >
-                                                <PlusCircle size={16} strokeWidth={2.4} />
-                                                Tambah Rundown
-                                            </button>
-                                        </section>
-
-                                        <button
-                                            className="save-profile-button"
-                                            type="submit"
-                                            disabled={!selectedLpj.execution?.can_edit_activity_data}
-                                        >
-                                            <Save size={17} strokeWidth={2.5} />
-                                            Simpan Data Kegiatan
-                                        </button>
+                                        <button type="submit" className="primary-button">Simpan Peserta</button>
                                     </form>
-                            )}
+                                )}
 
-                            {isDocumentationNav && (
-                                <>
-                                    <div className="narrative-header">
+                                <section className="selection-rundown-card">
+                                    <div className="selection-form-title">
                                         <div>
-                                            <p className="section-kicker">Dokumentasi</p>
-                                            <h2>
-                                                {selectedLpj.execution?.can_upload_documentation
-                                                    ? 'Dokumentasi dan lampiran'
-                                                    : 'Dokumentasi terkunci'}
-                                            </h2>
+                                            <p className="section-kicker">Rundown Event</p>
+                                            <h3>Rundown Acara</h3>
+                                            <p></p>
                                         </div>
-                                        <div className="save-state">
-                                            <Camera size={14} strokeWidth={2.4} />
-                                            {selectedLpj.execution?.can_upload_documentation ? 'Bisa upload' : 'Hanya baca'}
-                                        </div>
+                                        <button type="button" className="ghost-button" onClick={loadOperationalSchedules} disabled={rundownLoading}>
+                                            {rundownLoading ? 'Memuat...' : 'Refresh Rundown'}
+                                        </button>
                                     </div>
 
-                                    {executionMessage && <div className="profile-message">{executionMessage}</div>}
+                                    {rundownMessage && <div className="form-message">{rundownMessage}</div>}
 
-                                    <div className="upload-grid">
-                                        <form
-                                            className="finance-form"
-                                            onSubmit={(event) =>
-                                                handleExecutionUpload(event, 'documentation', 'documentations')
-                                            }
-                                        >
-                                            <div className="finance-form-title">
-                                                <Camera size={16} strokeWidth={2.4} />
-                                                <span>Dokumentasi kegiatan</span>
-                                            </div>
-                                            <select
-                                                disabled={!selectedLpj.execution?.can_upload_documentation}
-                                                value={executionForms.documentation.category}
-                                                onChange={(event) =>
-                                                    updateExecutionUploadForm(
-                                                        'documentation',
-                                                        'category',
-                                                        event.target.value
-                                                    )
-                                                }
-                                            >
-                                                {Object.entries(selectedLpj.execution?.documentation_categories ?? {}).map(
-                                                    ([value, label]) => (
-                                                        <option value={value} key={value}>
-                                                            {label}
-                                                        </option>
-                                                    )
-                                                )}
-                                            </select>
-                                            <textarea
-                                                disabled={!selectedLpj.execution?.can_upload_documentation}
-                                                placeholder="Caption dokumentasi"
-                                                value={executionForms.documentation.caption}
-                                                onChange={(event) =>
-                                                    updateExecutionUploadForm(
-                                                        'documentation',
-                                                        'caption',
-                                                        event.target.value
-                                                    )
-                                                }
-                                            />
-                                            <label className="check-row">
+                                    {false && rundownData?.can_manage_rundown && (
+                                        <form className="rundown-form" onSubmit={handleCreateRundown}>
+                                            <label>
+                                                Nama Kegiatan
                                                 <input
-                                                    disabled={!selectedLpj.execution?.can_upload_documentation}
-                                                    type="checkbox"
-                                                    checked={executionForms.documentation.include_in_report}
-                                                    onChange={(event) =>
-                                                        updateExecutionUploadForm(
-                                                            'documentation',
-                                                            'include_in_report',
-                                                            event.target.checked
-                                                        )
-                                                    }
-                                                />
-                                                <span>Masuk LPJ</span>
-                                            </label>
-                                            <label className="file-button">
-                                                <UploadCloud size={15} strokeWidth={2.4} />
-                                                <span>{executionForms.documentation.file?.name ?? 'Upload foto/PDF'}</span>
-                                                <input
-                                                    disabled={!selectedLpj.execution?.can_upload_documentation}
-                                                    accept="image/*,.pdf"
-                                                    type="file"
-                                                    onChange={(event) =>
-                                                        updateExecutionUploadForm(
-                                                            'documentation',
-                                                            'file',
-                                                            event.target.files?.[0] ?? null
-                                                        )
-                                                    }
+                                                    type="text"
+                                                    value={rundownForm.activity_name}
+                                                    onChange={(event) => updateRundownForm('activity_name', event.target.value)}
+                                                    placeholder="Contoh: Registrasi peserta"
+                                                    required
                                                 />
                                             </label>
-                                            <button
-                                                className="save-profile-button"
-                                                type="submit"
-                                                disabled={!selectedLpj.execution?.can_upload_documentation}
-                                            >
-                                                <UploadCloud size={17} strokeWidth={2.5} />
-                                                Simpan Dokumentasi
-                                            </button>
-                                        </form>
 
-                                        <form
-                                            className="finance-form"
-                                            onSubmit={(event) => handleExecutionUpload(event, 'attachment', 'attachments')}
-                                        >
-                                            <div className="finance-form-title">
-                                                <Paperclip size={16} strokeWidth={2.4} />
-                                                <span>Lampiran pendukung</span>
+                                            <div className="rundown-two-col">
+                                                <label>
+                                                    Mulai
+                                                    <input
+                                                        type="datetime-local"
+                                                        value={rundownForm.start_time}
+                                                        onChange={(event) => updateRundownForm('start_time', event.target.value)}
+                                                    />
+                                                </label>
+
+                                                <label>
+                                                    Selesai
+                                                    <input
+                                                        type="datetime-local"
+                                                        value={rundownForm.end_time}
+                                                        onChange={(event) => updateRundownForm('end_time', event.target.value)}
+                                                    />
+                                                </label>
                                             </div>
-                                            <input
-                                                disabled={!selectedLpj.execution?.can_upload_documentation}
-                                                placeholder="Judul lampiran"
-                                                value={executionForms.attachment.title}
-                                                onChange={(event) =>
-                                                    updateExecutionUploadForm('attachment', 'title', event.target.value)
-                                                }
-                                                required
-                                            />
-                                            <textarea
-                                                disabled={!selectedLpj.execution?.can_upload_documentation}
-                                                placeholder="Keterangan lampiran"
-                                                value={executionForms.attachment.description}
-                                                onChange={(event) =>
-                                                    updateExecutionUploadForm('attachment', 'description', event.target.value)
-                                                }
-                                            />
-                                            <label className="check-row">
+
+                                            <label>
+                                                PIC / Penanggung Jawab
                                                 <input
-                                                    disabled={!selectedLpj.execution?.can_upload_documentation}
-                                                    type="checkbox"
-                                                    checked={executionForms.attachment.include_in_report}
-                                                    onChange={(event) =>
-                                                        updateExecutionUploadForm(
-                                                            'attachment',
-                                                            'include_in_report',
-                                                            event.target.checked
-                                                        )
-                                                    }
-                                                />
-                                                <span>Masuk LPJ</span>
-                                            </label>
-                                            <label className="file-button">
-                                                <FileText size={15} strokeWidth={2.4} />
-                                                <span>{executionForms.attachment.file?.name ?? 'Upload lampiran'}</span>
-                                                <input
-                                                    disabled={!selectedLpj.execution?.can_upload_documentation}
-                                                    accept="image/*,.pdf,.doc,.docx,.xls,.xlsx"
-                                                    type="file"
-                                                    onChange={(event) =>
-                                                        updateExecutionUploadForm(
-                                                            'attachment',
-                                                            'file',
-                                                            event.target.files?.[0] ?? null
-                                                        )
-                                                    }
+                                                    type="text"
+                                                    value={rundownForm.responsible_person}
+                                                    onChange={(event) => updateRundownForm('responsible_person', event.target.value)}
+                                                    placeholder="Nama petugas/PIC"
                                                 />
                                             </label>
-                                            <button
-                                                className="save-profile-button"
-                                                type="submit"
-                                                disabled={!selectedLpj.execution?.can_upload_documentation}
-                                            >
-                                                <UploadCloud size={17} strokeWidth={2.5} />
-                                                Simpan Lampiran
-                                            </button>
+
+                                            <label>
+                                                Catatan
+                                                <textarea
+                                                    value={rundownForm.note}
+                                                    onChange={(event) => updateRundownForm('note', event.target.value)}
+                                                    placeholder="Catatan rundown jika ada"
+                                                />
+                                            </label>
+
+                                            <button type="submit" className="primary-button">Simpan Rundown</button>
                                         </form>
+                                    )}
+
+                                    <div className="rundown-list">
+                                        {(rundownData?.schedules ?? []).length === 0 ? (
+                                            <div className="empty-card">Belum ada rundown.</div>
+                                        ) : (
+                                            (rundownData?.schedules ?? []).map((item) => (
+                                                <article className="rundown-item" key={item.id}>
+                                                    <div>
+                                                        <strong>{item.activity_name}</strong>
+                                                        <span>{item.start_time || '-'}{item.end_time ? ' — ' + item.end_time : ''}</span>
+                                                        <small>PIC: {item.responsible_person || '-'} · Input: {item.created_by || '-'}</small>
+                                                    </div>
+                                                    {item.note && <p>{item.note}</p>}
+                                                    <div className="rundown-status-pill">{item.status_label ?? 'Belum mulai'}</div>
+                                                    {rundownData?.can_manage_rundown && (
+                                                        <form className="rundown-status-form" onSubmit={(event) => handleUpdateRundownStatus(event, item)}>
+                                                            <select
+                                                                value={rundownStatusForms[item.id]?.status ?? item.status ?? 'belum_mulai'}
+                                                                onChange={(event) => updateRundownStatusForm(item.id, 'status', event.target.value)}
+                                                            >
+                                                                <option value="belum_mulai">Belum mulai</option>
+                                                                <option value="sedang_berlangsung">Sedang berlangsung</option>
+                                                                <option value="selesai">Selesai</option>
+                                                                <option value="terkendala">Terkendala</option>
+                                                            </select>
+                                                            <textarea
+                                                                value={rundownStatusForms[item.id]?.status_note ?? ''}
+                                                                onChange={(event) => updateRundownStatusForm(item.id, 'status_note', event.target.value)}
+                                                                placeholder="Catatan status jika ada"
+                                                            />
+                                                            <button type="submit" className="ghost-button">Update Status</button>
+                                                        </form>
+                                                    )}
+                                                </article>
+                                            ))
+                                        )}
                                     </div>
+                                </section>
 
-                                    <section className="execution-card">
-                                        <div className="finance-form-title">
-                                            <FileText size={16} strokeWidth={2.4} />
-                                            <span>File tersimpan</span>
-                                        </div>
-                                        <div className="file-list">
-                                            {(selectedLpj.execution?.documentations ?? []).map((item) => (
-                                                item.is_image ? (
-                                                    <button
-                                                        key={`documentation-${item.id}`}
-                                                        type="button"
-                                                        onClick={() => setGalleryPreview({
-                                                            title: item.caption || item.original_name || item.category_label,
-                                                            url: item.url,
-                                                        })}
-                                                    >
-                                                        <Camera size={15} strokeWidth={2.4} />
-                                                        <span>{item.caption || item.original_name || item.category_label}</span>
-                                                        {item.include_in_report && <b>LPJ</b>}
-                                                    </button>
-                                                ) : (
-                                                    <a href={item.url} key={`documentation-${item.id}`} target="_blank" rel="noreferrer">
-                                                        <Camera size={15} strokeWidth={2.4} />
-                                                        <span>{item.caption || item.original_name || item.category_label}</span>
-                                                        {item.include_in_report && <b>LPJ</b>}
-                                                    </a>
-                                                )
-                                            ))}
-                                            {(selectedLpj.execution?.attachments ?? []).map((item) => (
-                                                item.is_image ? (
-                                                    <button
-                                                        key={`attachment-${item.id}`}
-                                                        type="button"
-                                                        onClick={() => setGalleryPreview({
-                                                            title: item.title,
-                                                            url: item.url,
-                                                        })}
-                                                    >
-                                                        <Paperclip size={15} strokeWidth={2.4} />
-                                                        <span>{item.title}</span>
-                                                        {item.include_in_report && <b>LPJ</b>}
-                                                    </button>
-                                                ) : (
-                                                    <a href={item.url} key={`attachment-${item.id}`} target="_blank" rel="noreferrer">
-                                                        <Paperclip size={15} strokeWidth={2.4} />
-                                                        <span>{item.title}</span>
-                                                        {item.include_in_report && <b>LPJ</b>}
-                                                    </a>
-                                                )
-                                            ))}
-                                            {(selectedLpj.execution?.documentations ?? []).length === 0 &&
-                                                (selectedLpj.execution?.attachments ?? []).length === 0 && (
-                                                    <div className="empty-state">Belum ada dokumentasi atau lampiran.</div>
+                                <div className="selection-toolbar">
+                                    <input type="search" value={selectionSearch} onChange={(event) => setSelectionSearch(event.target.value)} placeholder="Cari nama, no peserta, WhatsApp, asal..." />
+                                </div>
+
+                                <div className="selection-list">
+                                    {selectionLoading && <div className="empty-card">Memuat data peserta...</div>}
+
+                                    {!selectionLoading && selectionParticipants.length === 0 && (
+                                        <div className="empty-card">Belum ada peserta. Admin perlu menambahkan peserta terlebih dulu.</div>
+                                    )}
+
+                                    {!selectionLoading && selectionParticipants.map((participant) => {
+                                        const form = selectionRegistrationForms[participant.id] ?? {};
+                                        const expanded = expandedSelectionParticipantId === participant.id;
+
+                                        return (
+                                            <article className="selection-participant-card" key={participant.id}>
+                                                <button type="button" className="selection-participant-head" onClick={() => setExpandedSelectionParticipantId(expanded ? null : participant.id)}>
+                                                    <div className="participant-photo">
+                                                        {participant.photo_url ? <img src={participant.photo_url} alt={participant.name} /> : <span>{participant.name?.slice(0, 1) ?? '?'}</span>}
+                                                    </div>
+                                                    <div className="participant-main">
+                                                        <strong>{participant.name}</strong>
+                                                        <span>{participant.participant_number ? ('No. ' + participant.participant_number) : 'Belum ada nomor peserta'}</span>
+                                                        <small>{participant.origin || '-'}</small>
+                                                    </div>
+                                                    <div className="participant-badges">
+                                                        <span className="mini-badge">{participant.registration_status_label}</span>
+                                                        <span className={'mini-badge ' + selectionStatusClass(participant.selection_status)}>{participant.selection_status_label}</span>
+                                                    </div>
+                                                </button>
+
+                                                {expanded && (
+                                                    <div className="selection-participant-body">
+                                                        <form onSubmit={(event) => handleSelectionRegistrationSubmit(event, participant)}>
+                                                            <label>
+                                                                Nomor Peserta / Nomor Ujian
+                                                                <input type="text" value={form.participant_number ?? ''} onChange={(event) => updateSelectionRegistrationForm(participant.id, 'participant_number', event.target.value)} placeholder="Diisi setelah registrasi onsite" disabled={!selectionData?.can_manage_selection} />
+                                                            </label>
+
+                                                            <label>
+                                                                Nomor WhatsApp
+                                                                <input type="text" value={form.whatsapp ?? ''} onChange={(event) => updateSelectionRegistrationForm(participant.id, 'whatsapp', event.target.value)} placeholder="Contoh: 081234567890" disabled={!selectionData?.can_manage_selection} />
+                                                            </label>
+
+                                                            <label>
+                                                                Foto Peserta
+                                                                <input type="file" accept="image/*" capture="environment" onChange={(event) => updateSelectionRegistrationForm(participant.id, 'photo', event.target.files?.[0] ?? null)} disabled={!selectionData?.can_manage_selection} />
+                                                            </label>
+
+                                                            <label>
+                                                                Catatan Peserta
+                                                                <textarea value={form.note ?? ''} onChange={(event) => updateSelectionRegistrationForm(participant.id, 'note', event.target.value)} placeholder="Catatan perhatian/evaluasi/perbaikan" disabled={!selectionData?.can_manage_selection} />
+                                                            </label>
+
+                                                            <div className="selection-meta-grid">
+                                                                <div><span>Registrasi Oleh</span><strong>{participant.registered_by || '-'}</strong></div>
+                                                                <div><span>WhatsApp</span><strong>{participant.whatsapp || '-'}</strong></div>
+                                                                <div><span>Tahap Gugur</span><strong>{participant.eliminated_stage || '-'}</strong></div>
+                                                                <div><span>Tes Gugur</span><strong>{participant.eliminated_test || '-'}</strong></div>
+                                                            </div>
+
+                                                            {selectionData?.can_manage_selection && <button type="submit" className="primary-button">Simpan Registrasi</button>}
+                                                        </form>
+
+                                                        <div className="selection-tests-preview">
+                                                            <h4>Progress Tes</h4>
+                                                            {(participant.test_results ?? []).length === 0 ? (
+                                                                <p>Belum ada item tes.</p>
+                                                            ) : (
+                                                                <div className="selection-test-list">
+                                                                    {(participant.test_results ?? []).map((result) => (
+                                                                        <div className="selection-test-row" key={result.id}>
+                                                                            <div>
+                                                                                <strong>{result.stage_name}</strong>
+                                                                                <span>{result.test_name}</span>
+                                                                            </div>
+                                                                            <em>{result.status_label}</em>
+                                                                        </div>
+                                                                    ))}
+                                                                </div>
+                                                            )}
+                                                        </div>
+                                                    </div>
                                                 )}
-                                        </div>
-                                    </section>
-                                </>
-                            )}
+                                            </article>
+                                        );
+                                    })}
+                                </div>
+                            </section>}
 
-                            {isFinanceNav && <section className="finance-panel">
+{isFinanceNav && <section className="finance-panel">
                                 <div className="narrative-header">
                                     <div>
                                         <p className="section-kicker">Dana Kegiatan</p>

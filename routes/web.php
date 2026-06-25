@@ -1048,3 +1048,334 @@ Route::get('/admin/selection/participants/{participant}/detail', function (\Illu
         'backLabel' => $backLabel,
     ]);
 })->middleware('auth')->name('admin.selection.participants.detail');
+
+
+Route::get('/api/app/lpjs/{lpj}/selection', function (\Illuminate\Http\Request $request, \App\Models\Lpj $lpj, \App\Services\ActivitySelectionPayloadService $selectionService) {
+    /** @var \App\Models\User $user */
+    $user = $request->user();
+
+    abort_unless($user && $user->isUser(), 403);
+
+    $lpj = \App\Models\Lpj::query()
+        ->visibleToAssignedUser($user)
+        ->findOrFail($lpj->id);
+
+    return response()->json([
+        'data' => [
+            'selection' => $selectionService->payload($lpj, $user),
+        ],
+    ]);
+})->middleware('auth');
+
+Route::post('/api/app/lpjs/{lpj}/selection/participants', function (\Illuminate\Http\Request $request, \App\Models\Lpj $lpj, \App\Services\ActivitySelectionPayloadService $selectionService) {
+    /** @var \App\Models\User $user */
+    $user = $request->user();
+
+    abort_unless($user && $user->isUser(), 403);
+
+    $lpj = \App\Models\Lpj::query()
+        ->visibleToAssignedUser($user)
+        ->findOrFail($lpj->id);
+
+    abort_unless($lpj->status === \App\Models\Lpj::STATUS_AKTIF, 403);
+
+    $assignment = $lpj->assignedUsers()->where('user_id', $user->id)->first();
+    abort_unless($assignment, 403);
+
+    $validated = $request->validate([
+        'name' => ['required', 'string', 'max:255'],
+        'origin' => ['nullable', 'string', 'max:255'],
+        'participant_number' => [
+            'nullable',
+            'string',
+            'max:100',
+            \Illuminate\Validation\Rule::unique('activity_participants', 'participant_number')
+                ->where(fn ($query) => $query->where('lpj_id', $lpj->id)),
+        ],
+        'whatsapp' => ['nullable', 'string', 'max:50'],
+        'note' => ['nullable', 'string', 'max:5000'],
+    ]);
+
+    $selectionService->createParticipant($lpj, $user, $validated);
+
+    return response()->json([
+        'data' => [
+            'selection' => $selectionService->payload($lpj->fresh(), $user),
+        ],
+    ], 201);
+})->middleware('auth');
+
+Route::post('/api/app/lpjs/{lpj}/selection/participants/{participant}/registration', function (\Illuminate\Http\Request $request, \App\Models\Lpj $lpj, \App\Models\ActivityParticipant $participant, \App\Services\ActivitySelectionPayloadService $selectionService) {
+    /** @var \App\Models\User $user */
+    $user = $request->user();
+
+    abort_unless($user && $user->isUser(), 403);
+
+    $lpj = \App\Models\Lpj::query()
+        ->visibleToAssignedUser($user)
+        ->findOrFail($lpj->id);
+
+    abort_unless($lpj->status === \App\Models\Lpj::STATUS_AKTIF, 403);
+
+    $assignment = $lpj->assignedUsers()->where('user_id', $user->id)->first();
+    abort_unless($assignment, 403);
+    abort_unless($participant->lpj_id === $lpj->id, 404);
+
+    $validated = $request->validate([
+        'participant_number' => [
+            'nullable',
+            'string',
+            'max:100',
+            \Illuminate\Validation\Rule::unique('activity_participants', 'participant_number')
+                ->where(fn ($query) => $query->where('lpj_id', $lpj->id))
+                ->ignore($participant->id),
+        ],
+        'whatsapp' => ['nullable', 'string', 'max:50'],
+        'note' => ['nullable', 'string', 'max:5000'],
+        'photo' => ['nullable', 'file', 'mimes:jpg,jpeg,png,webp', 'max:5120'],
+    ]);
+
+    $selectionService->updateRegistration($lpj, $participant, $user, $validated, $request->file('photo'));
+
+    return response()->json([
+        'data' => [
+            'selection' => $selectionService->payload($lpj->fresh(), $user),
+        ],
+    ]);
+})->middleware('auth');
+
+
+Route::get('/api/app/lpjs/{lpj}/operational-schedules', function (\Illuminate\Http\Request $request, \App\Models\Lpj $lpj) {
+    /** @var \App\Models\User $user */
+    $user = $request->user();
+
+    abort_unless($user && $user->isUser(), 403);
+
+    $lpj = \App\Models\Lpj::query()
+        ->visibleToAssignedUser($user)
+        ->findOrFail($lpj->id);
+
+    $assignment = $lpj->assignedUsers()->where('user_id', $user->id)->first();
+
+    $schedules = \App\Models\ActivitySchedule::query()
+        ->where('lpj_id', $lpj->id)
+        ->with(['creator:id,name', 'statusUpdater:id,name'])
+        ->orderBy('sort_order')
+        ->orderBy('start_time')
+        ->orderBy('id')
+        ->get()
+        ->map(fn (\App\Models\ActivitySchedule $schedule): array => [
+            'id' => $schedule->id,
+            'activity_name' => $schedule->activity_name,
+            'start_time' => $schedule->start_time ? (string) $schedule->start_time : null,
+            'end_time' => $schedule->end_time ? (string) $schedule->end_time : null,
+            'responsible_person' => $schedule->responsible_person,
+            'note' => $schedule->note,
+            'sort_order' => $schedule->sort_order,
+            'status' => $schedule->status ?? \App\Models\ActivitySchedule::STATUS_NOT_STARTED,
+            'status_label' => \App\Models\ActivitySchedule::statusLabels()[$schedule->status ?? \App\Models\ActivitySchedule::STATUS_NOT_STARTED] ?? ($schedule->status ?? '-'),
+            'status_note' => $schedule->status_note,
+            'status_updated_by' => $schedule->statusUpdater?->name,
+            'status_updated_at' => optional($schedule->status_updated_at)->toDateTimeString(),
+            'created_by' => $schedule->creator?->name,
+        ])
+        ->values();
+
+    return response()->json([
+        'data' => [
+            'can_manage_rundown' => (bool) $assignment,
+            'schedules' => $schedules,
+        ],
+    ]);
+})->middleware('auth');
+
+Route::post('/api/app/lpjs/{lpj}/operational-schedules', function (\Illuminate\Http\Request $request, \App\Models\Lpj $lpj) {
+    /** @var \App\Models\User $user */
+    $user = $request->user();
+
+    abort_unless($user && $user->isUser(), 403);
+
+    $lpj = \App\Models\Lpj::query()
+        ->visibleToAssignedUser($user)
+        ->findOrFail($lpj->id);
+
+    abort_unless($lpj->status === \App\Models\Lpj::STATUS_AKTIF, 403);
+
+    $assignment = $lpj->assignedUsers()->where('user_id', $user->id)->first();
+    abort_unless($assignment, 403);
+
+    $validated = $request->validate([
+        'activity_name' => ['required', 'string', 'max:255'],
+        'start_time' => ['nullable', 'date'],
+        'end_time' => ['nullable', 'date'],
+        'responsible_person' => ['nullable', 'string', 'max:255'],
+        'note' => ['nullable', 'string', 'max:5000'],
+        'sort_order' => ['nullable', 'integer', 'min:0'],
+    ]);
+
+    $sortOrder = $validated['sort_order'] ?? (
+        ((int) \App\Models\ActivitySchedule::query()
+            ->where('lpj_id', $lpj->id)
+            ->max('sort_order')) + 1
+    );
+
+    \App\Models\ActivitySchedule::query()->create([
+        'lpj_id' => $lpj->id,
+        'created_by' => $user->id,
+        'activity_name' => $validated['activity_name'],
+        'start_time' => $validated['start_time'] ?? null,
+        'end_time' => $validated['end_time'] ?? null,
+        'responsible_person' => $validated['responsible_person'] ?? null,
+        'note' => $validated['note'] ?? null,
+        'sort_order' => $sortOrder,
+    ]);
+
+    $schedules = \App\Models\ActivitySchedule::query()
+        ->where('lpj_id', $lpj->id)
+        ->with(['creator:id,name', 'statusUpdater:id,name'])
+        ->orderBy('sort_order')
+        ->orderBy('start_time')
+        ->orderBy('id')
+        ->get()
+        ->map(fn (\App\Models\ActivitySchedule $schedule): array => [
+            'id' => $schedule->id,
+            'activity_name' => $schedule->activity_name,
+            'start_time' => $schedule->start_time ? (string) $schedule->start_time : null,
+            'end_time' => $schedule->end_time ? (string) $schedule->end_time : null,
+            'responsible_person' => $schedule->responsible_person,
+            'note' => $schedule->note,
+            'sort_order' => $schedule->sort_order,
+            'status' => $schedule->status ?? \App\Models\ActivitySchedule::STATUS_NOT_STARTED,
+            'status_label' => \App\Models\ActivitySchedule::statusLabels()[$schedule->status ?? \App\Models\ActivitySchedule::STATUS_NOT_STARTED] ?? ($schedule->status ?? '-'),
+            'status_note' => $schedule->status_note,
+            'status_updated_by' => $schedule->statusUpdater?->name,
+            'status_updated_at' => optional($schedule->status_updated_at)->toDateTimeString(),
+            'created_by' => $schedule->creator?->name,
+        ])
+        ->values();
+
+    return response()->json([
+        'data' => [
+            'can_manage_rundown' => true,
+            'schedules' => $schedules,
+        ],
+    ], 201);
+})->middleware('auth');
+
+Route::post('/api/app/lpjs/{lpj}/operational-schedules/{schedule}/status', function (\Illuminate\Http\Request $request, \App\Models\Lpj $lpj, \App\Models\ActivitySchedule $schedule) {
+    /** @var \App\Models\User $user */
+    $user = $request->user();
+
+    abort_unless($user && $user->isUser(), 403);
+
+    $lpj = \App\Models\Lpj::query()
+        ->visibleToAssignedUser($user)
+        ->findOrFail($lpj->id);
+
+    abort_unless($lpj->status === \App\Models\Lpj::STATUS_AKTIF, 403);
+
+    $assignment = $lpj->assignedUsers()->where('user_id', $user->id)->first();
+    abort_unless($assignment, 403);
+    abort_unless($schedule->lpj_id === $lpj->id, 404);
+
+    $validated = $request->validate([
+        'status' => ['required', 'string', \Illuminate\Validation\Rule::in(array_keys(\App\Models\ActivitySchedule::statusLabels()))],
+        'status_note' => ['nullable', 'string', 'max:5000'],
+    ]);
+
+    $schedule->forceFill([
+        'status' => $validated['status'],
+        'status_note' => $validated['status_note'] ?? null,
+        'status_updated_by' => $user->id,
+        'status_updated_at' => now(),
+    ])->save();
+
+    $schedules = \App\Models\ActivitySchedule::query()
+        ->where('lpj_id', $lpj->id)
+        ->with(['creator:id,name', 'statusUpdater:id,name'])
+        ->orderBy('sort_order')
+        ->orderBy('start_time')
+        ->orderBy('id')
+        ->get()
+        ->map(fn (\App\Models\ActivitySchedule $schedule): array => [
+            'id' => $schedule->id,
+            'activity_name' => $schedule->activity_name,
+            'start_time' => $schedule->start_time ? (string) $schedule->start_time : null,
+            'end_time' => $schedule->end_time ? (string) $schedule->end_time : null,
+            'responsible_person' => $schedule->responsible_person,
+            'note' => $schedule->note,
+            'sort_order' => $schedule->sort_order,
+            'status' => $schedule->status ?? \App\Models\ActivitySchedule::STATUS_NOT_STARTED,
+            'status_label' => \App\Models\ActivitySchedule::statusLabels()[$schedule->status ?? \App\Models\ActivitySchedule::STATUS_NOT_STARTED] ?? ($schedule->status ?? '-'),
+            'status_note' => $schedule->status_note,
+            'status_updated_by' => $schedule->statusUpdater?->name,
+            'status_updated_at' => optional($schedule->status_updated_at)->toDateTimeString(),
+            'created_by' => $schedule->creator?->name,
+        ])
+        ->values();
+
+    return response()->json([
+        'data' => [
+            'can_manage_rundown' => true,
+            'schedules' => $schedules,
+        ],
+    ]);
+})->middleware('auth');
+
+
+
+Route::post('/api/app/lpjs/{lpj}/documentations/{documentation}/update', function (\Illuminate\Http\Request $request, \App\Models\Lpj $lpj, \App\Models\ActivityDocumentation $documentation) {
+    /** @var \App\Models\User $user */
+    $user = $request->user();
+
+    abort_unless($user && $user->isUser(), 403);
+
+    $lpj = \App\Models\Lpj::query()
+        ->visibleToAssignedUser($user)
+        ->findOrFail($lpj->id);
+
+    abort_unless($lpj->status === \App\Models\Lpj::STATUS_AKTIF, 403);
+
+    $assignment = $lpj->assignedUsers()->where('user_id', $user->id)->first();
+    abort_unless($assignment, 403);
+    abort_unless($documentation->lpj_id === $lpj->id, 404);
+
+    $validated = $request->validate([
+        'category' => ['required', 'string', \Illuminate\Validation\Rule::in(array_keys(\App\Models\ActivityDocumentation::categoryOptions()))],
+        'caption' => ['nullable', 'string', 'max:5000'],
+        'include_in_report' => ['nullable', 'boolean'],
+        'file' => ['nullable', 'file', 'mimes:jpg,jpeg,png,webp,pdf', 'max:5120'],
+    ]);
+
+    $payload = [
+        'category' => $validated['category'],
+        'caption' => $validated['caption'] ?? null,
+        'include_in_report' => $request->boolean('include_in_report', true),
+    ];
+
+    if ($request->hasFile('file')) {
+        if (filled($documentation->file_path)) {
+            app(\App\Services\AppFileStorageService::class)->delete($documentation->file_path, $documentation->file_disk);
+        }
+
+        $stored = app(\App\Services\AppFileStorageService::class)->store($request->file('file'), 'activity-documentations');
+
+        $payload = array_merge($payload, [
+            'file_path' => $stored['path'],
+            'file_disk' => $stored['disk'],
+            'original_name' => $request->file('file')->getClientOriginalName(),
+            'mime_type' => $stored['mime_type'] ?? $request->file('file')->getMimeType(),
+            'file_size' => $stored['size'] ?? $request->file('file')->getSize(),
+        ]);
+    }
+
+    $documentation->forceFill($payload)->save();
+
+    $detail = app(\App\Services\ActivityExecutionService::class)->payload($lpj->fresh(), $user);
+
+    return response()->json([
+        'data' => [
+            'execution' => $detail,
+        ],
+    ]);
+})->middleware('auth');

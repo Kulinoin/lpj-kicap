@@ -504,3 +504,97 @@ Catatan validasi:
 - Menambahkan menu Admin Operasional Seleksi: Peserta Seleksi, Tahapan Seleksi, Item Tes Seleksi, dan Hasil Tes Peserta.
 - Detail peserta menampilkan nomor peserta, WhatsApp, foto, catatan peserta, status registrasi, status seleksi, tahap gugur, dan hasil tes per tahap.
 - Patch code-only: tidak migration dan tidak mengubah isi database.
+
+
+## Patch 2026-06-25 02:30:20 — PWA Registrasi Onsite Peserta Seleksi 01
+
+- Menambahkan API PWA untuk data seleksi peserta per event.
+- Menambahkan form PWA Operasional untuk tambah calon peserta dan registrasi onsite.
+- Petugas dapat input nomor peserta, WhatsApp, foto peserta, dan catatan peserta.
+- Semua petugas assigned event dapat melihat peserta bersama, input tetap tercatat per petugas.
+- Patch code-only: tidak migration dan tidak mengubah data lama.
+
+
+## Patch 2026-06-25 02:35:57 — PWA Tambah Rundown Event
+
+- Memperbaiki izin tambah peserta seleksi: semua petugas assigned event boleh input/registrasi peserta.
+- Menambahkan API PWA operational-schedules untuk melihat dan menambah rundown event.
+- Menambahkan form Tambah Rundown di PWA menu Operasional.
+- Patch code-only: tidak migration dan tidak mengubah data lama.
+
+
+## Patch 2026-06-25 02:58:24 — Fix PWA Blank Operasional Seleksi
+
+- Memperbaiki crash PWA blank putih akibat useEffect Operasional Seleksi membaca isOperationalNav sebelum deklarasi.
+- Mengubah dependency effect menjadi activeNav agar aman saat render awal.
+- Patch code-only: tidak migration dan tidak mengubah database.
+
+
+## Patch 2026-06-25 03:10:25 — PWA Operasional Correct Flow 01
+
+- Mengubah arah operasional: Admin menjadi input utama peserta/rundown; PWA petugas fokus melihat dan update status.
+- Menyembunyikan form tambah peserta dan tambah rundown dari PWA.
+- Menambahkan status rundown untuk petugas: belum mulai, sedang berlangsung, selesai, terkendala.
+- Menambahkan API update status rundown per petugas assigned event.
+- Migration additive hanya menambah kolom status pada activity_schedules; tidak menghapus data lama.
+
+
+## Patch 2026-06-25 03:19:04 — PWA Shared History + Operational Polish
+
+- Merapikan tampilan Operasional agar lebih sesuai dengan halaman PWA lain.
+- Menyembunyikan card Belum Registrasi dan Sudah Registrasi dari ringkasan Operasional.
+- Mengarahkan riwayat keuangan agar terlihat bersama per event untuk petugas assigned, saldo tetap pribadi.
+- Mengarahkan dokumentasi/operasional agar terlihat bersama per event untuk petugas assigned, inputter/uploader tetap tercatat.
+- Patch code-only: tidak migration dan tidak menghapus data lama.
+
+
+## Patch 2026-06-25 03:28:20 — Restore PWA Documentation History
+
+- Mengembalikan tampilan riwayat dokumentasi di PWA menu Dokumentasi.
+- Menambahkan kartu riwayat dokumentasi dengan thumbnail gambar dan link lampiran.
+- Menambahkan form upload dokumentasi ringan di PWA.
+- Melanjutkan polish tampilan Operasional agar lebih app-like.
+- Patch code-only: tidak migration dan tidak mengubah data lama.\n
+
+## Patch 2026-06-25 03:31:43 — Fix PWA Blank Dokumentasi Categories
+
+- Memperbaiki blank putih pada menu Dokumentasi akibat documentation_categories bisa berbentuk object/map, bukan array.
+- Menambahkan normalisasi kategori dokumentasi di PWA sebelum render select.
+- Patch code-only: tidak migration dan tidak mengubah database.
+
+
+## Patch 2026-06-25 03:36:14 — PWA Pull-to-refresh tanpa Tombol Refresh
+
+- Menyembunyikan tombol Refresh manual pada halaman Operasional dan Dokumentasi.
+- Menambahkan pull-to-refresh ringan berbasis gesture tarik ke bawah.
+- Refresh tetap berada di halaman aktif, tidak pindah ke halaman lain.
+- Patch code-only: tidak migration dan tidak mengubah database.\n
+
+## Patch 2026-06-25 03:43:17 — Clean PWA Operational Documentation Edit
+
+- Menyederhanakan header Operasional dan Dokumentasi agar cukup judul, tanpa helper text besar.
+- Menghilangkan teks pull-to-refresh dari tampilan agar lebih clean.
+- Menambahkan tombol Edit/Koreksi pada kartu riwayat dokumentasi.
+- Menambahkan API koreksi dokumentasi untuk update kategori, caption, include flag, dan opsional ganti file.
+- Patch code-only: tidak migration dan tidak mengubah data lama.
+
+
+## Patch 2026-06-25 03:48:28 — Fix PWA Pull-to-refresh v2
+
+- Memperbaiki gesture pull-to-refresh agar dipicu saat jari dilepas dari posisi paling atas halaman.
+- Refresh tetap berada di halaman aktif dan tidak pindah ke halaman lain.
+- Menghilangkan helper text visual pull-to-refresh agar tampilan tetap clean.
+- Patch code-only: tidak migration dan tidak mengubah database.\n
+
+## Patch 2026-06-25 03:52:04 — Fix Pull-to-refresh Keep Current Page
+
+- Memperbaiki pull-to-refresh agar tetap di halaman/menu aktif.
+- Menyimpan activeNav dan selectedLpjId ke sessionStorage agar jika browser reload, halaman terakhir dipulihkan.
+- Mencegah native browser pull refresh saat gesture custom aktif.
+- Patch code-only: tidak migration dan tidak mengubah database.\n
+
+## Patch 2026-06-25 03:53:55 — Native Pull Refresh Keep Page
+
+- Mengganti custom pull-to-refresh menjadi native pull-to-refresh Android/Chrome agar lebih stabil.
+- Tetap menyimpan activeNav dan selectedLpjId agar setelah refresh tetap kembali ke halaman/menu terakhir.
+- Patch code-only: tidak migration dan tidak mengubah database.\n

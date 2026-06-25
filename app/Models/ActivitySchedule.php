@@ -7,6 +7,11 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class ActivitySchedule extends Model
 {
+    public const STATUS_NOT_STARTED = 'belum_mulai';
+    public const STATUS_IN_PROGRESS = 'sedang_berlangsung';
+    public const STATUS_DONE = 'selesai';
+    public const STATUS_BLOCKED = 'terkendala';
+
     protected $fillable = [
         'lpj_id',
         'created_by',
@@ -16,11 +21,18 @@ class ActivitySchedule extends Model
         'responsible_person',
         'note',
         'sort_order',
+    
+        'status',
+        'status_note',
+        'status_updated_by',
+        'status_updated_at',
+    
     ];
 
     protected function casts(): array
     {
         return [
+            'status_updated_at' => 'datetime',
             'start_time' => 'datetime',
             'end_time' => 'datetime',
             'sort_order' => 'integer',
@@ -36,4 +48,19 @@ class ActivitySchedule extends Model
     {
         return $this->belongsTo(User::class, 'created_by');
     }
+    public function statusUpdater(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'status_updated_by');
+    }
+
+    public static function statusLabels(): array
+    {
+        return [
+            self::STATUS_NOT_STARTED => 'Belum mulai',
+            self::STATUS_IN_PROGRESS => 'Sedang berlangsung',
+            self::STATUS_DONE => 'Selesai',
+            self::STATUS_BLOCKED => 'Terkendala',
+        ];
+    }
+
 }

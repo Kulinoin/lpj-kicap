@@ -27,3 +27,18 @@
 - 2026-06-25 01:42:04: Patch Admin operasional event detail; resource peserta, panitia, rundown + halaman detail.
 
 - 2026-06-25 02:20:00: Admin Monitoring Seleksi; resource list dan detail peserta seleksi lengkap.
+
+- 2026-06-25 02:30:20: PWA Registrasi Onsite Peserta Seleksi 01; API + UI tambah/registrasi peserta.
+
+- 2026-06-25 02:35:57: PWA Tambah Rundown Event + fix permission tambah peserta.
+
+- 2026-06-25 02:58:24: Fix PWA Blank Operasional Seleksi; useEffect memakai activeNav agar tidak crash saat render.
+
+- 2026-06-25 03:10:25: PWA Operasional Correct Flow 01; admin input master, petugas update status rundown.
+
+- 2026-06-25 03:19:04: PWA Shared History + Operational Polish; UI operasional clean, finance/docs shared event visibility.
+\n- 2026-06-25 03:28:20: Restore PWA Documentation History + polish Operasional app-like.\n\n
+- 2026-06-25 03:31:43: Fix PWA Blank Dokumentasi Categories; normalisasi options kategori dokumentasi.
+\n- 2026-06-25 03:36:14: PWA Pull-to-refresh tanpa Tombol Refresh; refresh halaman aktif via gesture tarik ke bawah.\n\n
+- 2026-06-25 03:43:17: Clean PWA Operational Documentation Edit; header lebih simple + edit dokumentasi.
+\n- 2026-06-25 03:48:28: Fix PWA Pull-to-refresh v2; trigger refresh saat touchend dari posisi paling atas.\n\n\n- 2026-06-25 03:52:04: Fix Pull-to-refresh Keep Current Page; activeNav/selectedLpjId dipersist agar refresh tidak kembali ke Beranda.\n\n\n- 2026-06-25 03:53:55: Native Pull Refresh Keep Page; native browser refresh aktif, halaman terakhir dipulihkan via sessionStorage.\n\n

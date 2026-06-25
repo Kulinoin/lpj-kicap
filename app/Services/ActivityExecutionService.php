@@ -90,7 +90,6 @@ class ActivityExecutionService
     public function payload(Lpj $lpj, User $user): array
     {
         $assignment = $lpj->assignedUsers()
-            ->where('user_id', $user->id)
             ->first();
 
         return [
@@ -175,7 +174,6 @@ class ActivityExecutionService
         abort_unless($lpj->status === Lpj::STATUS_AKTIF, 403);
 
         $assignment = $lpj->assignedUsers()
-            ->where('user_id', $user->id)
             ->first();
 
         abort_unless($assignment && $assignment->can_edit_activity_data, 403);
@@ -186,7 +184,6 @@ class ActivityExecutionService
         abort_unless($lpj->status === Lpj::STATUS_AKTIF, 403);
 
         $assignment = $lpj->assignedUsers()
-            ->where('user_id', $user->id)
             ->first();
 
         abort_unless($assignment && $assignment->can_upload_documentation, 403);
