@@ -2934,3 +2934,1010 @@ body,
 .mobile-shell {
     overscroll-behavior-y: auto !important;
 }
+
+/* KICAP_PWA_PARTICIPANT_DETAIL_POPUP_03 */
+.selection-participant-card .selection-participant-sheet {
+    position: fixed !important;
+    left: 50% !important;
+    bottom: calc(env(safe-area-inset-bottom, 0px) + 12px) !important;
+    z-index: 120 !important;
+    width: min(560px, calc(100vw - 20px)) !important;
+    max-height: min(82vh, 760px) !important;
+    overflow-y: auto !important;
+    transform: translateX(-50%) !important;
+    border: 1px solid rgba(148, 163, 184, .24) !important;
+    border-radius: 28px !important;
+    background: linear-gradient(180deg, rgba(15, 23, 42, .98), rgba(2, 6, 23, .98)) !important;
+    box-shadow: 0 30px 90px rgba(0, 0, 0, .56), 0 0 0 9999px rgba(2, 6, 23, .62) !important;
+    padding: .8rem 1rem 1rem !important;
+}
+
+.sheet-grabber {
+    width: 46px;
+    height: 5px;
+    margin: 0 auto .85rem;
+    border-radius: 999px;
+    background: rgba(148, 163, 184, .38);
+}
+
+.participant-sheet-header {
+    display: grid;
+    grid-template-columns: 82px minmax(0, 1fr) auto;
+    gap: .85rem;
+    align-items: start;
+    padding-bottom: .9rem;
+    margin-bottom: .9rem;
+    border-bottom: 1px solid rgba(148, 163, 184, .16);
+}
+
+.participant-sheet-photo {
+    width: 82px;
+    height: 82px;
+    border-radius: 24px;
+    overflow: hidden;
+    display: grid;
+    place-items: center;
+    background: rgba(245, 158, 11, .18);
+    color: #fbbf24;
+    font-size: 2rem;
+    font-weight: 950;
+}
+
+.participant-sheet-photo img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.participant-sheet-title h3 {
+    margin: .1rem 0 .1rem;
+    color: #f8fafc;
+    font-size: 1.1rem;
+}
+
+.participant-sheet-title span,
+.participant-sheet-title small {
+    display: block;
+    color: rgba(226, 232, 240, .7);
+    font-size: .82rem;
+}
+
+.participant-sheet-badges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .4rem;
+    margin-top: .55rem;
+}
+
+.sheet-close-button {
+    border: 1px solid rgba(148, 163, 184, .2);
+    border-radius: 999px;
+    padding: .48rem .7rem;
+    background: rgba(15, 23, 42, .82);
+    color: #f8fafc;
+    font-weight: 850;
+}
+
+.participant-detail-preview {
+    display: grid;
+    gap: .9rem;
+}
+
+.participant-detail-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: .65rem;
+}
+
+.participant-detail-grid div,
+.participant-detail-note {
+    border: 1px solid rgba(148, 163, 184, .18);
+    border-radius: 18px;
+    background: rgba(15, 23, 42, .66);
+    padding: .75rem .8rem;
+}
+
+.participant-detail-grid span,
+.participant-detail-note span {
+    display: block;
+    margin-bottom: .28rem;
+    color: rgba(226, 232, 240, .58);
+    font-size: .72rem;
+    font-weight: 850;
+}
+
+.participant-detail-grid strong,
+.participant-detail-note p {
+    margin: 0;
+    color: #f8fafc;
+    font-size: .9rem;
+    font-weight: 900;
+}
+
+.selection-participant-sheet form {
+    display: grid;
+    gap: .85rem;
+}
+
+@media (max-width: 520px) {
+    .selection-participant-card .selection-participant-sheet {
+        width: calc(100vw - 16px) !important;
+        bottom: calc(env(safe-area-inset-bottom, 0px) + 8px) !important;
+        border-radius: 26px 26px 22px 22px !important;
+        padding: .72rem .82rem 1rem !important;
+    }
+
+    .participant-sheet-header {
+        grid-template-columns: 70px minmax(0, 1fr);
+    }
+
+    .sheet-close-button {
+        grid-column: 1 / -1;
+        justify-self: stretch;
+    }
+
+    .participant-sheet-photo {
+        width: 70px;
+        height: 70px;
+        border-radius: 21px;
+    }
+
+    .participant-detail-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* KICAP_PWA_PARTICIPANT_CENTER_GALLERY_04 */
+.selection-participant-card .selection-participant-sheet {
+    top: 50% !important;
+    bottom: auto !important;
+    transform: translate(-50%, -50%) !important;
+    width: min(560px, calc(100vw - 22px)) !important;
+    max-height: min(78vh, 720px) !important;
+    border-radius: 30px !important;
+    background:
+        radial-gradient(circle at 8% 0%, rgba(20, 184, 166, .20), transparent 34%),
+        radial-gradient(circle at 92% 12%, rgba(244, 63, 94, .12), transparent 30%),
+        linear-gradient(180deg, rgba(15, 23, 42, .98), rgba(15, 23, 42, .96)) !important;
+    border: 1px solid rgba(226, 232, 240, .13) !important;
+    box-shadow: 0 28px 88px rgba(2, 6, 23, .60), 0 0 0 9999px rgba(15, 23, 42, .58) !important;
+    color: #f8fafc !important;
+}
+
+.selection-participant-card .selection-participant-sheet .sheet-grabber {
+    background: rgba(226, 232, 240, .30);
+}
+
+.selection-participant-card .participant-sheet-header {
+    grid-template-columns: 86px minmax(0, 1fr) auto;
+    background: rgba(255, 255, 255, .035);
+    border: 1px solid rgba(226, 232, 240, .08);
+    border-radius: 24px;
+    padding: .8rem;
+    margin-bottom: .85rem;
+}
+
+.selection-participant-card .participant-sheet-photo {
+    appearance: none;
+    border: 0;
+    padding: 0;
+    width: 86px;
+    height: 86px;
+    border-radius: 24px;
+    background: linear-gradient(135deg, rgba(245, 158, 11, .30), rgba(20, 184, 166, .16));
+    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .10);
+}
+
+.selection-participant-card .participant-sheet-photo.is-clickable {
+    cursor: zoom-in;
+}
+
+.selection-participant-card .participant-sheet-photo.is-clickable:active {
+    transform: scale(.98);
+}
+
+.selection-participant-card .participant-sheet-photo img {
+    border-radius: inherit;
+}
+
+.selection-participant-card .participant-sheet-title .section-kicker {
+    color: #2dd4bf;
+}
+
+.selection-participant-card .participant-sheet-title h3 {
+    color: #f8fafc;
+    letter-spacing: -.02em;
+}
+
+.selection-participant-card .participant-sheet-title span,
+.selection-participant-card .participant-sheet-title small {
+    color: rgba(226, 232, 240, .76);
+}
+
+.selection-participant-card .sheet-close-button {
+    background: rgba(15, 23, 42, .72);
+    color: #f8fafc;
+    border-color: rgba(226, 232, 240, .14);
+}
+
+.selection-participant-card .participant-detail-grid div,
+.selection-participant-card .participant-detail-note {
+    background: rgba(255, 255, 255, .045);
+    border-color: rgba(226, 232, 240, .10);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, .035);
+}
+
+.selection-participant-card .participant-detail-grid span,
+.selection-participant-card .participant-detail-note span {
+    color: rgba(226, 232, 240, .58);
+}
+
+.selection-participant-card .participant-detail-grid strong,
+.selection-participant-card .participant-detail-note p {
+    color: #f8fafc;
+}
+
+.participant-photo-lightbox {
+    position: fixed;
+    inset: 0;
+    z-index: 160;
+    display: grid;
+    place-items: center;
+    padding: 20px;
+}
+
+.photo-lightbox-backdrop {
+    position: absolute;
+    inset: 0;
+    border: 0;
+    background: rgba(2, 6, 23, .88);
+}
+
+.photo-lightbox-panel {
+    position: relative;
+    z-index: 1;
+    width: min(680px, 100%);
+    max-height: 88vh;
+    display: grid;
+    gap: .8rem;
+    place-items: center;
+}
+
+.photo-lightbox-panel img {
+    max-width: 100%;
+    max-height: 76vh;
+    object-fit: contain;
+    border-radius: 24px;
+    box-shadow: 0 30px 90px rgba(0, 0, 0, .55);
+    background: #020617;
+}
+
+.photo-lightbox-panel strong {
+    color: #f8fafc;
+    font-size: .95rem;
+    text-align: center;
+}
+
+.photo-lightbox-close {
+    justify-self: end;
+    border: 1px solid rgba(226, 232, 240, .18);
+    border-radius: 999px;
+    padding: .55rem .8rem;
+    background: rgba(15, 23, 42, .88);
+    color: #f8fafc;
+    font-weight: 850;
+}
+
+@media (max-width: 520px) {
+    .selection-participant-card .selection-participant-sheet {
+        width: calc(100vw - 18px) !important;
+        max-height: 80vh !important;
+        border-radius: 28px !important;
+    }
+
+    .selection-participant-card .participant-sheet-header {
+        grid-template-columns: 74px minmax(0, 1fr);
+        border-radius: 22px;
+    }
+
+    .selection-participant-card .participant-sheet-photo {
+        width: 74px;
+        height: 74px;
+        border-radius: 22px;
+    }
+
+    .selection-participant-card .sheet-close-button {
+        grid-column: 1 / -1;
+        justify-self: stretch;
+    }
+
+    .photo-lightbox-panel img {
+        max-height: 72vh;
+        border-radius: 20px;
+    }
+}
+
+/* KICAP_PWA_PARTICIPANT_LIGHT_POPUP_06 */
+.selection-participant-card .selection-participant-sheet {
+    top: 50% !important;
+    bottom: auto !important;
+    transform: translate(-50%, -50%) !important;
+    width: min(560px, calc(100vw - 22px)) !important;
+    max-height: min(78vh, 720px) !important;
+    overflow-y: auto !important;
+    border-radius: 30px !important;
+    background:
+        radial-gradient(circle at 8% 0%, rgba(20, 184, 166, .12), transparent 34%),
+        linear-gradient(180deg, rgba(255, 255, 255, .98), rgba(248, 250, 252, .98)) !important;
+    border: 1px solid rgba(15, 23, 42, .10) !important;
+    box-shadow: 0 28px 88px rgba(15, 23, 42, .25), 0 0 0 9999px rgba(15, 23, 42, .46) !important;
+    color: #0f172a !important;
+    padding: .85rem 1rem 1rem !important;
+}
+
+.selection-participant-card .selection-participant-sheet .sheet-grabber {
+    background: rgba(15, 23, 42, .18);
+}
+
+.selection-participant-card .participant-sheet-header {
+    grid-template-columns: 82px minmax(0, 1fr);
+    gap: .85rem;
+    align-items: center;
+    background: linear-gradient(135deg, rgba(20, 184, 166, .10), rgba(244, 63, 94, .06));
+    border: 1px solid rgba(15, 23, 42, .08);
+    border-radius: 24px;
+    padding: .82rem;
+    margin-bottom: .85rem;
+}
+
+.selection-participant-card .participant-sheet-photo {
+    appearance: none;
+    border: 0;
+    padding: 0;
+    width: 82px;
+    height: 82px;
+    border-radius: 24px;
+    overflow: hidden;
+    display: grid;
+    place-items: center;
+    background: linear-gradient(135deg, rgba(245, 158, 11, .28), rgba(20, 184, 166, .16));
+    color: #f59e0b;
+    font-size: 2rem;
+    font-weight: 950;
+}
+
+.selection-participant-card .participant-sheet-photo.is-clickable {
+    cursor: zoom-in;
+}
+
+.selection-participant-card .participant-sheet-photo img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.selection-participant-card .participant-sheet-title .section-kicker {
+    color: #0f766e;
+    font-size: .72rem;
+    font-weight: 950;
+    letter-spacing: .08em;
+}
+
+.selection-participant-card .participant-sheet-title h3 {
+    color: #0f172a;
+    margin: .12rem 0 .16rem;
+    font-size: 1.12rem;
+    letter-spacing: -.02em;
+}
+
+.selection-participant-card .participant-sheet-title span,
+.selection-participant-card .participant-sheet-title small {
+    color: #475569;
+    display: block;
+    font-size: .86rem;
+}
+
+.selection-participant-card .participant-sheet-badges {
+    display: flex;
+    flex-wrap: nowrap;
+    gap: .42rem;
+    margin-top: .58rem;
+    overflow-x: auto;
+    scrollbar-width: none;
+}
+
+.selection-participant-card .participant-sheet-badges::-webkit-scrollbar {
+    display: none;
+}
+
+.selection-participant-card .participant-sheet-badges .mini-badge {
+    white-space: nowrap;
+    background: #ffffff;
+    border: 1px solid rgba(15, 23, 42, .12);
+    color: #334155;
+    box-shadow: 0 5px 16px rgba(15, 23, 42, .06);
+}
+
+.selection-participant-card .sheet-close-button {
+    grid-column: 1 / -1;
+    width: 100%;
+    margin-top: .72rem;
+    border: 1px solid rgba(15, 23, 42, .12);
+    border-radius: 18px;
+    padding: .75rem .9rem;
+    background: #0f172a;
+    color: #ffffff;
+    font-weight: 900;
+}
+
+.selection-participant-card .participant-detail-preview {
+    display: grid;
+    gap: .8rem;
+}
+
+.selection-participant-card .participant-detail-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: .62rem;
+}
+
+.selection-participant-card .participant-detail-grid div,
+.selection-participant-card .participant-detail-note {
+    background: #ffffff;
+    border: 1px solid rgba(15, 23, 42, .08);
+    border-radius: 18px;
+    padding: .75rem .8rem;
+    box-shadow: 0 8px 24px rgba(15, 23, 42, .055);
+}
+
+.selection-participant-card .participant-detail-grid span,
+.selection-participant-card .participant-detail-note span {
+    display: block;
+    margin-bottom: .28rem;
+    color: #64748b;
+    font-size: .72rem;
+    font-weight: 900;
+}
+
+.selection-participant-card .participant-detail-grid strong,
+.selection-participant-card .participant-detail-note p {
+    margin: 0;
+    color: #0f172a;
+    font-size: .92rem;
+    font-weight: 900;
+    line-height: 1.45;
+}
+
+.selection-participant-card .selection-sheet-message {
+    border-radius: 16px;
+    background: rgba(20, 184, 166, .10);
+    color: #0f766e;
+    padding: .75rem .85rem;
+    font-weight: 850;
+}
+
+.selection-participant-card .selection-participant-sheet form {
+    display: grid;
+    gap: .85rem;
+}
+
+.selection-participant-card .selection-participant-sheet label {
+    color: #334155 !important;
+}
+
+.selection-participant-card .selection-participant-sheet input,
+.selection-participant-card .selection-participant-sheet textarea {
+    background: #ffffff !important;
+    color: #0f172a !important;
+    border-color: rgba(15, 23, 42, .13) !important;
+}
+
+.selection-participant-card .selection-participant-sheet input::placeholder,
+.selection-participant-card .selection-participant-sheet textarea::placeholder {
+    color: #94a3b8 !important;
+}
+
+.selection-participant-card .selection-participant-sheet .primary-button,
+.selection-participant-card .selection-participant-sheet .ghost-button {
+    width: 100%;
+}
+
+.participant-photo-lightbox {
+    position: fixed;
+    inset: 0;
+    z-index: 180;
+    display: grid;
+    place-items: center;
+    padding: 20px;
+}
+
+.photo-lightbox-backdrop {
+    position: absolute;
+    inset: 0;
+    border: 0;
+    background: rgba(2, 6, 23, .88);
+}
+
+.photo-lightbox-panel {
+    position: relative;
+    z-index: 1;
+    width: min(680px, 100%);
+    max-height: 88vh;
+    display: grid;
+    gap: .8rem;
+    place-items: center;
+}
+
+.photo-lightbox-panel img {
+    max-width: 100%;
+    max-height: 76vh;
+    object-fit: contain;
+    border-radius: 24px;
+    box-shadow: 0 30px 90px rgba(0, 0, 0, .55);
+    background: #020617;
+}
+
+.photo-lightbox-panel strong {
+    color: #f8fafc;
+    font-size: .95rem;
+    text-align: center;
+}
+
+.photo-lightbox-close {
+    justify-self: end;
+    border: 1px solid rgba(226, 232, 240, .18);
+    border-radius: 999px;
+    padding: .55rem .8rem;
+    background: rgba(15, 23, 42, .88);
+    color: #f8fafc;
+    font-weight: 850;
+}
+
+@media (max-width: 520px) {
+    .selection-participant-card .selection-participant-sheet {
+        width: calc(100vw - 18px) !important;
+        max-height: 80vh !important;
+        border-radius: 28px !important;
+    }
+
+    .selection-participant-card .participant-sheet-header {
+        grid-template-columns: 74px minmax(0, 1fr);
+        border-radius: 22px;
+    }
+
+    .selection-participant-card .participant-sheet-photo {
+        width: 74px;
+        height: 74px;
+        border-radius: 22px;
+    }
+
+    .selection-participant-card .participant-detail-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .photo-lightbox-panel img {
+        max-height: 72vh;
+        border-radius: 20px;
+    }
+}
+
+/* KICAP_PWA_PROGRESS_TEST_UPDATE_02 */
+.selection-test-action {
+    width: 100%;
+    border: 0;
+    text-align: left;
+    cursor: pointer;
+}
+
+.selection-test-action small {
+    display: block;
+    margin-top: .2rem;
+    color: #64748b;
+    font-size: .72rem;
+    font-weight: 750;
+}
+
+.test-status-pill {
+    white-space: nowrap;
+    border-radius: 999px;
+    padding: .42rem .62rem;
+    font-size: .76rem;
+    font-weight: 950;
+}
+
+.test-status-pill.is-pending {
+    background: rgba(100, 116, 139, .12);
+    color: #475569;
+    border: 1px solid rgba(100, 116, 139, .18);
+}
+
+.test-status-pill.is-passed {
+    background: rgba(20, 184, 166, .14);
+    color: #0f766e;
+    border: 1px solid rgba(15, 118, 110, .18);
+}
+
+.test-status-pill.is-eliminated {
+    background: rgba(239, 68, 68, .14);
+    color: #b91c1c;
+    border: 1px solid rgba(185, 28, 28, .22);
+}
+
+.selection-test-sheet {
+    position: fixed;
+    inset: 0;
+    z-index: 190;
+    display: grid;
+    place-items: center;
+    padding: 16px;
+}
+
+.selection-test-sheet-backdrop {
+    position: absolute;
+    inset: 0;
+    border: 0;
+    background: rgba(15, 23, 42, .50);
+}
+
+.selection-test-sheet-panel {
+    position: relative;
+    z-index: 1;
+    width: min(520px, calc(100vw - 24px));
+    max-height: 82vh;
+    overflow-y: auto;
+    border: 1px solid rgba(15, 23, 42, .10);
+    border-radius: 28px;
+    background: linear-gradient(180deg, rgba(255,255,255,.99), rgba(248,250,252,.99));
+    box-shadow: 0 28px 88px rgba(15, 23, 42, .26);
+    padding: .95rem;
+    display: grid;
+    gap: .85rem;
+}
+
+.selection-test-sheet-panel h3 {
+    margin: -.25rem 0 0;
+    color: #0f172a;
+    font-size: 1.15rem;
+}
+
+.selection-test-sheet-panel small {
+    color: #64748b;
+    font-weight: 800;
+}
+
+.selection-test-sheet-panel label {
+    display: grid;
+    gap: .35rem;
+    color: #334155;
+    font-size: .82rem;
+    font-weight: 900;
+}
+
+.selection-test-sheet-panel select,
+.selection-test-sheet-panel textarea {
+    width: 100%;
+    border: 1px solid rgba(15, 23, 42, .13);
+    border-radius: 16px;
+    background: #ffffff;
+    color: #0f172a;
+    padding: .82rem .9rem;
+    outline: none;
+    font-weight: 800;
+}
+
+.selection-test-sheet-panel textarea {
+    min-height: 100px;
+    resize: vertical;
+}
+
+.selection-test-sheet-panel .primary-button,
+.selection-test-sheet-panel .ghost-button {
+    width: 100%;
+}
+
+/* KICAP_PWA_PARTICIPANT_PROGRESS_POLISH_08 */
+.selection-participant-card .participant-status-line,
+.selection-participant-card .participant-sheet-badges.participant-status-line {
+    display: flex !important;
+    align-items: center !important;
+    gap: .45rem !important;
+    flex-wrap: nowrap !important;
+    overflow-x: auto;
+    scrollbar-width: none;
+}
+
+.selection-participant-card .participant-status-line::-webkit-scrollbar,
+.selection-participant-card .participant-sheet-badges.participant-status-line::-webkit-scrollbar {
+    display: none;
+}
+
+.selection-participant-card .participant-status-pill {
+    white-space: nowrap !important;
+    border-radius: 999px !important;
+    padding: .46rem .74rem !important;
+    font-size: .78rem !important;
+    font-weight: 950 !important;
+    letter-spacing: -.01em;
+}
+
+.selection-participant-card .participant-status-pill.is-active {
+    color: #0f766e !important;
+    background: rgba(20, 184, 166, .13) !important;
+    border: 1px solid rgba(15, 118, 110, .22) !important;
+}
+
+.selection-participant-card .participant-status-pill.is-eliminated {
+    color: #b91c1c !important;
+    background: rgba(239, 68, 68, .13) !important;
+    border: 1px solid rgba(185, 28, 28, .24) !important;
+}
+
+.selection-participant-card .selection-participant-sheet {
+    background:
+        radial-gradient(circle at 10% 0%, rgba(20, 184, 166, .10), transparent 35%),
+        linear-gradient(180deg, rgba(255, 255, 255, .99), rgba(248, 250, 252, .99)) !important;
+    color: #0f172a !important;
+}
+
+.selection-participant-card .participant-sheet-header {
+    background: linear-gradient(135deg, rgba(20, 184, 166, .10), rgba(241, 245, 249, .92)) !important;
+}
+
+.selection-participant-card .participant-detail-grid div,
+.selection-participant-card .participant-detail-note {
+    background: #ffffff !important;
+    border-color: rgba(15, 23, 42, .08) !important;
+}
+
+.selection-participant-card .participant-detail-grid span,
+.selection-participant-card .participant-detail-note span {
+    color: #64748b !important;
+}
+
+.selection-participant-card .participant-detail-grid strong,
+.selection-participant-card .participant-detail-note p {
+    color: #0f172a !important;
+}
+
+/* Progress test modal: center & reachable */
+.selection-participant-card .selection-test-sheet {
+    position: fixed !important;
+    inset: 0 !important;
+    z-index: 220 !important;
+    display: grid !important;
+    place-items: center !important;
+    padding: 20px !important;
+    transform: none !important;
+}
+
+.selection-participant-card .selection-test-sheet-backdrop {
+    position: fixed !important;
+    inset: 0 !important;
+    border: 0 !important;
+    background: rgba(15, 23, 42, .48) !important;
+}
+
+.selection-participant-card .selection-test-sheet-panel {
+    position: relative !important;
+    z-index: 1 !important;
+    width: min(520px, calc(100vw - 24px)) !important;
+    max-height: min(78vh, 680px) !important;
+    overflow-y: auto !important;
+    border-radius: 28px !important;
+    background: linear-gradient(180deg, rgba(255,255,255,.99), rgba(248,250,252,.99)) !important;
+    box-shadow: 0 28px 88px rgba(15, 23, 42, .28) !important;
+    border: 1px solid rgba(15, 23, 42, .10) !important;
+    padding: 1rem !important;
+}
+
+.selection-participant-card .selection-test-sheet-panel .sheet-grabber {
+    background: rgba(15, 23, 42, .18) !important;
+}
+
+.selection-participant-card .selection-test-sheet-panel h3 {
+    color: #0f172a !important;
+}
+
+.selection-participant-card .selection-test-sheet-panel small {
+    color: #64748b !important;
+}
+
+.selection-participant-card .selection-test-sheet-panel label {
+    color: #334155 !important;
+}
+
+.selection-participant-card .selection-test-sheet-panel select,
+.selection-participant-card .selection-test-sheet-panel textarea {
+    background: #ffffff !important;
+    color: #0f172a !important;
+    border-color: rgba(15, 23, 42, .13) !important;
+}
+
+@media (max-width: 520px) {
+    .selection-participant-card .selection-test-sheet {
+        align-items: center !important;
+        padding: 14px !important;
+    }
+
+    .selection-participant-card .selection-test-sheet-panel {
+        width: calc(100vw - 22px) !important;
+        max-height: 76vh !important;
+        border-radius: 26px !important;
+    }
+}
+
+/* KICAP_PWA_PROGRESS_TEST_CENTER_LOCK_09 */
+.selection-participant-card .participant-status-pill {
+    white-space: nowrap !important;
+    border-radius: 999px !important;
+    padding: .46rem .74rem !important;
+    font-size: .78rem !important;
+    font-weight: 950 !important;
+}
+
+.selection-participant-card .participant-status-pill.is-active {
+    color: #0f766e !important;
+    background: rgba(20, 184, 166, .13) !important;
+    border: 1px solid rgba(15, 118, 110, .22) !important;
+}
+
+.selection-participant-card .participant-status-pill.is-eliminated {
+    color: #b91c1c !important;
+    background: rgba(239, 68, 68, .13) !important;
+    border: 1px solid rgba(185, 28, 28, .24) !important;
+}
+
+.selection-test-action.is-locked {
+    opacity: .58;
+    cursor: not-allowed;
+    filter: grayscale(.2);
+}
+
+.selection-test-action.is-locked::after {
+    content: "Terkunci";
+    display: inline-flex;
+    margin-top: .45rem;
+    border-radius: 999px;
+    padding: .28rem .55rem;
+    background: rgba(100, 116, 139, .12);
+    color: #64748b;
+    font-size: .7rem;
+    font-weight: 900;
+}
+
+/* Paksa popup progress tes benar-benar berada di tengah layar */
+.selection-participant-card .selection-test-sheet {
+    position: fixed !important;
+    inset: 0 !important;
+    z-index: 260 !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    padding: 18px !important;
+    transform: none !important;
+}
+
+.selection-participant-card .selection-test-sheet-backdrop {
+    position: fixed !important;
+    inset: 0 !important;
+    border: 0 !important;
+    background: rgba(15, 23, 42, .52) !important;
+}
+
+.selection-participant-card .selection-test-sheet-panel {
+    position: relative !important;
+    z-index: 1 !important;
+    width: min(520px, calc(100vw - 24px)) !important;
+    max-height: min(72vh, 620px) !important;
+    overflow-y: auto !important;
+    border-radius: 28px !important;
+    background: linear-gradient(180deg, rgba(255,255,255,.99), rgba(248,250,252,.99)) !important;
+    box-shadow: 0 28px 88px rgba(15, 23, 42, .28) !important;
+    border: 1px solid rgba(15, 23, 42, .10) !important;
+    padding: 1rem !important;
+    margin: auto !important;
+    transform: translateY(0) !important;
+}
+
+@media (max-width: 520px) {
+    .selection-participant-card .selection-test-sheet {
+        align-items: center !important;
+        justify-content: center !important;
+        padding: 14px !important;
+    }
+
+    .selection-participant-card .selection-test-sheet-panel {
+        width: calc(100vw - 22px) !important;
+        max-height: 70vh !important;
+        border-radius: 26px !important;
+    }
+}
+
+/* KICAP_PWA_PROGRESS_TEST_CONTEXTUAL_POPUP_11 */
+.selection-participant-card .selection-test-sheet {
+    position: static !important;
+    inset: auto !important;
+    z-index: auto !important;
+    display: block !important;
+    padding: .45rem 0 .85rem !important;
+    transform: none !important;
+}
+
+.selection-participant-card .selection-test-sheet-backdrop {
+    display: none !important;
+}
+
+.selection-participant-card .selection-test-sheet-panel {
+    position: relative !important;
+    width: 100% !important;
+    max-height: none !important;
+    overflow: visible !important;
+    margin: .35rem 0 .2rem !important;
+    border-radius: 24px !important;
+    background:
+        radial-gradient(circle at 8% 0%, rgba(20, 184, 166, .10), transparent 34%),
+        linear-gradient(180deg, #ffffff, #f8fafc) !important;
+    border: 1px solid rgba(15, 23, 42, .10) !important;
+    box-shadow: 0 16px 42px rgba(15, 23, 42, .12) !important;
+    padding: .9rem !important;
+    animation: progressContextIn .16s ease-out;
+}
+
+@keyframes progressContextIn {
+    from {
+        opacity: 0;
+        transform: translateY(-6px) scale(.99);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+.selection-participant-card .selection-test-sheet-panel::before {
+    content: "";
+    position: absolute;
+    top: -8px;
+    left: 34px;
+    width: 16px;
+    height: 16px;
+    transform: rotate(45deg);
+    background: #ffffff;
+    border-left: 1px solid rgba(15, 23, 42, .08);
+    border-top: 1px solid rgba(15, 23, 42, .08);
+}
+
+.selection-participant-card .selection-test-sheet-panel .sheet-grabber {
+    display: none !important;
+}
+
+.selection-participant-card .selection-test-sheet-panel .section-kicker {
+    color: #0f766e !important;
+}
+
+.selection-participant-card .selection-test-sheet-panel h3 {
+    margin-top: 0 !important;
+}
+
+.selection-participant-card .selection-test-sheet-panel .primary-button,
+.selection-participant-card .selection-test-sheet-panel .ghost-button {
+    min-height: 48px;
+    border-radius: 16px;
+}
+
+@media (max-width: 520px) {
+    .selection-participant-card .selection-test-sheet {
+        padding: .4rem 0 .8rem !important;
+    }
+
+    .selection-participant-card .selection-test-sheet-panel {
+        border-radius: 22px !important;
+        padding: .85rem !important;
+    }
+
+    .selection-participant-card .selection-test-sheet-panel::before {
+        left: 28px;
+    }
+}
+

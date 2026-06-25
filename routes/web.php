@@ -907,6 +907,162 @@ Route::get('/admin/reports/lpjs/{lpj}/print', function (Request $request, Lpj $l
         ]);
     });
 
+    // KICAP_DIRECTOR_ENDPOINTS_SAFE_01
+    Route::get('/api/app/director/events', function (Request $request) {
+        /** @var User $user */
+        $user = $request->user();
+
+        abort_unless($user && method_exists($user, 'isDirektur') && $user->isDirektur() && $user->is_active, 403);
+
+        $statusLabels = [
+            'draft' => 'Draft',
+            'aktif' => 'Aktif',
+            'review' => 'Diajukan',
+            'diajukan' => 'Diajukan',
+            'submitted' => 'Diajukan',
+            'revisi' => 'Perlu Revisi',
+            'perlu_revisi' => 'Perlu Revisi',
+            'approved' => 'Disetujui',
+            'disetujui' => 'Disetujui',
+            'finish' => 'Selesai',
+            'selesai' => 'Selesai',
+        ];
+
+        $events = \Illuminate\Support\Facades\DB::table('lpjs')
+            ->leftJoin('lpj_types', 'lpj_types.id', '=', 'lpjs.lpj_type_id')
+            ->leftJoin('users as pic', 'pic.id', '=', 'lpjs.person_in_charge_id')
+            ->select([
+                'lpjs.id',
+                'lpjs.code',
+                'lpjs.title',
+                'lpjs.status',
+                'lpjs.start_date',
+                'lpjs.end_date',
+                'lpjs.location',
+                'lpj_types.name as type_name',
+                'pic.name as person_in_charge_name',
+            ])
+            ->orderByDesc('lpjs.id')
+            ->get()
+            ->map(function ($event) use ($statusLabels): array {
+                $participantCount = \Illuminate\Support\Facades\DB::table('activity_participants')
+                    ->where('lpj_id', $event->id)
+                    ->count();
+
+                $documentationCount = \Illuminate\Support\Facades\DB::table('activity_documentations')
+                    ->where('lpj_id', $event->id)
+                    ->count();
+
+                $transactionCount = \Illuminate\Support\Facades\DB::table('lpj_financial_transactions')
+                    ->where('lpj_id', $event->id)
+                    ->count();
+
+                $progress = $event->status === 'finish' || $event->status === 'selesai'
+                    ? 100
+                    : min(95, 30
+                        + ($participantCount > 0 ? 20 : 0)
+                        + ($documentationCount > 0 ? 20 : 0)
+                        + ($transactionCount > 0 ? 15 : 0));
+
+                return [
+                    'id' => $event->id,
+                    'code' => $event->code,
+                    'title' => $event->title,
+                    'type' => $event->type_name,
+                    'status' => $event->status,
+                    'status_label' => $statusLabels[$event->status] ?? ucfirst((string) $event->status),
+                    'start_date' => $event->start_date ? \Illuminate\Support\Carbon::parse($event->start_date)->toDateString() : null,
+                    'end_date' => $event->end_date ? \Illuminate\Support\Carbon::parse($event->end_date)->toDateString() : null,
+                    'location' => $event->location,
+                    'person_in_charge' => $event->person_in_charge_name,
+                    'assignment_role' => 'Monitoring',
+                    'participant_count' => $participantCount,
+                    'documentation_count' => $documentationCount,
+                    'transaction_count' => $transactionCount,
+                    'progress_label' => 'Monitoring Event',
+                    'progress_percentage' => $progress,
+                    'latest_transaction' => null,
+                ];
+            })
+            ->values();
+
+        return response()->json(['data' => $events]);
+    });
+
+    Route::get('/api/app/director/events/{lpj}', function (Request $request, Lpj $lpj) {
+        /** @var User $user */
+        $user = $request->user();
+
+        abort_unless($user && method_exists($user, 'isDirektur') && $user->isDirektur() && $user->is_active, 403);
+
+        $event = \Illuminate\Support\Facades\DB::table('lpjs')
+            ->leftJoin('lpj_types', 'lpj_types.id', '=', 'lpjs.lpj_type_id')
+            ->leftJoin('users as pic', 'pic.id', '=', 'lpjs.person_in_charge_id')
+            ->where('lpjs.id', $lpj->id)
+            ->select([
+                'lpjs.*',
+                'lpj_types.name as type_name',
+                'lpj_types.slug as type_slug',
+                'pic.name as person_in_charge_name',
+            ])
+            ->first();
+
+        abort_unless($event, 404);
+
+        $documentations = \Illuminate\Support\Facades\DB::table('activity_documentations')
+            ->where('lpj_id', $event->id)
+            ->orderByDesc('id')
+            ->limit(50)
+            ->get();
+
+        $transactions = \Illuminate\Support\Facades\DB::table('lpj_financial_transactions')
+            ->where('lpj_id', $event->id)
+            ->orderByDesc('id')
+            ->limit(50)
+            ->get();
+
+        $schedules = \Illuminate\Support\Facades\DB::table('activity_schedules')
+            ->where('lpj_id', $event->id)
+            ->orderBy('id')
+            ->get();
+
+        $participants = \Illuminate\Support\Facades\DB::table('activity_participants')
+            ->where('lpj_id', $event->id)
+            ->orderBy('id')
+            ->limit(100)
+            ->get();
+
+        return response()->json([
+            'data' => [
+                'id' => $event->id,
+                'code' => $event->code,
+                'title' => $event->title,
+                'type' => $event->type_name,
+                'type_slug' => $event->type_slug,
+                'status' => $event->status,
+                'status_label' => ucfirst((string) $event->status),
+                'start_date' => $event->start_date ? \Illuminate\Support\Carbon::parse($event->start_date)->toDateString() : null,
+                'end_date' => $event->end_date ? \Illuminate\Support\Carbon::parse($event->end_date)->toDateString() : null,
+                'location' => $event->location,
+                'person_in_charge' => $event->person_in_charge_name,
+                'can_input_operational_data' => false,
+                'can_submit_review' => false,
+                'can_print_report' => in_array($event->status, ['finish', 'selesai'], true),
+                'report_print_url' => in_array($event->status, ['finish', 'selesai'], true) ? route('app.lpjs.report.print', $event->id) : null,
+                'is_director_view' => true,
+                'activity_notes' => [],
+                'execution' => [
+                    'schedules' => $schedules,
+                    'participants' => $participants,
+                ],
+                'finance' => [
+                    'transactions' => $transactions,
+                ],
+                'documentations' => $documentations,
+            ],
+        ]);
+    });
+
     Route::get('/api/app/profile', function (Request $request) {
         /** @var User $user */
         $user = $request->user();
@@ -1379,3 +1535,89 @@ Route::post('/api/app/lpjs/{lpj}/documentations/{documentation}/update', functio
         ],
     ]);
 })->middleware('auth');
+
+// KICAP_PWA_PROGRESS_TEST_UPDATE_01
+Route::post('/api/app/lpjs/{lpj}/selection/participants/{participant}/test-results/{result}', function (
+    \Illuminate\Http\Request $request,
+    \App\Models\Lpj $lpj,
+    \App\Models\ActivityParticipant $participant,
+    \App\Models\ActivityParticipantTestResult $result,
+    \App\Services\ActivitySelectionPayloadService $selectionService
+) {
+    /** @var \App\Models\User $user */
+    $user = $request->user();
+
+    abort_unless($user && $user->isUser(), 403);
+
+    $lpj = \App\Models\Lpj::query()
+        ->visibleToAssignedUser($user)
+        ->findOrFail($lpj->id);
+
+    abort_unless($lpj->status === \App\Models\Lpj::STATUS_AKTIF, 403);
+
+    $assignment = $lpj->assignedUsers()->where('user_id', $user->id)->first();
+    abort_unless($assignment, 403);
+
+    abort_unless($participant->lpj_id === $lpj->id, 404);
+    abort_unless($result->lpj_id === $lpj->id, 404);
+    abort_unless($result->activity_participant_id === $participant->id, 404);
+
+    $failed = $participant->testResults()
+        ->where('status', \App\Models\ActivityParticipantTestResult::STATUS_FAILED)
+        ->with(['stage', 'test'])
+        ->join('activity_selection_stages', 'activity_selection_stages.id', '=', 'activity_participant_test_results.activity_selection_stage_id')
+        ->join('activity_selection_tests', 'activity_selection_tests.id', '=', 'activity_participant_test_results.activity_selection_test_id')
+        ->orderBy('activity_selection_stages.sort_order')
+        ->orderBy('activity_selection_tests.sort_order')
+        ->select('activity_participant_test_results.*')
+        ->first();
+
+    if ($failed && (int) $failed->id !== (int) $result->id) {
+        $result->loadMissing(['stage', 'test']);
+
+        $failedOrder = [
+            $failed->stage?->sort_order ?? 999999,
+            $failed->test?->sort_order ?? 999999,
+        ];
+
+        $targetOrder = [
+            $result->stage?->sort_order ?? 999999,
+            $result->test?->sort_order ?? 999999,
+        ];
+
+        if ($targetOrder > $failedOrder) {
+            return response()->json([
+                'message' => 'Peserta sudah gugur, tes berikutnya terkunci.',
+            ], 422);
+        }
+    }
+    $validated = $request->validate([
+        'status' => [
+            'required',
+            \Illuminate\Validation\Rule::in([
+                \App\Models\ActivityParticipantTestResult::STATUS_PENDING,
+                \App\Models\ActivityParticipantTestResult::STATUS_PASSED,
+                \App\Models\ActivityParticipantTestResult::STATUS_FAILED,
+            ]),
+        ],
+        'note' => ['nullable', 'string', 'max:5000'],
+    ]);
+
+    $result->forceFill([
+        'status' => $validated['status'],
+        'note' => $validated['note'] ?? null,
+        'updated_by' => $user->id,
+        'assessed_at' => $validated['status'] === \App\Models\ActivityParticipantTestResult::STATUS_PENDING
+            ? null
+            : now(),
+    ])->save();
+
+    app(\App\Services\ActivitySelectionService::class)->recalculateParticipantStatus($participant->fresh());
+
+    return response()->json([
+        'data' => [
+            'selection' => $selectionService->payload($lpj->fresh(), $user),
+        ],
+    ]);
+})->middleware('auth');
+

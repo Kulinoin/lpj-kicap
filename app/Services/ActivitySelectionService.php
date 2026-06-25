@@ -184,13 +184,8 @@ class ActivitySelectionService
                 );
             }
 
-            $hasNumber = filled($participant->participant_number);
-
-            $participant->forceFill([
-                'selection_registration_status' => $hasNumber ? ActivityParticipant::REGISTRATION_STATUS_REGISTERED : ActivityParticipant::REGISTRATION_STATUS_UNREGISTERED,
-                'selection_status' => $hasNumber ? ActivityParticipant::SELECTION_STATUS_ACTIVE : ActivityParticipant::SELECTION_STATUS_NOT_STARTED,
-                'registered_at' => $hasNumber ? ($participant->registered_at ?? now()) : null,
-            ])->save();
+            $this->recalculateParticipantStatus($participant->fresh());
+            return;
         });
     }
 

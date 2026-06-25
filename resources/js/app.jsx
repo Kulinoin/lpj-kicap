@@ -370,6 +370,8 @@ function KicapApp() {
     const [selectionParticipantForm, setSelectionParticipantForm] = useState(emptySelectionParticipantForm);
     const [selectionRegistrationForms, setSelectionRegistrationForms] = useState({});
     const [expandedSelectionParticipantId, setExpandedSelectionParticipantId] = useState(null);
+    const [editingSelectionParticipantId, setEditingSelectionParticipantId] = useState(null);
+    const [previewSelectionPhotoParticipantId, setPreviewSelectionPhotoParticipantId] = useState(null);
     const [documentationMessage, setDocumentationMessage] = useState('');
     const [editingDocumentationId, setEditingDocumentationId] = useState(null);
     const [documentationEditForms, setDocumentationEditForms] = useState({});
@@ -415,6 +417,8 @@ function KicapApp() {
         note: '',
     });
     const [rundownStatusForms, setRundownStatusForms] = useState({});
+    const [editingSelectionTestResult, setEditingSelectionTestResult] = useState(null);
+    const [selectionTestResultForms, setSelectionTestResultForms] = useState({});
 
     useEffect(() => {
         let isMounted = true;
@@ -951,6 +955,109 @@ function KicapApp() {
         }));
     };
 
+
+    const isProgressTestLocked = (participant, result) => {
+        const results = participant.test_results ?? [];
+        const failedIndex = results.findIndex((item) => item.status === 'gagal');
+        const currentIndex = results.findIndex((item) => item.id === result.id);
+
+        return failedIndex >= 0 && currentIndex > failedIndex;
+    };
+
+    const progressTestStatusLabel = (status) => {
+        if (status === 'gagal') return 'Gugur';
+        if (status === 'lulus') return 'Lulus';
+        return 'Belum Tes';
+    };
+
+    const progressTestStatusClass = (status) => {
+        if (status === 'gagal') return 'is-eliminated';
+        if (status === 'lulus') return 'is-passed';
+        return 'is-pending';
+    };
+
+    const openSelectionTestResultEditor = (participant, result) => {
+        if (isProgressTestLocked(participant, result)) {
+            setSelectionMessage('Peserta sudah gugur, tes berikutnya terkunci.');
+            return;
+        }
+
+        setEditingSelectionTestResult({
+            participantId: participant.id,
+            participantName: participant.name,
+            resultId: result.id,
+            stageName: result.stage_name,
+            testName: result.test_name,
+        });
+
+        setSelectionTestResultForms((current) => ({
+            ...current,
+            [result.id]: {
+                status: result.status === 'gagal' || result.status === 'lulus' ? result.status : 'belum_tes',
+                note: result.note ?? '',
+            },
+        }));
+    };
+
+    const updateSelectionTestResultForm = (resultId, field, value) => {
+        setSelectionTestResultForms((current) => ({
+            ...current,
+            [resultId]: {
+                ...(current[resultId] ?? {}),
+                [field]: value,
+            },
+        }));
+    };
+
+    const handleSelectionTestResultSubmit = (event) => {
+        event.preventDefault();
+
+        if (!selectedLpj?.id || !selectionData?.can_manage_selection || !editingSelectionTestResult) {
+            return;
+        }
+
+        const form = selectionTestResultForms[editingSelectionTestResult.resultId] ?? {};
+        const formData = new FormData();
+
+        formData.append('status', form.status ?? 'belum_tes');
+
+        if (form.note) {
+            formData.append('note', form.note);
+        }
+
+        setSelectionMessage('Menyimpan progress tes...');
+
+        fetch('/api/app/lpjs/' + selectedLpj.id + '/selection/participants/' + editingSelectionTestResult.participantId + '/test-results/' + editingSelectionTestResult.resultId, {
+            method: 'POST',
+            headers: {
+                Accept: 'application/json',
+                'X-CSRF-TOKEN': getCsrfToken(),
+            },
+            body: formData,
+        })
+            .then(async (response) => {
+                const payload = await response.json().catch(() => ({}));
+
+                if (!response.ok) {
+                    const firstMessage = Object.values(payload.errors ?? {})?.[0]?.[0];
+                    throw new Error(firstMessage ?? payload.message ?? 'Progress tes belum tersimpan.');
+                }
+
+                return payload;
+            })
+            .then((payload) => {
+                const selection = payload.data?.selection ?? null;
+
+                setSelectionData(selection);
+                setSelectionRegistrationForms(buildSelectionRegistrationForms(selection?.participants ?? []));
+                setSelectionMessage('Progress tes tersimpan.');
+                setEditingSelectionTestResult(null);
+            })
+            .catch((error) => {
+                setSelectionMessage(error.message ?? 'Progress tes belum tersimpan.');
+            });
+    };
+
     const handleCreateSelectionParticipant = (event) => {
         event.preventDefault();
 
@@ -1039,6 +1146,7 @@ function KicapApp() {
                 setSelectionData(selection);
                 setSelectionRegistrationForms(buildSelectionRegistrationForms(selection?.participants ?? []));
                 setSelectionMessage('Registrasi peserta tersimpan.');
+                setEditingSelectionParticipantId(null);
             })
             .catch((error) => {
                 setSelectionMessage(error.message ?? 'Registrasi belum tersimpan.');
@@ -2511,7 +2619,7 @@ function KicapApp() {
 
                                         return (
                                             <article className="selection-participant-card" key={participant.id}>
-                                                <button type="button" className="selection-participant-head" onClick={() => setExpandedSelectionParticipantId(expanded ? null : participant.id)}>
+                                                <button type="button" className="selection-participant-head" onClick={() => { setExpandedSelectionParticipantId(expanded ? null : participant.id); setEditingSelectionParticipantId(null); setPreviewSelectionPhotoParticipantId(null); }}>
                                                     <div className="participant-photo">
                                                         {participant.photo_url ? <img src={participant.photo_url} alt={participant.name} /> : <span>{participant.name?.slice(0, 1) ?? '?'}</span>}
                                                     </div>
@@ -2520,15 +2628,55 @@ function KicapApp() {
                                                         <span>{participant.participant_number ? ('No. ' + participant.participant_number) : 'Belum ada nomor peserta'}</span>
                                                         <small>{participant.origin || '-'}</small>
                                                     </div>
-                                                    <div className="participant-badges">
-                                                        <span className="mini-badge">{participant.registration_status_label}</span>
-                                                        <span className={'mini-badge ' + selectionStatusClass(participant.selection_status)}>{participant.selection_status_label}</span>
+                                                    <div className="participant-badges participant-status-line">
+                                                        <span className={'mini-badge participant-status-pill ' + (participant.selection_status === 'gugur' ? 'is-eliminated' : 'is-active')}>
+                                                            {participant.selection_status === 'gugur' ? 'Gugur' : 'Aktif'}
+                                                        </span>
                                                     </div>
                                                 </button>
 
                                                 {expanded && (
-                                                    <div className="selection-participant-body">
-                                                        <form onSubmit={(event) => handleSelectionRegistrationSubmit(event, participant)}>
+                                                    <div className="selection-participant-body selection-participant-sheet">
+                                                        <div className="sheet-grabber" aria-hidden="true" />
+                                                        <div className="participant-sheet-header">
+                                                            <button
+                                                                type="button"
+                                                                className={'participant-sheet-photo ' + (participant.photo_url ? 'is-clickable' : 'is-empty')}
+                                                                onClick={() => participant.photo_url && setPreviewSelectionPhotoParticipantId(participant.id)}
+                                                                disabled={!participant.photo_url}
+                                                                aria-label="Lihat foto peserta"
+                                                            >
+                                                                {participant.photo_url ? <img src={participant.photo_url} alt={participant.name} /> : <span>{participant.name?.slice(0, 1) ?? '?'}</span>}
+                                                            </button>
+                                                            <div className="participant-sheet-title">
+                                                                <p className="section-kicker">Detail Peserta</p>
+                                                                <h3>{participant.name}</h3>
+                                                                <span>{participant.participant_number ? ('No. ' + participant.participant_number) : 'Belum ada nomor peserta'}</span>
+                                                                <small>{participant.origin || '-'}</small>
+                                                                <div className="participant-sheet-badges participant-status-line">
+                                                                    <span className={'mini-badge participant-status-pill ' + (participant.selection_status === 'gugur' ? 'is-eliminated' : 'is-active')}>
+                                                                        {participant.selection_status === 'gugur' ? 'Gugur' : 'Aktif'}
+                                                                    </span>
+                                                                </div>
+                                                            </div>
+                                                            <button type="button" className="sheet-close-button" onClick={() => { setExpandedSelectionParticipantId(null); setEditingSelectionParticipantId(null); setPreviewSelectionPhotoParticipantId(null); setPreviewSelectionPhotoParticipantId(null); }}>
+                                                                Tutup
+                                                            </button>
+                                                        </div>
+                                                        {previewSelectionPhotoParticipantId === participant.id && participant.photo_url && (
+                                                            <div className="participant-photo-lightbox" role="dialog" aria-modal="true">
+                                                                <button type="button" className="photo-lightbox-backdrop" onClick={() => setPreviewSelectionPhotoParticipantId(null)} aria-label="Tutup foto" />
+                                                                <div className="photo-lightbox-panel">
+                                                                    <button type="button" className="photo-lightbox-close" onClick={() => setPreviewSelectionPhotoParticipantId(null)}>
+                                                                        Tutup
+                                                                    </button>
+                                                                    <img src={participant.photo_url} alt={participant.name} />
+                                                                    <strong>{participant.name}</strong>
+                                                                </div>
+                                                            </div>
+                                                        )}
+                                                        {editingSelectionParticipantId === participant.id ? (
+                                                            <form onSubmit={(event) => handleSelectionRegistrationSubmit(event, participant)}>
                                                             <label>
                                                                 Nomor Peserta / Nomor Ujian
                                                                 <input type="text" value={form.participant_number ?? ''} onChange={(event) => updateSelectionRegistrationForm(participant.id, 'participant_number', event.target.value)} placeholder="Diisi setelah registrasi onsite" disabled={!selectionData?.can_manage_selection} />
@@ -2541,7 +2689,7 @@ function KicapApp() {
 
                                                             <label>
                                                                 Foto Peserta
-                                                                <input type="file" accept="image/*" capture="environment" onChange={(event) => updateSelectionRegistrationForm(participant.id, 'photo', event.target.files?.[0] ?? null)} disabled={!selectionData?.can_manage_selection} />
+                                                                <input type="file" accept="image/*" onChange={(event) => updateSelectionRegistrationForm(participant.id, 'photo', event.target.files?.[0] ?? null)} disabled={!selectionData?.can_manage_selection} />
                                                             </label>
 
                                                             <label>
@@ -2552,12 +2700,30 @@ function KicapApp() {
                                                             <div className="selection-meta-grid">
                                                                 <div><span>Registrasi Oleh</span><strong>{participant.registered_by || '-'}</strong></div>
                                                                 <div><span>WhatsApp</span><strong>{participant.whatsapp || '-'}</strong></div>
-                                                                <div><span>Tahap Gugur</span><strong>{participant.eliminated_stage || '-'}</strong></div>
-                                                                <div><span>Tes Gugur</span><strong>{participant.eliminated_test || '-'}</strong></div>
                                                             </div>
 
                                                             {selectionData?.can_manage_selection && <button type="submit" className="primary-button">Simpan Registrasi</button>}
+                                                            <button type="button" className="ghost-button" onClick={() => setEditingSelectionParticipantId(null)}>Batal Edit</button>
                                                         </form>
+                                                    ) : (
+                                                        <div className="participant-detail-preview">
+                                                            <div className="participant-detail-grid">
+                                                                <div><span>No. Peserta</span><strong>{participant.participant_number || '-'}</strong></div>
+                                                                <div><span>Asal</span><strong>{participant.origin || '-'}</strong></div>
+                                                                <div><span>WhatsApp</span><strong>{participant.whatsapp || '-'}</strong></div>
+                                                                <div><span>Registrasi Oleh</span><strong>{participant.registered_by || '-'}</strong></div>
+                                                            </div>
+                                                            <div className="participant-detail-note">
+                                                                <span>Catatan Peserta</span>
+                                                                <p>{participant.note || '-'}</p>
+                                                            </div>
+                                                            {selectionData?.can_manage_selection && (
+                                                                <button type="button" className="primary-button" onClick={() => setEditingSelectionParticipantId(participant.id)}>
+                                                                    Edit Data / Upload Foto
+                                                                </button>
+                                                            )}
+                                                        </div>
+                                                    )}
 
                                                         <div className="selection-tests-preview">
                                                             <h4>Progress Tes</h4>
@@ -2566,13 +2732,53 @@ function KicapApp() {
                                                             ) : (
                                                                 <div className="selection-test-list">
                                                                     {(participant.test_results ?? []).map((result) => (
-                                                                        <div className="selection-test-row" key={result.id}>
-                                                                            <div>
-                                                                                <strong>{result.stage_name}</strong>
-                                                                                <span>{result.test_name}</span>
-                                                                            </div>
-                                                                            <em>{result.status_label}</em>
-                                                                        </div>
+                                                                        <React.Fragment key={result.id}>
+                                                                            <button type="button" className={'selection-test-row selection-test-action ' + (isProgressTestLocked(participant, result) ? 'is-locked' : '')} onClick={() => openSelectionTestResultEditor(participant, result)}>
+                                                                                <div>
+                                                                                    <strong>{result.stage_name}</strong>
+                                                                                    <span>{result.test_name}</span>
+                                                                                    {result.note && <small>{result.note}</small>}
+                                                                                </div>
+                                                                                <em className={'test-status-pill ' + progressTestStatusClass(result.status)}>
+                                                                                    {progressTestStatusLabel(result.status)}
+                                                                                </em>
+                                                                            </button>
+                                                                            {editingSelectionTestResult?.resultId === result.id && (
+                                                                                <div className="selection-test-sheet" role="dialog" aria-modal="true">
+                                                                                    <button type="button" className="selection-test-sheet-backdrop" onClick={() => setEditingSelectionTestResult(null)} aria-label="Tutup update tes" />
+                                                                                    <form className="selection-test-sheet-panel" onSubmit={handleSelectionTestResultSubmit}>
+                                                                                        <div className="sheet-grabber" aria-hidden="true" />
+                                                                                        <p className="section-kicker">Update Progress Tes</p>
+                                                                                        <h3>{result.test_name}</h3>
+                                                                                        <small>{result.stage_name} · {participant.name}</small>
+
+                                                                                        <label>
+                                                                                            Status Tes
+                                                                                            <select
+                                                                                                value={selectionTestResultForms[result.id]?.status ?? result.status ?? 'belum_tes'}
+                                                                                                onChange={(event) => updateSelectionTestResultForm(result.id, 'status', event.target.value)}
+                                                                                            >
+                                                                                                <option value="belum_tes">Belum Tes</option>
+                                                                                                <option value="lulus">Lulus</option>
+                                                                                                <option value="gagal">Gugur</option>
+                                                                                            </select>
+                                                                                        </label>
+
+                                                                                        <label>
+                                                                                            Catatan
+                                                                                            <textarea
+                                                                                                value={selectionTestResultForms[result.id]?.note ?? ''}
+                                                                                                onChange={(event) => updateSelectionTestResultForm(result.id, 'note', event.target.value)}
+                                                                                                placeholder="Catatan hasil tes jika ada"
+                                                                                            />
+                                                                                        </label>
+
+                                                                                        <button type="submit" className="primary-button">Simpan Progress Tes</button>
+                                                                                        <button type="button" className="ghost-button" onClick={() => setEditingSelectionTestResult(null)}>Batal</button>
+                                                                                    </form>
+                                                                                </div>
+                                                                            )}
+                                                                        </React.Fragment>
                                                                     ))}
                                                                 </div>
                                                             )}
