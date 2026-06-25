@@ -917,7 +917,7 @@ function KicapApp() {
             })
             .then((payload) => {
                 const selection = payload.data?.selection ?? null;
-                setSelectionData(selection);
+                setSelectionData(sortSelectionPayload(selection));
                 setSelectionRegistrationForms(buildSelectionRegistrationForms(selection?.participants ?? []));
             })
             .catch((error) => {
@@ -955,6 +955,71 @@ function KicapApp() {
         }));
     };
 
+
+
+    const selectionParticipantSortKey = (participant) => {
+        const rawNumber = String(participant?.participant_number ?? '').trim();
+        const name = String(participant?.name ?? '').trim().toLocaleLowerCase('id-ID');
+
+        if (!rawNumber) {
+            return {
+                hasNumber: false,
+                numeric: Number.MAX_SAFE_INTEGER,
+                rawNumber: '',
+                name,
+            };
+        }
+
+        const numericMatch = rawNumber.match(/\d+/);
+        const numeric = numericMatch ? Number.parseInt(numericMatch[0], 10) : Number.MAX_SAFE_INTEGER;
+
+        return {
+            hasNumber: true,
+            numeric: Number.isFinite(numeric) ? numeric : Number.MAX_SAFE_INTEGER,
+            rawNumber: rawNumber.toLocaleLowerCase('id-ID'),
+            name,
+        };
+    };
+
+    const sortSelectionParticipants = (participants = []) => {
+        return [...participants].sort((a, b) => {
+            const left = selectionParticipantSortKey(a);
+            const right = selectionParticipantSortKey(b);
+
+            if (left.hasNumber !== right.hasNumber) {
+                return left.hasNumber ? -1 : 1;
+            }
+
+            if (left.numeric !== right.numeric) {
+                return left.numeric - right.numeric;
+            }
+
+            const numberCompare = left.rawNumber.localeCompare(right.rawNumber, 'id-ID', {
+                numeric: true,
+                sensitivity: 'base',
+            });
+
+            if (numberCompare !== 0) {
+                return numberCompare;
+            }
+
+            return left.name.localeCompare(right.name, 'id-ID', {
+                numeric: true,
+                sensitivity: 'base',
+            });
+        });
+    };
+
+    const sortSelectionPayload = (selection) => {
+        if (!selection || !Array.isArray(selection.participants)) {
+            return selection;
+        }
+
+        return {
+            ...selection,
+            participants: sortSelectionParticipants(selection.participants),
+        };
+    };
 
     const isProgressTestLocked = (participant, result) => {
         const results = participant.test_results ?? [];
@@ -1048,7 +1113,7 @@ function KicapApp() {
             .then((payload) => {
                 const selection = payload.data?.selection ?? null;
 
-                setSelectionData(selection);
+                setSelectionData(sortSelectionPayload(selection));
                 setSelectionRegistrationForms(buildSelectionRegistrationForms(selection?.participants ?? []));
                 setSelectionMessage('Progress tes tersimpan.');
                 setEditingSelectionTestResult(null);
@@ -1095,7 +1160,7 @@ function KicapApp() {
             })
             .then((payload) => {
                 const selection = payload.data?.selection ?? null;
-                setSelectionData(selection);
+                setSelectionData(sortSelectionPayload(selection));
                 setSelectionRegistrationForms(buildSelectionRegistrationForms(selection?.participants ?? []));
                 setSelectionParticipantForm(emptySelectionParticipantForm);
                 setSelectionMessage('Peserta tersimpan.');
@@ -1143,7 +1208,7 @@ function KicapApp() {
             })
             .then((payload) => {
                 const selection = payload.data?.selection ?? null;
-                setSelectionData(selection);
+                setSelectionData(sortSelectionPayload(selection));
                 setSelectionRegistrationForms(buildSelectionRegistrationForms(selection?.participants ?? []));
                 setSelectionMessage('Registrasi peserta tersimpan.');
                 setEditingSelectionParticipantId(null);
