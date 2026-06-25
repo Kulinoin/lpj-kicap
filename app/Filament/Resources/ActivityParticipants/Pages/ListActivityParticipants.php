@@ -13,6 +13,11 @@ class ListActivityParticipants extends ListRecords
     protected function getHeaderActions(): array
     {
         return [
+            \Filament\Actions\Action::make('importPeserta')
+                ->label('Import Peserta')
+                ->icon('heroicon-o-arrow-up-tray')
+                ->color('success')
+                ->url(url('/admin/tools/import-peserta')),
             CreateAction::make()
                 ->label('Tambah Peserta'),
         ];

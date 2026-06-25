@@ -1621,3 +1621,379 @@ Route::post('/api/app/lpjs/{lpj}/selection/participants/{participant}/test-resul
     ]);
 })->middleware('auth');
 
+// KICAP_ADMIN_IMPORT_PESERTA_CSV_02
+Route::middleware(['auth'])->prefix('admin/tools')->name('admin.tools.')->group(function () {
+    $ensureAdmin = function () {
+        $user = auth()->user();
+
+        $isAdmin = $user && (
+            (method_exists($user, 'isAdmin') && $user->isAdmin())
+            || (($user->role ?? null) === 'admin')
+        );
+
+        abort_unless($isAdmin, 403);
+    };
+
+    $renderImportPage = function (?array $result = null, ?array $errors = null) {
+        $lpjs = \App\Models\Lpj::query()
+            ->orderByDesc('id')
+            ->get(['id', 'title', 'status', 'start_date'])
+            ->map(function ($lpj) {
+                $date = $lpj->start_date ? ' · '.$lpj->start_date : '';
+
+                return [
+                    'id' => $lpj->id,
+                    'label' => '#'.$lpj->id.' · '.$lpj->title.$date.' · '.$lpj->status,
+                ];
+            });
+
+        $csrf = csrf_token();
+        $templateUrl = route('admin.tools.import-peserta.template');
+        $actionUrl = route('admin.tools.import-peserta.store');
+
+        $options = $lpjs
+            ->map(fn ($lpj) => '<option value="'.e($lpj['id']).'">'.e($lpj['label']).'</option>')
+            ->implode('');
+
+        $resultHtml = '';
+
+        if ($result) {
+            $rows = '';
+
+            foreach (($result['messages'] ?? []) as $message) {
+                $rows .= '<li>'.e($message).'</li>';
+            }
+
+            $resultHtml = '
+                <section class="card result">
+                    <h2>Hasil Import</h2>
+                    <div class="stats">
+                        <div><strong>'.e($result['total_rows'] ?? 0).'</strong><span>Total baris</span></div>
+                        <div><strong>'.e($result['created'] ?? 0).'</strong><span>Peserta baru</span></div>
+                        <div><strong>'.e($result['updated'] ?? 0).'</strong><span>Diupdate</span></div>
+                        <div><strong>'.e($result['skipped'] ?? 0).'</strong><span>Diskip</span></div>
+                    </div>
+                    '.($rows ? '<ul>'.$rows.'</ul>' : '').'
+                </section>';
+        }
+
+        $errorHtml = '';
+
+        if ($errors) {
+            $items = '';
+
+            foreach ($errors as $error) {
+                $items .= '<li>'.e($error).'</li>';
+            }
+
+            $errorHtml = '
+                <section class="card error">
+                    <h2>Perlu dicek</h2>
+                    <ul>'.$items.'</ul>
+                </section>';
+        }
+
+        return response(<<<HTML
+<!doctype html>
+<html lang="id">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Import Peserta · Kicap Event</title>
+    <style>
+        body { margin: 0; background: #f8fafc; color: #0f172a; font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+        .wrap { width: min(920px, calc(100vw - 32px)); margin: 32px auto; display: grid; gap: 18px; }
+        .top { display: flex; justify-content: space-between; gap: 12px; align-items: flex-start; flex-wrap: wrap; }
+        h1 { margin: 0; font-size: clamp(1.5rem, 4vw, 2.2rem); letter-spacing: -.04em; }
+        h2 { margin-top: 0; }
+        p { color: #64748b; line-height: 1.55; }
+        .card { background: #fff; border: 1px solid rgba(15,23,42,.08); border-radius: 24px; padding: 20px; box-shadow: 0 18px 48px rgba(15,23,42,.08); }
+        form { display: grid; gap: 16px; }
+        label { display: grid; gap: 7px; font-weight: 850; color: #334155; }
+        select, input[type=file] { width: 100%; box-sizing: border-box; border: 1px solid rgba(15,23,42,.12); border-radius: 16px; background: #fff; padding: 12px 14px; color: #0f172a; font-weight: 750; }
+        .actions { display: flex; gap: 10px; flex-wrap: wrap; }
+        button, a.button { appearance: none; border: 0; border-radius: 999px; padding: 12px 18px; font-weight: 900; text-decoration: none; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; }
+        button { background: #0f766e; color: #fff; }
+        a.button { background: rgba(15,118,110,.10); color: #0f766e; }
+        a.back { background: rgba(15,23,42,.06); color: #334155; }
+        code { background: rgba(15,23,42,.06); padding: 2px 6px; border-radius: 8px; }
+        .hint { background: rgba(20,184,166,.09); border-color: rgba(15,118,110,.14); }
+        .stats { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; margin: 12px 0; }
+        .stats div { border: 1px solid rgba(15,23,42,.08); border-radius: 18px; padding: 12px; background: #f8fafc; }
+        .stats strong { display: block; font-size: 1.4rem; }
+        .stats span { color: #64748b; font-weight: 800; font-size: .78rem; }
+        .error { border-color: rgba(185,28,28,.22); background: #fff7f7; }
+        ul { margin: 10px 0 0; padding-left: 20px; color: #475569; }
+        @media (max-width: 560px) { .stats { grid-template-columns: repeat(2, minmax(0,1fr)); } .wrap { margin: 18px auto; } }
+    </style>
+</head>
+<body>
+    <main class="wrap">
+        <div class="top">
+            <div>
+                <h1>Import Peserta</h1>
+                <p>Upload daftar peserta ke event tertentu. Gunakan CSV dari Excel/Spreadsheet.</p>
+            </div>
+            <a class="button back" href="/admin">Kembali ke Admin</a>
+        </div>
+
+        {$errorHtml}
+        {$resultHtml}
+
+        <section class="card hint">
+            <strong>Format kolom CSV</strong>
+            <p>Kolom yang dikenali: <code>nama_peserta</code> wajib, lalu opsional <code>asal</code>, <code>nomor_peserta</code>, <code>whatsapp</code>, <code>catatan</code>.</p>
+            <p>Kalau <code>nomor_peserta</code> sudah ada di event yang sama, data peserta akan diupdate, bukan dibuat dobel.</p>
+        </section>
+
+        <section class="card">
+            <form method="post" action="{$actionUrl}" enctype="multipart/form-data">
+                <input type="hidden" name="_token" value="{$csrf}">
+                <label>
+                    Pilih Event
+                    <select name="lpj_id" required>
+                        <option value="">Pilih event...</option>
+                        {$options}
+                    </select>
+                </label>
+
+                <label>
+                    File CSV
+                    <input type="file" name="file" accept=".csv,text/csv,text/plain" required>
+                </label>
+
+                <div class="actions">
+                    <button type="submit">Import Peserta</button>
+                    <a class="button" href="{$templateUrl}">Download Template CSV</a>
+                </div>
+            </form>
+        </section>
+    </main>
+</body>
+</html>
+HTML);
+    };
+
+    Route::get('/import-peserta', function () use ($ensureAdmin, $renderImportPage) {
+        $ensureAdmin();
+
+        return $renderImportPage();
+    })->name('import-peserta.index');
+
+    Route::get('/import-peserta/template.csv', function () use ($ensureAdmin) {
+        $ensureAdmin();
+
+        $csv = "\xEF\xBB\xBFnama_peserta,asal,nomor_peserta,whatsapp,catatan\nContoh Peserta,SMK Contoh,001,081234567890,Catatan opsional\n";
+
+        return response($csv, 200, [
+            'Content-Type' => 'text/csv; charset=UTF-8',
+            'Content-Disposition' => 'attachment; filename="template_import_peserta_kicap.csv"',
+        ]);
+    })->name('import-peserta.template');
+
+    Route::post('/import-peserta', function (\Illuminate\Http\Request $request) use ($ensureAdmin, $renderImportPage) {
+        $ensureAdmin();
+
+        $validated = $request->validate([
+            'lpj_id' => ['required', 'integer', 'exists:lpjs,id'],
+            'file' => ['required', 'file', 'max:5120'],
+        ]);
+
+        $file = $request->file('file');
+        $extension = strtolower($file->getClientOriginalExtension() ?: '');
+
+        if (! in_array($extension, ['csv', 'txt'], true)) {
+            return $renderImportPage(null, ['File harus CSV. Dari Excel, gunakan Save As / Export ke CSV.']);
+        }
+
+        $lpj = \App\Models\Lpj::query()->findOrFail($validated['lpj_id']);
+
+        $handle = fopen($file->getRealPath(), 'rb');
+
+        if (! $handle) {
+            return $renderImportPage(null, ['File tidak bisa dibaca.']);
+        }
+
+        $firstLine = fgets($handle) ?: '';
+        rewind($handle);
+
+        $delimiter = ',';
+        $bestCount = 0;
+
+        foreach ([',', ';', "\t"] as $candidate) {
+            $count = count(str_getcsv($firstLine, $candidate));
+
+            if ($count > $bestCount) {
+                $bestCount = $count;
+                $delimiter = $candidate;
+            }
+        }
+
+        $headers = fgetcsv($handle, 0, $delimiter);
+
+        if (! $headers) {
+            fclose($handle);
+
+            return $renderImportPage(null, ['Header CSV tidak ditemukan.']);
+        }
+
+        $normalize = function ($value) {
+            $value = trim((string) $value);
+            $value = preg_replace('/^\xEF\xBB\xBF/', '', $value);
+
+            return \Illuminate\Support\Str::of($value)
+                ->lower()
+                ->ascii()
+                ->replace([' ', '-', '.', '/', '\\'], '_')
+                ->replaceMatches('/_+/', '_')
+                ->trim('_')
+                ->toString();
+        };
+
+        $headers = array_map($normalize, $headers);
+
+        $aliases = [
+            'name' => ['nama_peserta', 'nama', 'name', 'peserta'],
+            'origin' => ['asal', 'asal_lembaga', 'lembaga', 'origin', 'instansi', 'sekolah'],
+            'participant_number' => ['nomor_peserta', 'no_peserta', 'nomor', 'no', 'participant_number'],
+            'whatsapp' => ['whatsapp', 'wa', 'no_wa', 'hp', 'phone', 'telepon'],
+            'note' => ['catatan', 'note', 'keterangan'],
+        ];
+
+        $findValue = function (array $row, string $field) use ($headers, $aliases) {
+            foreach ($aliases[$field] ?? [] as $alias) {
+                $index = array_search($alias, $headers, true);
+
+                if ($index !== false) {
+                    return trim((string) ($row[$index] ?? ''));
+                }
+            }
+
+            return '';
+        };
+
+        if (! array_intersect($headers, $aliases['name'])) {
+            fclose($handle);
+
+            return $renderImportPage(null, ['Kolom nama_peserta wajib ada.']);
+        }
+
+        $schema = \Illuminate\Support\Facades\Schema::getColumnListing('activity_participants');
+        $hasColumn = fn (string $column) => in_array($column, $schema, true);
+
+        $result = [
+            'total_rows' => 0,
+            'created' => 0,
+            'updated' => 0,
+            'skipped' => 0,
+            'messages' => [],
+        ];
+
+        $rowNumber = 1;
+
+        \Illuminate\Support\Facades\DB::transaction(function () use (
+            $handle,
+            $delimiter,
+            $findValue,
+            $lpj,
+            $hasColumn,
+            &$result,
+            &$rowNumber
+        ) {
+            while (($row = fgetcsv($handle, 0, $delimiter)) !== false) {
+                $rowNumber++;
+                $result['total_rows']++;
+
+                $name = $findValue($row, 'name');
+                $origin = $findValue($row, 'origin');
+                $participantNumber = $findValue($row, 'participant_number');
+                $whatsapp = $findValue($row, 'whatsapp');
+                $note = $findValue($row, 'note');
+
+                if ($name === '' && $origin === '' && $participantNumber === '' && $whatsapp === '' && $note === '') {
+                    $result['skipped']++;
+                    continue;
+                }
+
+                if ($name === '') {
+                    $result['skipped']++;
+                    $result['messages'][] = 'Baris '.$rowNumber.' diskip: nama_peserta kosong.';
+                    continue;
+                }
+
+                $query = \App\Models\ActivityParticipant::query()->where('lpj_id', $lpj->id);
+
+                if ($participantNumber !== '') {
+                    $query->where('participant_number', $participantNumber);
+                } elseif ($whatsapp !== '') {
+                    $query->where('name', $name)->where('whatsapp', $whatsapp);
+                } else {
+                    $query->where('name', $name)->where(function ($q) {
+                        $q->whereNull('participant_number')->orWhere('participant_number', '');
+                    });
+                }
+
+                $participant = $query->first();
+
+                $data = [
+                    'lpj_id' => $lpj->id,
+                    'name' => $name,
+                ];
+
+                if ($hasColumn('origin')) {
+                    $data['origin'] = $origin ?: null;
+                }
+
+                if ($hasColumn('participant_number')) {
+                    $data['participant_number'] = $participantNumber ?: null;
+                }
+
+                if ($hasColumn('whatsapp')) {
+                    $data['whatsapp'] = $whatsapp ?: null;
+                }
+
+                if ($hasColumn('note')) {
+                    $data['note'] = $note ?: null;
+                }
+
+                if ($hasColumn('created_by') && ! $participant) {
+                    $data['created_by'] = auth()->id();
+                }
+
+                if ($hasColumn('updated_by')) {
+                    $data['updated_by'] = auth()->id();
+                }
+
+                if ($hasColumn('attendance_status') && ! $participant) {
+                    $data['attendance_status'] = 'hadir';
+                }
+
+                if ($participant) {
+                    $participant->forceFill($data)->save();
+                    $result['updated']++;
+                } else {
+                    $participant = new \App\Models\ActivityParticipant();
+                    $participant->forceFill($data)->save();
+                    $result['created']++;
+                }
+
+                $service = app(\App\Services\ActivitySelectionService::class);
+
+                if (method_exists($service, 'recalculateParticipantStatus')) {
+                    try {
+                        $service->recalculateParticipantStatus($participant->fresh());
+                    } catch (\Throwable $exception) {
+                        report($exception);
+                    }
+                }
+            }
+        });
+
+        fclose($handle);
+
+        $result['messages'][] = 'Import selesai untuk event: '.$lpj->title.'.';
+
+        return $renderImportPage($result);
+    })->name('import-peserta.store');
+});
+

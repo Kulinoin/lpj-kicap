@@ -220,6 +220,23 @@ class ActivityParticipantResource extends Resource
                     ->dateTime('d M Y H:i')
                     ->sortable(),
             ])
+            // KICAP_ADMIN_PARTICIPANT_EDIT_DELETE_SAFE_01
+            ->recordActions([
+                \Filament\Actions\EditAction::make()
+                    ->label('Edit')
+                    ->url(fn (ActivityParticipant $record): string => static::getUrl('edit', ['record' => $record])),
+
+                \Filament\Actions\DeleteAction::make()
+                    ->label('Hapus')
+                    ->requiresConfirmation()
+                    ->modalHeading('Hapus peserta?')
+                    ->modalDescription('Peserta dan progress tes terkait akan ikut dihapus.')
+                    ->before(function (ActivityParticipant $record): void {
+                        if (method_exists($record, 'testResults')) {
+                            $record->testResults()->delete();
+                        }
+                    }),
+            ])
             ->recordUrl(fn (ActivityParticipant $record): string => static::getUrl('view', ['record' => $record]));
     }
 
