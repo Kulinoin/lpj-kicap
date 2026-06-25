@@ -1277,6 +1277,34 @@ function KicapApp() {
         return 'is-not-started';
     };
 
+    const rundownDateKey = (value) => {
+        const match = String(value ?? '').match(/(\d{4})-(\d{2})-(\d{2})/);
+
+        if (!match) {
+            return '9999-12-31';
+        }
+
+        return match[1] + '-' + match[2] + '-' + match[3];
+    };
+
+    const formatRundownDate = (item) => {
+        const rawDate = item.start_time || item.end_time;
+        const match = String(rawDate ?? '').match(/(\d{4})-(\d{2})-(\d{2})/);
+
+        if (!match) {
+            return 'Tanggal belum diisi';
+        }
+
+        const date = new Date(match[1] + '-' + match[2] + '-' + match[3] + 'T00:00:00');
+
+        return date.toLocaleDateString('id-ID', {
+            weekday: 'short',
+            day: '2-digit',
+            month: 'short',
+            year: 'numeric',
+        }).replace(',', '');
+    };
+
     const rundownMinutes = (value) => {
         const match = String(value ?? '').match(/(\d{1,2}):(\d{2})/);
 
@@ -1314,6 +1342,14 @@ function KicapApp() {
 
     const sortRundownSchedules = (schedules = []) => {
         return [...schedules].sort((a, b) => {
+            const leftDate = rundownDateKey(a.start_time || a.end_time);
+            const rightDate = rundownDateKey(b.start_time || b.end_time);
+            const dateCompare = leftDate.localeCompare(rightDate);
+
+            if (dateCompare !== 0) {
+                return dateCompare;
+            }
+
             const startDiff = rundownMinutes(a.start_time) - rundownMinutes(b.start_time);
 
             if (startDiff !== 0) {
@@ -2768,7 +2804,10 @@ function KicapApp() {
                                                     }}
                                                 >
                                                     <div className="rundown-main-row">
-                                                        <div className="rundown-time-chip">{formatRundownRange(item)}</div>
+                                                        <div className="rundown-time-chip">
+                                                            <span className="rundown-date-chip">{formatRundownDate(item)}</span>
+                                                            <span className="rundown-hour-chip">{formatRundownRange(item)}</span>
+                                                        </div>
                                                         <div className="rundown-info">
                                                             <strong>{item.activity_name}</strong>
                                                             {item.responsible_person && <small>PIC: {item.responsible_person}</small>}
@@ -2779,12 +2818,6 @@ function KicapApp() {
                                                     <div className={'rundown-status-pill ' + rundownStatusClass(item.status)}>
                                                         {rundownStatusLabel(item.status)}
                                                     </div>
-
-                                                    {rundownData?.can_manage_rundown && (
-                                                        <small className="rundown-tap-hint">
-                                                            {expandedRundownStatusId === item.id ? 'Pilih status baru' : 'Ketuk rundown untuk ubah status'}
-                                                        </small>
-                                                    )}
 
                                                     {rundownData?.can_manage_rundown && expandedRundownStatusId === item.id && (
                                                         <div className="rundown-quick-actions" aria-label="Update status rundown">
