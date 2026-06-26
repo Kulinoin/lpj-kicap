@@ -2928,10 +2928,20 @@ function KicapApp() {
                                                                 <input type="text" value={form.whatsapp ?? ''} onChange={(event) => updateSelectionRegistrationForm(participant.id, 'whatsapp', event.target.value)} placeholder="Contoh: 081234567890" disabled={!selectionData?.can_manage_selection} />
                                                             </label>
 
-                                                            <label>
-                                                                Foto Peserta
-                                                                <input type="file" accept="image/*" onChange={(event) => updateSelectionRegistrationForm(participant.id, 'photo', event.target.files?.[0] ?? null)} disabled={!selectionData?.can_manage_selection} />
-                                                            </label>
+                                                            <div className="participant-photo-source-field">
+                                                                                            <span>Foto Peserta</span>
+                                                                                            <div className="participant-photo-source-actions">
+                                                                                                <label className="participant-photo-source-button is-camera">
+                                                                                                    <span>Ambil dari Kamera</span>
+                                                                                                    <input type="file" accept="image/*" capture="environment" onChange={(event) => updateSelectionRegistrationForm(participant.id, 'photo', event.target.files?.[0] ?? null)} disabled={!selectionData?.can_manage_selection} />
+                                                                                                </label>
+                                                                                                <label className="participant-photo-source-button is-gallery">
+                                                                                                    <span>Pilih dari Galeri</span>
+                                                                                                    <input type="file" accept="image/*" onChange={(event) => updateSelectionRegistrationForm(participant.id, 'photo', event.target.files?.[0] ?? null)} disabled={!selectionData?.can_manage_selection} />
+                                                                                                </label>
+                                                                                            </div>
+                                                                                            {form.photo && <small className="participant-photo-selected">File dipilih: {form.photo.name}</small>}
+                                                                                        </div>
 
                                                             <label>
                                                                 Catatan Peserta
