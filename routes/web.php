@@ -1597,6 +1597,7 @@ Route::post('/api/app/lpjs/{lpj}/selection/participants/{participant}/test-resul
             \Illuminate\Validation\Rule::in([
                 \App\Models\ActivityParticipantTestResult::STATUS_PENDING,
                 \App\Models\ActivityParticipantTestResult::STATUS_PASSED,
+                \App\Models\ActivityParticipantTestResult::STATUS_PASSED_WITH_NOTE,
                 \App\Models\ActivityParticipantTestResult::STATUS_FAILED,
             ]),
         ],
@@ -1997,3 +1998,368 @@ HTML);
     })->name('import-peserta.store');
 });
 
+
+
+// KICAP_PWA_RUNTIME_POLISH_ROUTES_START
+Route::get('/kicap-pwa-reset.html', function () {
+    return response(file_get_contents(public_path('kicap-pwa-reset.html')), 200)
+        ->header('Content-Type', 'text/html; charset=UTF-8')
+        ->header('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0');
+});
+
+Route::get('/kicap-pwa-reset', function () {
+    return response(file_get_contents(public_path('kicap-pwa-reset.html')), 200)
+        ->header('Content-Type', 'text/html; charset=UTF-8')
+        ->header('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0');
+});
+
+Route::get('/kicap-pwa-runtime-polish.css', function () {
+    return response(file_get_contents(public_path('kicap-pwa-runtime-polish.css')), 200)
+        ->header('Content-Type', 'text/css; charset=UTF-8')
+        ->header('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0');
+});
+
+Route::get('/kicap-pwa-runtime-polish.js', function () {
+    return response(file_get_contents(public_path('kicap-pwa-runtime-polish.js')), 200)
+        ->header('Content-Type', 'application/javascript; charset=UTF-8')
+        ->header('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0');
+});
+// KICAP_PWA_RUNTIME_POLISH_ROUTES_END
+
+
+// KICAP_ACTIVITY_HISTORY_API_START
+\Illuminate\Support\Facades\Route::middleware(['auth'])->get('/api/app/activity-history', function () {
+    $user = auth()->user();
+
+    if (! $user || ! method_exists($user, 'canAccessPwa') || ! $user->canAccessPwa()) {
+        abort(403);
+    }
+
+    $time = function ($value): ?string {
+        if (! $value) {
+            return null;
+        }
+
+        try {
+            return \Illuminate\Support\Carbon::parse($value)->toIso8601String();
+        } catch (\Throwable $e) {
+            return null;
+        }
+    };
+
+    $money = function ($value): string {
+        $number = (float) ($value ?? 0);
+
+        if ($number <= 0) {
+            return '';
+        }
+
+        return 'Rp ' . number_format($number, 0, ',', '.');
+    };
+
+    $status = function ($value): string {
+        if (! $value) {
+            return '';
+        }
+
+        return \Illuminate\Support\Str::of((string) $value)
+            ->replace('_', ' ')
+            ->title()
+            ->toString();
+    };
+
+    $label = function ($value): string {
+        if (! $value) {
+            return '';
+        }
+
+        return \Illuminate\Support\Str::of((string) $value)
+            ->replace('_', ' ')
+            ->title()
+            ->toString();
+    };
+
+    $activities = [];
+
+    $push = function (array $activity) use (&$activities): void {
+        if (empty($activity['at'])) {
+            return;
+        }
+
+        $activities[] = [
+            'id' => $activity['id'] ?? ('activity-' . count($activities)),
+            'icon' => $activity['icon'] ?? '•',
+            'title' => $activity['title'] ?? 'Aktivitas user',
+            'subtitle' => $activity['subtitle'] ?? 'Event',
+            'meta' => $activity['meta'] ?? '',
+            'at' => $activity['at'],
+        ];
+    };
+
+    $lpjs = \App\Models\Lpj::query()
+        ->visibleToAssignedUser($user)
+        ->select(['id', 'title', 'status'])
+        ->get();
+
+    $lpjIds = $lpjs->pluck('id')->all();
+    $lpjTitles = $lpjs->pluck('title', 'id');
+
+    if (empty($lpjIds)) {
+        return response()->json([
+            'data' => [
+                'activities' => [],
+            ],
+        ]);
+    }
+
+    $eventTitle = function ($lpjId) use ($lpjTitles): string {
+        return (string) ($lpjTitles[$lpjId] ?? 'Event');
+    };
+
+    // Transaksi user terkait
+    \App\Models\LpjFinancialTransaction::query()
+        ->whereIn('lpj_id', $lpjIds)
+        ->where('user_id', $user->id)
+        ->latest('created_at')
+        ->get()
+        ->each(function ($transaction) use ($push, $eventTitle, $time, $money, $status): void {
+            $isAdvance = $transaction->source_type === \App\Models\LpjFinancialTransaction::SOURCE_ADVANCE;
+
+            $push([
+                'id' => 'transaction-' . $transaction->id,
+                'icon' => $isAdvance ? '🧾' : '💸',
+                'title' => $isAdvance ? 'Mencatat dana talangan' : 'Mencatat pengeluaran',
+                'subtitle' => $eventTitle($transaction->lpj_id),
+                'meta' => collect([
+                    $transaction->description ?: $transaction->category,
+                    $money($transaction->amount),
+                    $transaction->status ? 'Status ' . $status($transaction->status) : null,
+                ])->filter()->implode(' • '),
+                'at' => $time($transaction->created_at ?? $transaction->spent_at),
+            ]);
+        });
+
+    // Transfer/mutasi saldo milik user terkait
+    \App\Models\LpjBalanceMutation::query()
+        ->with(['relatedUser:id,name'])
+        ->whereIn('lpj_id', $lpjIds)
+        ->where('user_id', $user->id)
+        ->whereIn('type', [
+            \App\Models\LpjBalanceMutation::TYPE_TRANSFER_IN,
+            \App\Models\LpjBalanceMutation::TYPE_TRANSFER_OUT,
+        ])
+        ->latest('occurred_at')
+        ->get()
+        ->each(function ($mutation) use ($push, $eventTitle, $time, $money): void {
+            $isOut = $mutation->type === \App\Models\LpjBalanceMutation::TYPE_TRANSFER_OUT;
+            $relatedName = $mutation->relatedUser?->name;
+
+            $push([
+                'id' => 'transfer-' . $mutation->id,
+                'icon' => '⇄',
+                'title' => $isOut ? 'Transfer saldo keluar' : 'Transfer saldo masuk',
+                'subtitle' => $eventTitle($mutation->lpj_id),
+                'meta' => collect([
+                    $relatedName ? ($isOut ? 'Ke ' . $relatedName : 'Dari ' . $relatedName) : null,
+                    $money($mutation->amount),
+                    $mutation->note,
+                ])->filter()->implode(' • '),
+                'at' => $time($mutation->occurred_at ?? $mutation->created_at),
+            ]);
+        });
+
+    // Klaim dana talangan milik user
+    \App\Models\LpjAdvanceClaim::query()
+        ->whereIn('lpj_id', $lpjIds)
+        ->where('user_id', $user->id)
+        ->latest('created_at')
+        ->get()
+        ->each(function ($claim) use ($push, $eventTitle, $time, $money, $status): void {
+            $push([
+                'id' => 'advance-claim-' . $claim->id,
+                'icon' => '🧾',
+                'title' => 'Klaim dana talangan',
+                'subtitle' => $eventTitle($claim->lpj_id),
+                'meta' => collect([
+                    $money($claim->amount),
+                    $claim->status ? 'Status ' . $status($claim->status) : null,
+                ])->filter()->implode(' • '),
+                'at' => $time($claim->created_at),
+            ]);
+        });
+
+    // Dokumentasi yang diupload user terkait
+    \App\Models\ActivityDocumentation::query()
+        ->whereIn('lpj_id', $lpjIds)
+        ->where('uploaded_by', $user->id)
+        ->latest('created_at')
+        ->get()
+        ->each(function ($documentation) use ($push, $eventTitle, $time, $label): void {
+            $push([
+                'id' => 'documentation-' . $documentation->id,
+                'icon' => '📷',
+                'title' => 'Upload dokumentasi',
+                'subtitle' => $eventTitle($documentation->lpj_id),
+                'meta' => collect([
+                    $documentation->caption ?: $label($documentation->category),
+                    $documentation->include_in_report ? 'Masuk LPJ' : 'Internal',
+                ])->filter()->implode(' • '),
+                'at' => $time($documentation->created_at ?? $documentation->updated_at),
+            ]);
+        });
+
+    // Lampiran yang diupload user terkait
+    \App\Models\ActivityAttachment::query()
+        ->whereIn('lpj_id', $lpjIds)
+        ->where('uploaded_by', $user->id)
+        ->latest('created_at')
+        ->get()
+        ->each(function ($attachment) use ($push, $eventTitle, $time): void {
+            $push([
+                'id' => 'attachment-' . $attachment->id,
+                'icon' => '📎',
+                'title' => 'Upload lampiran',
+                'subtitle' => $eventTitle($attachment->lpj_id),
+                'meta' => collect([
+                    $attachment->title ?: $attachment->original_name,
+                    $attachment->include_in_report ? 'Masuk LPJ' : 'Internal',
+                ])->filter()->implode(' • '),
+                'at' => $time($attachment->created_at ?? $attachment->updated_at),
+            ]);
+        });
+
+    // Catatan milik user terkait
+    \App\Models\ActivityNote::query()
+        ->whereIn('lpj_id', $lpjIds)
+        ->where('user_id', $user->id)
+        ->latest('created_at')
+        ->get()
+        ->each(function ($note) use ($push, $eventTitle, $time, $label): void {
+            $push([
+                'id' => 'note-' . $note->id,
+                'icon' => '📝',
+                'title' => 'Membuat catatan',
+                'subtitle' => $eventTitle($note->lpj_id),
+                'meta' => collect([
+                    $label($note->type),
+                    $note->content,
+                    $note->include_in_report ? 'Masuk LPJ' : null,
+                ])->filter()->implode(' • '),
+                'at' => $time($note->created_at ?? $note->updated_at),
+            ]);
+        });
+
+    // Peserta hanya jika dibuat/diupdate user terkait
+    if (class_exists(\App\Models\ActivityParticipant::class)) {
+        $participantQuery = \App\Models\ActivityParticipant::query()
+            ->whereIn('lpj_id', $lpjIds);
+
+        $participantQuery->where(function ($query) use ($user): void {
+            $hasCreatedBy = \Illuminate\Support\Facades\Schema::hasColumn('activity_participants', 'created_by');
+            $hasUpdatedBy = \Illuminate\Support\Facades\Schema::hasColumn('activity_participants', 'updated_by');
+
+            if ($hasCreatedBy) {
+                $query->orWhere('created_by', $user->id);
+            }
+
+            if ($hasUpdatedBy) {
+                $query->orWhere('updated_by', $user->id);
+            }
+        });
+
+        $participantQuery->latest('updated_at')
+            ->get()
+            ->each(function ($participant) use ($push, $eventTitle, $time, $status): void {
+                $push([
+                    'id' => 'participant-' . $participant->id,
+                    'icon' => '👥',
+                    'title' => 'Update data peserta',
+                    'subtitle' => $eventTitle($participant->lpj_id),
+                    'meta' => collect([
+                        $participant->name,
+                        $participant->attendance_status ? 'Kehadiran ' . $status($participant->attendance_status) : null,
+                        $participant->result_status ? 'Status ' . $status($participant->result_status) : null,
+                    ])->filter()->implode(' • '),
+                    'at' => $time($participant->updated_at ?? $participant->created_at),
+                ]);
+            });
+    }
+
+    // Rundown/pelaksanaan hanya jika dibuat/diupdate user terkait
+    if (class_exists(\App\Models\ActivitySchedule::class)) {
+        $scheduleQuery = \App\Models\ActivitySchedule::query()
+            ->whereIn('lpj_id', $lpjIds);
+
+        $scheduleQuery->where(function ($query) use ($user): void {
+            $hasCreatedBy = \Illuminate\Support\Facades\Schema::hasColumn('activity_schedules', 'created_by');
+            $hasUpdatedBy = \Illuminate\Support\Facades\Schema::hasColumn('activity_schedules', 'updated_by');
+            $hasStatusUpdatedBy = \Illuminate\Support\Facades\Schema::hasColumn('activity_schedules', 'status_updated_by');
+
+            if ($hasCreatedBy) {
+                $query->orWhere('created_by', $user->id);
+            }
+
+            if ($hasUpdatedBy) {
+                $query->orWhere('updated_by', $user->id);
+            }
+
+            if ($hasStatusUpdatedBy) {
+                $query->orWhere('status_updated_by', $user->id);
+            }
+        });
+
+        $scheduleQuery->latest('updated_at')
+            ->get()
+            ->each(function ($schedule) use ($push, $eventTitle, $time, $status): void {
+                $push([
+                    'id' => 'schedule-' . $schedule->id,
+                    'icon' => '✅',
+                    'title' => 'Update rundown/pelaksanaan',
+                    'subtitle' => $eventTitle($schedule->lpj_id),
+                    'meta' => collect([
+                        $schedule->activity_name,
+                        isset($schedule->status) && $schedule->status ? 'Status ' . $status($schedule->status) : null,
+                    ])->filter()->implode(' • '),
+                    'at' => $time($schedule->updated_at ?? $schedule->created_at),
+                ]);
+            });
+    }
+
+    // Hasil tes peserta hanya jika dibuat/diupdate user terkait
+    if (class_exists(\App\Models\ActivityParticipantTestResult::class)) {
+        \App\Models\ActivityParticipantTestResult::query()
+            ->with(['participant:id,lpj_id,name'])
+            ->where(function ($query) use ($user): void {
+                $query
+                    ->where('created_by', $user->id)
+                    ->orWhere('updated_by', $user->id);
+            })
+            ->latest('updated_at')
+            ->get()
+            ->filter(fn ($result) => $result->participant && in_array($result->participant->lpj_id, $lpjIds, true))
+            ->each(function ($result) use ($push, $eventTitle, $time, $status): void {
+                $push([
+                    'id' => 'test-result-' . $result->id,
+                    'icon' => '✅',
+                    'title' => 'Update hasil tes peserta',
+                    'subtitle' => $eventTitle($result->participant->lpj_id),
+                    'meta' => collect([
+                        $result->participant?->name,
+                        isset($result->status) && $result->status ? 'Status ' . $status($result->status) : null,
+                    ])->filter()->implode(' • '),
+                    'at' => $time($result->updated_at ?? $result->created_at),
+                ]);
+            });
+    }
+
+    usort($activities, function ($left, $right): int {
+        return strtotime($right['at']) <=> strtotime($left['at']);
+    });
+
+    return response()->json([
+        'data' => [
+            'activities' => array_slice($activities, 0, 200),
+        ],
+    ]);
+});
+// KICAP_ACTIVITY_HISTORY_API_END

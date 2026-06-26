@@ -598,3 +598,17 @@ Catatan validasi:
 - Mengganti custom pull-to-refresh menjadi native pull-to-refresh Android/Chrome agar lebih stabil.
 - Tetap menyimpan activeNav dan selectedLpjId agar setelah refresh tetap kembali ke halaman/menu terakhir.
 - Patch code-only: tidak migration dan tidak mengubah database.\n
+
+## Patch 2026-06-25 07:29:28 — Admin CRUD Peserta Rundown
+
+- Menambahkan halaman create/edit Filament untuk Peserta Seleksi, Rundown Event, dan Panitia/Pendamping.
+- Patch code-only: tidak migration, tidak hapus data, tidak menyentuh flow PWA User.
+
+## 20260626_132431 — PWA Activity History & Dashboard Polish
+
+- Dashboard: nama lembaga dibuat ringkas agar muat 1 baris.
+- Avatar Beranda dan Profil dibuat bulat penuh, foto ikut ter-clip rapi.
+- Activity History profil menampilkan aktivitas user login saja melalui endpoint backend `/api/app/activity-history`.
+- Dokumentasi/lampiran user terkait ikut masuk Activity History.
+- Ditambahkan runtime polish asset dan reset cache PWA.
+- Code-only polish; tidak ada migration, seed, atau reset database.

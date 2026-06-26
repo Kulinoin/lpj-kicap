@@ -1,0 +1,174 @@
+/* Kicap PWA runtime polish - no build */
+.home-header h1 {
+    max-width: calc(100vw - 128px) !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    white-space: nowrap !important;
+    font-size: clamp(1.05rem, 4.35vw, 1.35rem) !important;
+    line-height: 1.08 !important;
+}
+
+.avatar-button,
+.avatar-picker.large {
+    border-radius: 22px !important;
+    overflow: hidden !important;
+}
+
+.avatar-button.small {
+    border-radius: 16px !important;
+}
+
+.avatar-button img,
+.avatar-picker.large img {
+    width: 100% !important;
+    height: 100% !important;
+    display: block !important;
+    object-fit: cover !important;
+    border-radius: inherit !important;
+}
+
+.activity-history.runtime-polished {
+    display: grid;
+    gap: 16px;
+}
+
+.activity-runtime-loading,
+.activity-runtime-empty {
+    padding: 18px;
+    border-radius: 24px;
+    background: #ffffff;
+    box-shadow: 0 14px 35px rgba(15, 23, 42, 0.07);
+    color: #64748b;
+    font-size: 0.9rem;
+    font-weight: 800;
+    text-align: center;
+}
+
+.activity-runtime-list {
+    display: grid;
+    gap: 14px;
+}
+
+.activity-runtime-card {
+    display: flex;
+    gap: 14px;
+    padding: 16px;
+    border-radius: 26px;
+    background: #ffffff;
+    box-shadow: 0 14px 35px rgba(15, 23, 42, 0.07);
+}
+
+.activity-runtime-icon {
+    flex: 0 0 auto;
+    width: 44px;
+    height: 44px;
+    border-radius: 17px;
+    background: #ecfdf5;
+    display: grid;
+    place-items: center;
+    font-size: 1.1rem;
+}
+
+.activity-runtime-body {
+    min-width: 0;
+    flex: 1;
+}
+
+.activity-runtime-top {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.activity-runtime-top h3 {
+    margin: 0;
+    color: #172d57;
+    font-size: 0.98rem;
+    font-weight: 950;
+    line-height: 1.25;
+}
+
+.activity-runtime-top p {
+    margin: 4px 0 0;
+    color: #64748b;
+    font-size: 0.82rem;
+    font-weight: 800;
+    line-height: 1.3;
+}
+
+.activity-runtime-top time {
+    flex: 0 0 auto;
+    max-width: 104px;
+    color: #10b981;
+    font-size: 0.68rem;
+    font-weight: 950;
+    line-height: 1.25;
+    text-align: right;
+}
+
+.activity-runtime-meta {
+    margin-top: 10px;
+    color: #475569;
+    font-size: 0.82rem;
+    font-weight: 700;
+    line-height: 1.45;
+    overflow-wrap: anywhere;
+}
+
+/* Kicap PWA avatar final: bulat penuh */
+.avatar-button,
+.avatar-button.small,
+.avatar-picker.large {
+    border-radius: 9999px !important;
+    overflow: hidden !important;
+}
+
+.avatar-button img,
+.avatar-picker.large img {
+    width: 100% !important;
+    height: 100% !important;
+    display: block !important;
+    object-fit: cover !important;
+    border-radius: 9999px !important;
+}
+
+.avatar-button span,
+.avatar-picker.large span {
+    border-radius: 9999px !important;
+}
+
+/* Kicap PWA avatar Beranda final: bulat penuh seperti Profil */
+.home-header .avatar-button,
+.app-header.home-header .avatar-button,
+header.home-header .avatar-button {
+    border-radius: 9999px !important;
+    overflow: hidden !important;
+    padding: 0 !important;
+    aspect-ratio: 1 / 1 !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+}
+
+.home-header .avatar-button img,
+.app-header.home-header .avatar-button img,
+header.home-header .avatar-button img {
+    width: 100% !important;
+    height: 100% !important;
+    display: block !important;
+    object-fit: cover !important;
+    object-position: center !important;
+    border-radius: 9999px !important;
+    clip-path: circle(50% at 50% 50%) !important;
+}
+
+.home-header .avatar-button span,
+.app-header.home-header .avatar-button span,
+header.home-header .avatar-button span {
+    width: 100% !important;
+    height: 100% !important;
+    border-radius: 9999px !important;
+    display: inline-grid !important;
+    place-items: center !important;
+}

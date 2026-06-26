@@ -11,6 +11,18 @@
     <link rel="apple-touch-icon" href="/icons/kicap-event-apple-touch.png">
     @viteReactRefresh
     @vite(['resources/css/app.css', 'resources/js/app.jsx'])
+
+
+
+
+<!-- KICAP_PWA_RUNTIME_POLISH_START -->
+<link rel="stylesheet" href="/kicap-pwa-runtime-polish.css?v=20260626_131004">
+<script defer src="/kicap-pwa-runtime-polish.js?v=20260626_131004"></script>
+<!-- KICAP_PWA_RUNTIME_POLISH_END -->
+
+
+
+
 </head>
 <body>
     <div id="kicap-lpj-root"></div>

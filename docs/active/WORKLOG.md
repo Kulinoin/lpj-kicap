@@ -42,3 +42,12 @@
 \n- 2026-06-25 03:36:14: PWA Pull-to-refresh tanpa Tombol Refresh; refresh halaman aktif via gesture tarik ke bawah.\n\n
 - 2026-06-25 03:43:17: Clean PWA Operational Documentation Edit; header lebih simple + edit dokumentasi.
 \n- 2026-06-25 03:48:28: Fix PWA Pull-to-refresh v2; trigger refresh saat touchend dari posisi paling atas.\n\n\n- 2026-06-25 03:52:04: Fix Pull-to-refresh Keep Current Page; activeNav/selectedLpjId dipersist agar refresh tidak kembali ke Beranda.\n\n\n- 2026-06-25 03:53:55: Native Pull Refresh Keep Page; native browser refresh aktif, halaman terakhir dipulihkan via sessionStorage.\n\n
+- 2026-06-25 07:29:28: Admin CRUD Peserta Rundown; tambah create/edit untuk peserta, rundown, panitia/pendamping.
+
+## 20260626_132431
+
+PWA polish validated manually:
+- Nama lembaga Dashboard tampil 1 baris.
+- Avatar Beranda dan Profil bulat sesuai arahan.
+- Activity History tampil untuk user terkait saja.
+- Dokumentasi user terkait ikut tampil dan tidak bercampur user lain.
