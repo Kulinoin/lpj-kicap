@@ -187,7 +187,7 @@ class ActivitySelectionPayloadService
     private function participantPayload(ActivityParticipant $participant): array
     {
         $photoUrl = filled($participant->photo_path)
-            ? route('participant-photo.proxy.v3', $participant)
+            ? route('participant-photo.fast', $participant)
             : null;
 
         return [

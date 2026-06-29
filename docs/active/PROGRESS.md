@@ -620,3 +620,10 @@ Catatan validasi:
 - Payload PWA selection memakai route proxy `participant-photo.proxy.v3`, bukan URL storage langsung.
 - Proxy memiliki fallback membaca file dari URL public storage/R2 ketika adapter storage gagal mengecek bucket.
 - Fix bersifat code-only; tidak ada migration, seed, reset, atau perubahan data.
+
+## 20260629_135407 — PWA Participant Photo Speed & Popup Polish
+
+- Foto peserta dipercepat dengan route fast redirect `participant-photo.fast` setelah akses user diverifikasi.
+- Payload PWA selection diarahkan ke route fast redirect agar thumbnail peserta lebih cepat dimuat.
+- Runtime polish ditambah untuk kontrol tutup popup detail peserta.
+- Tidak ada migration, seed, reset database, atau perubahan data.

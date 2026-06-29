@@ -155,3 +155,252 @@
         boot();
     }
 })();
+
+/* Kicap PWA polish: klik luar popup detail peserta untuk tutup */
+(() => {
+    'use strict';
+
+    if (window.__kicapParticipantPopupOutsideCloseInstalled) {
+        return;
+    }
+
+    window.__kicapParticipantPopupOutsideCloseInstalled = true;
+
+    const isVisible = (element) => {
+        if (!element) return false;
+
+        const style = window.getComputedStyle(element);
+        const rect = element.getBoundingClientRect();
+
+        return style.display !== 'none'
+            && style.visibility !== 'hidden'
+            && Number(style.opacity || 1) !== 0
+            && rect.width > 0
+            && rect.height > 0;
+    };
+
+    const findVisibleCloseButton = () => {
+        const buttons = Array.from(document.querySelectorAll('button'));
+
+        return buttons.find((button) => {
+            const text = (button.textContent || '').trim().toLowerCase();
+
+            return isVisible(button)
+                && (
+                    button.classList.contains('sheet-close-button')
+                    || text === 'tutup'
+                    || text.includes('tutup')
+                );
+        }) || null;
+    };
+
+    const findPopupPanel = (closeButton) => {
+        if (!closeButton) return null;
+
+        return closeButton.closest([
+            '.participant-detail-preview',
+            '.participant-detail-sheet',
+            '.participant-sheet',
+            '.participant-sheet-panel',
+            '.sheet-panel',
+            '.sheet-content',
+            '.selection-participant-detail',
+            '.selection-participant-sheet',
+            '.photo-lightbox-panel'
+        ].join(', ')) || closeButton.closest('section, article, div');
+    };
+
+    const shouldIgnore = (target) => {
+        if (!target || !(target instanceof Element)) return true;
+
+        return Boolean(target.closest([
+            '.bottom-nav',
+            '.photo-lightbox-panel',
+            '.photo-lightbox-close',
+            '.participant-photo-lightbox',
+            '.participant-photo',
+            '.participant-sheet-photo',
+            '.participant-photo-source-field',
+            '.participant-photo-source-actions',
+            'input',
+            'select',
+            'textarea',
+            'label'
+        ].join(', ')));
+    };
+
+    document.addEventListener('click', (event) => {
+        const target = event.target;
+
+        if (!(target instanceof Element)) return;
+        if (shouldIgnore(target)) return;
+
+        const closeButton = findVisibleCloseButton();
+
+        if (!closeButton) return;
+
+        const panel = findPopupPanel(closeButton);
+
+        if (!panel || !isVisible(panel)) return;
+
+        if (panel.contains(target)) return;
+
+        event.preventDefault();
+        event.stopPropagation();
+
+        closeButton.click();
+    }, true);
+})();
+
+
+// KICAP_PARTICIPANT_POPUP_FLOATING_CLOSE_START
+(() => {
+    'use strict';
+
+    const MARKER_ID = 'kicap-floating-participant-close';
+
+    const isVisible = (element) => {
+        if (!element) return false;
+
+        const style = window.getComputedStyle(element);
+        const rect = element.getBoundingClientRect();
+
+        return style.display !== 'none'
+            && style.visibility !== 'hidden'
+            && Number(style.opacity || 1) !== 0
+            && rect.width > 0
+            && rect.height > 0;
+    };
+
+    const isParticipantDetailOpen = () => {
+        const texts = Array.from(document.querySelectorAll('h1,h2,h3,strong,small,span,div'))
+            .slice(0, 800)
+            .map((node) => (node.textContent || '').trim().toLowerCase());
+
+        return texts.some((text) => text === 'detail peserta' || text.includes('detail peserta'));
+    };
+
+    const findCloseButton = () => {
+        const buttons = Array.from(document.querySelectorAll('button'));
+
+        return buttons.find((button) => {
+            const text = (button.textContent || '').trim().toLowerCase();
+
+            return isVisible(button)
+                && (
+                    button.classList.contains('sheet-close-button')
+                    || text === 'tutup'
+                    || text.includes('tutup')
+                );
+        }) || null;
+    };
+
+    const closeParticipantDetail = () => {
+        const closeButton = findCloseButton();
+
+        if (closeButton) {
+            closeButton.click();
+            return true;
+        }
+
+        document.dispatchEvent(new KeyboardEvent('keydown', {
+            key: 'Escape',
+            code: 'Escape',
+            bubbles: true,
+        }));
+
+        return false;
+    };
+
+    const ensureFloatingButton = () => {
+        let button = document.getElementById(MARKER_ID);
+
+        if (!button) {
+            button = document.createElement('button');
+            button.id = MARKER_ID;
+            button.type = 'button';
+            button.className = 'kicap-floating-participant-close';
+            button.setAttribute('aria-label', 'Tutup detail peserta');
+            button.innerHTML = '×';
+
+            button.addEventListener('click', (event) => {
+                event.preventDefault();
+                event.stopPropagation();
+                closeParticipantDetail();
+            }, true);
+
+            document.body.appendChild(button);
+        }
+
+        return button;
+    };
+
+    const findLikelyPanel = () => {
+        const closeButton = findCloseButton();
+
+        if (!closeButton) return null;
+
+        return closeButton.closest([
+            '.participant-detail-preview',
+            '.participant-detail-sheet',
+            '.participant-sheet',
+            '.sheet-panel',
+            '.sheet-content',
+            '.selection-panel',
+            '.selection-participant-sheet'
+        ].join(', '));
+    };
+
+    const refreshFloatingClose = () => {
+        const floatingButton = ensureFloatingButton();
+        const shouldShow = isParticipantDetailOpen() && Boolean(findCloseButton());
+
+        floatingButton.classList.toggle('is-visible', shouldShow);
+    };
+
+    document.addEventListener('pointerdown', (event) => {
+        const target = event.target;
+
+        if (!(target instanceof Element)) return;
+
+        const floatingButton = document.getElementById(MARKER_ID);
+
+        if (!floatingButton || !floatingButton.classList.contains('is-visible')) return;
+
+        if (target.closest('#' + MARKER_ID)) return;
+        if (target.closest('input, textarea, select, label')) return;
+        if (target.closest('.photo-lightbox-panel, .participant-photo-lightbox')) return;
+
+        const panel = findLikelyPanel();
+
+        if (panel && panel.contains(target)) return;
+
+        event.preventDefault();
+        event.stopPropagation();
+
+        closeParticipantDetail();
+    }, true);
+
+    document.addEventListener('keydown', (event) => {
+        if (event.key === 'Escape' && isParticipantDetailOpen()) {
+            closeParticipantDetail();
+        }
+    }, true);
+
+    const observer = new MutationObserver(() => {
+        window.requestAnimationFrame(refreshFloatingClose);
+    });
+
+    observer.observe(document.body, {
+        childList: true,
+        subtree: true,
+        attributes: true,
+        attributeFilter: ['class', 'style'],
+    });
+
+    window.addEventListener('scroll', refreshFloatingClose, true);
+    window.addEventListener('resize', refreshFloatingClose);
+
+    refreshFloatingClose();
+})();
+// KICAP_PARTICIPANT_POPUP_FLOATING_CLOSE_END

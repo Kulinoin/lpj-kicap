@@ -58,3 +58,10 @@ Participant photo visibility fix validated:
 - Foto peserta tampil kembali setelah route proxy v3.
 - Validasi backend memastikan response foto status 200 dan content-type image untuk Admin dan assigned user.
 - File tetap tersimpan di storage/R2, akses disaring oleh auth + assignment event.
+
+## 20260629_135407
+
+Validated participant photo + popup polish:
+- Foto peserta tampil cepat via redirect setelah auth/assignment check.
+- Smoke test route /app dan route foto peserta tidak menghasilkan 500.
+- Runtime polish popup detail peserta disimpan untuk iterasi UI berikutnya.

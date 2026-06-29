@@ -1,5 +1,53 @@
 <?php
 
+// KICAP_PARTICIPANT_PHOTO_FAST_REDIRECT_START
+\Illuminate\Support\Facades\Route::middleware(['auth'])->get('/participant-photo-fast/{participant}/photo', function (
+    \Illuminate\Http\Request $request,
+    \App\Models\ActivityParticipant $participant
+) {
+    $user = $request->user();
+
+    if (! $user) {
+        abort(403);
+    }
+
+    $participant->loadMissing(['lpj.assignedUsers']);
+
+    $isAdmin = method_exists($user, 'isAdmin') && $user->isAdmin();
+    $isDirektur = method_exists($user, 'isDirektur') && $user->isDirektur();
+
+    $isAssignedUser = $participant->lpj
+        && $participant->lpj->assignedUsers
+            ->contains(fn ($assignment): bool => (int) $assignment->user_id === (int) $user->id);
+
+    $isPersonInCharge = $participant->lpj
+        && (int) $participant->lpj->person_in_charge_id === (int) $user->id;
+
+    if (! $isAdmin && ! $isDirektur && ! $isAssignedUser && ! $isPersonInCharge) {
+        abort(403);
+    }
+
+    if (blank($participant->photo_path)) {
+        abort(404);
+    }
+
+    $disk = $participant->photo_disk ?: 'public';
+    $path = $participant->photo_path;
+
+    $publicUrl = app(\App\Services\AppFileStorageService::class)->url($path, $disk);
+
+    if (blank($publicUrl)) {
+        abort(404);
+    }
+
+    return redirect()->away($publicUrl, 302, [
+        'Cache-Control' => 'private, max-age=3600',
+        'X-Kicap-Photo-Proxy' => 'fast-redirect',
+    ]);
+})->name('participant-photo.fast');
+// KICAP_PARTICIPANT_PHOTO_FAST_REDIRECT_END
+
+
 // KICAP_PARTICIPANT_PHOTO_PROXY_V3_START
 \Illuminate\Support\Facades\Route::middleware(['auth'])->get('/participant-photo/{participant}/photo', function (
     \Illuminate\Http\Request $request,
@@ -1280,7 +1328,7 @@ Route::get('/admin/selection/participants/{participant}/detail', function (\Illu
 
     // KICAP_PARTICIPANT_PHOTO_ADMIN_DETAIL_PROXY_01
     if (filled($participant->photo_path)) {
-        $photoUrl = route('participant-photo.proxy.v3', $participant);
+        $photoUrl = route('participant-photo.fast', $participant);
     }
 
     return view('admin.selection-participant-detail', [
@@ -2517,3 +2565,306 @@ Route::get('/kicap-pwa-runtime-polish.js', function () {
     ]);
 })->name('app.participant-photo.show');
 // KICAP_PARTICIPANT_PHOTO_PROXY_END
+
+// KICAP_ADMIN_USER_AVATAR_PROXY_V1
+// Proxy avatar user untuk Admin/Filament.
+// Dipakai agar avatar yang tersimpan di R2/private storage tetap bisa tampil aman di tabel/detail Admin.
+Route::get('/admin/user-avatar/{user}/avatar', function (\App\Models\User $user) {
+    $viewer = auth()->user();
+
+    abort_unless($viewer, 403);
+
+    $viewerRole = (string) ($viewer->role ?? '');
+    abort_unless($viewerRole === 'admin' || (int) $viewer->id === (int) $user->id, 403);
+
+    $attributes = $user->getAttributes();
+
+    $candidateColumns = [
+        'avatar_path',
+        'profile_photo_path',
+        'photo_path',
+        'profile_image_path',
+        'image_path',
+        'avatar',
+        'photo',
+    ];
+
+    $rawPath = null;
+
+    foreach ($candidateColumns as $column) {
+        $value = $attributes[$column] ?? null;
+
+        if (is_string($value) && trim($value) !== '') {
+            $rawPath = trim($value);
+            break;
+        }
+    }
+
+    if (! $rawPath) {
+        foreach (['avatar_url', 'profile_photo_url', 'photo_url'] as $computedColumn) {
+            try {
+                $value = $user->{$computedColumn} ?? null;
+
+                if (is_string($value) && trim($value) !== '' && ! str_contains($value, '/admin/user-avatar/')) {
+                    $rawPath = trim($value);
+                    break;
+                }
+            } catch (\Throwable $e) {
+                // Abaikan accessor yang error.
+            }
+        }
+    }
+
+    $fallback = function () use ($user) {
+        $name = trim((string) ($user->name ?: $user->email ?: 'User'));
+        $parts = preg_split('/\s+/', $name) ?: [];
+        $initials = '';
+
+        foreach ($parts as $part) {
+            if ($part !== '') {
+                $initials .= mb_strtoupper(mb_substr($part, 0, 1));
+            }
+
+            if (mb_strlen($initials) >= 2) {
+                break;
+            }
+        }
+
+        if ($initials === '') {
+            $initials = 'U';
+        }
+
+        $escapedInitials = e($initials);
+        $escapedName = e($name);
+
+        $svg = <<<SVG
+<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 256 256" role="img" aria-label="{$escapedName}">
+  <rect width="256" height="256" rx="128" fill="#e2e8f0"/>
+  <circle cx="128" cy="96" r="48" fill="#1d4ed8"/>
+  <path d="M48 226c13-49 47-77 80-77s67 28 80 77" fill="#14b8a6"/>
+  <text x="128" y="235" text-anchor="middle" font-family="Arial, sans-serif" font-size="36" font-weight="700" fill="#0f172a">{$escapedInitials}</text>
+</svg>
+SVG;
+
+        return response($svg, 200, [
+            'Content-Type' => 'image/svg+xml; charset=UTF-8',
+            'Cache-Control' => 'private, max-age=300',
+        ]);
+    };
+
+    if (! $rawPath) {
+        return $fallback();
+    }
+
+    if (preg_match('/^https?:\/\//i', $rawPath)) {
+        return redirect()->away($rawPath);
+    }
+
+    $cleanPath = ltrim($rawPath, '/');
+
+    $candidates = array_values(array_unique(array_filter([
+        $cleanPath,
+        preg_replace('#^storage/#', '', $cleanPath),
+        preg_replace('#^public/#', '', $cleanPath),
+        preg_replace('#^app/public/#', '', $cleanPath),
+        preg_replace('#^private/#', '', $cleanPath),
+    ])));
+
+    $diskNames = array_values(array_unique(array_filter([
+        'r2',
+        's3',
+        config('filesystems.default'),
+        'public',
+        'local',
+    ])));
+
+    foreach ($diskNames as $diskName) {
+        if (! is_string($diskName) || $diskName === '' || ! config("filesystems.disks.{$diskName}")) {
+            continue;
+        }
+
+        try {
+            $disk = \Illuminate\Support\Facades\Storage::disk($diskName);
+
+            foreach ($candidates as $candidate) {
+                if (! is_string($candidate) || trim($candidate) === '') {
+                    continue;
+                }
+
+                if (! $disk->exists($candidate)) {
+                    continue;
+                }
+
+                $mime = $disk->mimeType($candidate) ?: 'image/jpeg';
+                $stream = $disk->readStream($candidate);
+
+                if (is_resource($stream)) {
+                    return response()->stream(function () use ($stream) {
+                        fpassthru($stream);
+
+                        if (is_resource($stream)) {
+                            fclose($stream);
+                        }
+                    }, 200, [
+                        'Content-Type' => $mime,
+                        'Cache-Control' => 'private, max-age=300',
+                    ]);
+                }
+
+                return response($disk->get($candidate), 200, [
+                    'Content-Type' => $mime,
+                    'Cache-Control' => 'private, max-age=300',
+                ]);
+            }
+        } catch (\Throwable $e) {
+            continue;
+        }
+    }
+
+    return $fallback();
+})->middleware(['web', 'auth'])->name('admin.user-avatar.proxy');
+
+// KICAP_ADMIN_EVENT_DETAIL_CUSTOM_V1
+// Custom detail Event untuk Admin. Lebih aman daripada Filament ViewRecord karena hanya render blade sederhana.
+Route::get('/admin/lpjs/{lpj}/detail', function (\App\Models\Lpj $lpj) {
+    $viewer = auth()->user();
+
+    abort_unless($viewer, 403);
+
+    $role = strtolower((string) ($viewer->role ?? ''));
+    abort_unless(in_array($role, ['admin', 'direktur', 'director'], true), 403);
+
+    $lpjId = (int) $lpj->id;
+
+    $hasTable = fn (string $table): bool => \Illuminate\Support\Facades\Schema::hasTable($table);
+    $hasColumn = fn (string $table, string $column): bool => $hasTable($table) && \Illuminate\Support\Facades\Schema::hasColumn($table, $column);
+
+    $safeCount = function (string $table) use ($lpjId, $hasColumn): int {
+        try {
+            if (! $hasColumn($table, 'lpj_id')) {
+                return 0;
+            }
+
+            return (int) \Illuminate\Support\Facades\DB::table($table)->where('lpj_id', $lpjId)->count();
+        } catch (\Throwable $e) {
+            return 0;
+        }
+    };
+
+    $safeSum = function (array $tables, string $amountColumn = 'amount', ?string $statusColumn = null, ?string $statusValue = null) use ($lpjId, $hasColumn): float {
+        foreach ($tables as $table) {
+            try {
+                if (! $hasColumn($table, 'lpj_id') || ! $hasColumn($table, $amountColumn)) {
+                    continue;
+                }
+
+                $query = \Illuminate\Support\Facades\DB::table($table)->where('lpj_id', $lpjId);
+
+                if ($statusColumn && $statusValue && $hasColumn($table, $statusColumn)) {
+                    $query->where($statusColumn, $statusValue);
+                }
+
+                return (float) $query->sum($amountColumn);
+            } catch (\Throwable $e) {
+                continue;
+            }
+        }
+
+        return 0;
+    };
+
+    $typeName = '-';
+    try {
+        if (! empty($lpj->lpj_type_id) && $hasTable('lpj_types')) {
+            $typeName = (string) (\Illuminate\Support\Facades\DB::table('lpj_types')->where('id', $lpj->lpj_type_id)->value('name') ?: '-');
+        }
+    } catch (\Throwable $e) {
+        $typeName = '-';
+    }
+
+    $picName = '-';
+    try {
+        if (! empty($lpj->person_in_charge_id) && $hasTable('users')) {
+            $picName = (string) (\Illuminate\Support\Facades\DB::table('users')->where('id', $lpj->person_in_charge_id)->value('name') ?: '-');
+        }
+    } catch (\Throwable $e) {
+        $picName = '-';
+    }
+
+    $assignedUsers = collect();
+    try {
+        if ($hasColumn('lpj_assigned_users', 'lpj_id') && $hasColumn('lpj_assigned_users', 'user_id') && $hasTable('users')) {
+            $assignedUsers = \Illuminate\Support\Facades\DB::table('lpj_assigned_users')
+                ->leftJoin('users', 'users.id', '=', 'lpj_assigned_users.user_id')
+                ->where('lpj_assigned_users.lpj_id', $lpjId)
+                ->select([
+                    'users.id',
+                    'users.name',
+                    'users.username',
+                    'users.email',
+                    'users.role',
+                    'lpj_assigned_users.role_label',
+                ])
+                ->orderBy('users.name')
+                ->get();
+        }
+    } catch (\Throwable $e) {
+        $assignedUsers = collect();
+    }
+
+    $latestNotes = collect();
+    try {
+        if ($hasColumn('activity_notes', 'lpj_id')) {
+            $latestNotes = \Illuminate\Support\Facades\DB::table('activity_notes')
+                ->leftJoin('users', 'users.id', '=', 'activity_notes.user_id')
+                ->where('activity_notes.lpj_id', $lpjId)
+                ->select([
+                    'activity_notes.type',
+                    'activity_notes.content',
+                    'activity_notes.created_at',
+                    'users.name as user_name',
+                ])
+                ->orderByDesc('activity_notes.created_at')
+                ->limit(5)
+                ->get();
+        }
+    } catch (\Throwable $e) {
+        $latestNotes = collect();
+    }
+
+    $fundsReceived = (float) ($lpj->total_funds_received ?: 0);
+    if ($fundsReceived <= 0) {
+        $fundsReceived = $safeSum(['lpj_fund_receipts', 'lpj_funds']);
+    }
+
+    $validExpense = (float) ($lpj->total_valid_expense ?: 0);
+    if ($validExpense <= 0) {
+        $validExpense = $safeSum(['lpj_financial_transactions', 'lpj_transactions'], 'amount', 'status', 'valid');
+    }
+
+    $remainingFund = $lpj->total_remaining_fund;
+    if ($remainingFund === null || $remainingFund === '') {
+        $remainingFund = $fundsReceived - $validExpense;
+    }
+
+    $stats = [
+        'participants' => $safeCount('activity_participants'),
+        'documentations' => $safeCount('activity_documentations'),
+        'notes' => $safeCount('activity_notes'),
+        'schedules' => $safeCount('activity_schedules'),
+        'assigned_users' => $assignedUsers->count(),
+        'funds_received' => $fundsReceived,
+        'valid_expense' => $validExpense,
+        'remaining_fund' => (float) $remainingFund,
+    ];
+
+    return view('admin.lpjs.detail', [
+        'lpj' => $lpj,
+        'typeName' => $typeName,
+        'picName' => $picName,
+        'assignedUsers' => $assignedUsers,
+        'latestNotes' => $latestNotes,
+        'stats' => $stats,
+    ]);
+})->middleware(['web', 'auth'])->name('admin.lpjs.detail');
+

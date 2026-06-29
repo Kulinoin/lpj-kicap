@@ -172,3 +172,57 @@ header.home-header .avatar-button span {
     display: inline-grid !important;
     place-items: center !important;
 }
+
+/* Kicap PWA polish: tombol tutup detail peserta tetap mudah dijangkau */
+.selection-panel .sheet-close-button,
+.selection-panel .participant-sheet .sheet-close-button,
+.selection-panel .participant-detail-sheet .sheet-close-button,
+.selection-panel .participant-detail-preview .sheet-close-button {
+    position: sticky !important;
+    bottom: 18px !important;
+    z-index: 30 !important;
+    margin-top: 18px !important;
+    box-shadow: 0 18px 38px rgba(15, 23, 42, 0.22) !important;
+}
+
+.selection-panel .participant-sheet,
+.selection-panel .participant-detail-sheet,
+.selection-panel .participant-detail-preview {
+    padding-bottom: 18px !important;
+}
+
+/* Area scroll popup diberi ruang agar tombol sticky tidak menutup konten terakhir */
+.selection-panel .participant-sheet-panel,
+.selection-panel .sheet-panel,
+.selection-panel .participant-detail-panel {
+    padding-bottom: 84px !important;
+}
+
+
+/* KICAP_PARTICIPANT_POPUP_FLOATING_CLOSE_CSS_START */
+.kicap-floating-participant-close {
+    position: fixed !important;
+    right: 22px !important;
+    bottom: calc(118px + env(safe-area-inset-bottom, 0px)) !important;
+    z-index: 999999 !important;
+    width: 52px !important;
+    height: 52px !important;
+    border: 0 !important;
+    border-radius: 999px !important;
+    background: #0f172a !important;
+    color: #ffffff !important;
+    font-size: 34px !important;
+    line-height: 1 !important;
+    font-weight: 800 !important;
+    display: none !important;
+    align-items: center !important;
+    justify-content: center !important;
+    box-shadow: 0 18px 42px rgba(15, 23, 42, 0.35) !important;
+    cursor: pointer !important;
+    -webkit-tap-highlight-color: transparent !important;
+}
+
+.kicap-floating-participant-close.is-visible {
+    display: flex !important;
+}
+/* KICAP_PARTICIPANT_POPUP_FLOATING_CLOSE_CSS_END */
