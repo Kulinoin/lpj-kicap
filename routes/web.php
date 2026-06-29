@@ -1,5 +1,88 @@
 <?php
 
+// KICAP_PARTICIPANT_PHOTO_PROXY_V3_START
+\Illuminate\Support\Facades\Route::middleware(['auth'])->get('/participant-photo/{participant}/photo', function (
+    \Illuminate\Http\Request $request,
+    \App\Models\ActivityParticipant $participant
+) {
+    $user = $request->user();
+
+    if (! $user) {
+        abort(403);
+    }
+
+    $participant->loadMissing(['lpj.assignedUsers']);
+
+    $isAdmin = method_exists($user, 'isAdmin') && $user->isAdmin();
+    $isDirektur = method_exists($user, 'isDirektur') && $user->isDirektur();
+
+    $isAssignedUser = $participant->lpj
+        && $participant->lpj->assignedUsers
+            ->contains(fn ($assignment): bool => (int) $assignment->user_id === (int) $user->id);
+
+    $isPersonInCharge = $participant->lpj
+        && (int) $participant->lpj->person_in_charge_id === (int) $user->id;
+
+    if (! $isAdmin && ! $isDirektur && ! $isAssignedUser && ! $isPersonInCharge) {
+        abort(403);
+    }
+
+    if (blank($participant->photo_path)) {
+        abort(404);
+    }
+
+    $disk = $participant->photo_disk ?: 'public';
+    $path = $participant->photo_path;
+    $mime = $participant->photo_mime_type ?: 'image/jpeg';
+    $content = null;
+
+    try {
+        $storage = \Illuminate\Support\Facades\Storage::disk($disk);
+
+        if ($storage->exists($path)) {
+            $content = $storage->get($path);
+            $mime = $participant->photo_mime_type ?: ($storage->mimeType($path) ?: $mime);
+        }
+    } catch (\Throwable $e) {
+        report($e);
+    }
+
+    if ($content === null) {
+        try {
+            $publicUrl = app(\App\Services\AppFileStorageService::class)->url($path, $disk);
+
+            if (filled($publicUrl)) {
+                $response = \Illuminate\Support\Facades\Http::timeout(20)
+                    ->withHeaders([
+                        'Accept' => 'image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8',
+                    ])
+                    ->get($publicUrl);
+
+                if ($response->successful() && str_starts_with((string) $response->header('content-type'), 'image/')) {
+                    $content = $response->body();
+                    $mime = (string) $response->header('content-type');
+                }
+            }
+        } catch (\Throwable $e) {
+            report($e);
+        }
+    }
+
+    if ($content === null) {
+        abort(404);
+    }
+
+    $fileName = $participant->photo_original_name ?: ('participant-'.$participant->id.'.jpg');
+
+    return response($content, 200)
+        ->header('Content-Type', $mime)
+        ->header('Content-Disposition', 'inline; filename="'.str_replace('"', '', $fileName).'"')
+        ->header('Cache-Control', 'private, max-age=300')
+        ->header('X-Content-Type-Options', 'nosniff');
+})->name('participant-photo.proxy.v3');
+// KICAP_PARTICIPANT_PHOTO_PROXY_V3_END
+
+
 use App\Models\ActivityNote;
 use App\Models\ActivityDocumentation;
 use App\Models\Lpj;
@@ -1195,6 +1278,11 @@ Route::get('/admin/selection/participants/{participant}/detail', function (\Illu
         ->orderBy('sort_order')
         ->get();
 
+    // KICAP_PARTICIPANT_PHOTO_ADMIN_DETAIL_PROXY_01
+    if (filled($participant->photo_path)) {
+        $photoUrl = route('participant-photo.proxy.v3', $participant);
+    }
+
     return view('admin.selection-participant-detail', [
         'participant' => $participant,
         'stages' => $stages,
@@ -2363,3 +2451,69 @@ Route::get('/kicap-pwa-runtime-polish.js', function () {
     ]);
 });
 // KICAP_ACTIVITY_HISTORY_API_END
+
+
+// KICAP_PARTICIPANT_PHOTO_PROXY_START
+\Illuminate\Support\Facades\Route::middleware(['auth'])->get('/app/participant-photos/{participant}/photo', function (
+    \Illuminate\Http\Request $request,
+    \App\Models\ActivityParticipant $participant
+) {
+    $user = $request->user();
+
+    if (! $user) {
+        abort(403);
+    }
+
+    $participant->loadMissing(['lpj.assignedUsers']);
+
+    $isAdmin = method_exists($user, 'isAdmin') && $user->isAdmin();
+    $isDirektur = method_exists($user, 'isDirektur') && $user->isDirektur();
+
+    $isAssignedUser = $participant->lpj
+        && $participant->lpj->assignedUsers
+            ->contains(fn ($assignment): bool => (int) $assignment->user_id === (int) $user->id);
+
+    $isPersonInCharge = $participant->lpj
+        && (int) $participant->lpj->person_in_charge_id === (int) $user->id;
+
+    if (! $isAdmin && ! $isDirektur && ! $isAssignedUser && ! $isPersonInCharge) {
+        abort(403);
+    }
+
+    if (blank($participant->photo_path)) {
+        abort(404);
+    }
+
+    $disk = $participant->photo_disk ?: 'public';
+    $path = $participant->photo_path;
+
+    if (! \Illuminate\Support\Facades\Storage::disk($disk)->exists($path)) {
+        abort(404);
+    }
+
+    $mime = $participant->photo_mime_type
+        ?: \Illuminate\Support\Facades\Storage::disk($disk)->mimeType($path)
+        ?: 'image/jpeg';
+
+    $stream = \Illuminate\Support\Facades\Storage::disk($disk)->readStream($path);
+
+    if (! is_resource($stream)) {
+        abort(404);
+    }
+
+    $fileName = $participant->photo_original_name ?: ('participant-'.$participant->id.'.jpg');
+
+    return response()->stream(function () use ($stream): void {
+        fpassthru($stream);
+
+        if (is_resource($stream)) {
+            fclose($stream);
+        }
+    }, 200, [
+        'Content-Type' => $mime,
+        'Content-Disposition' => 'inline; filename="'.addslashes($fileName).'"',
+        'Cache-Control' => 'private, max-age=300',
+        'X-Content-Type-Options' => 'nosniff',
+    ]);
+})->name('app.participant-photo.show');
+// KICAP_PARTICIPANT_PHOTO_PROXY_END

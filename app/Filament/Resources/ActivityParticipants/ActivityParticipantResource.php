@@ -106,6 +106,7 @@ class ActivityParticipantResource extends Resource
     {
         return $schema->schema([
             ImageEntry::make('photo_path')
+                ->getStateUsing(fn ($record): ?string => filled($record->photo_path) ? route('participant-photo.proxy.v3', $record) : null)
                 ->label('Foto Peserta')
                 ->disk('public')
                 ->height(280)

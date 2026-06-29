@@ -187,7 +187,7 @@ class ActivitySelectionPayloadService
     private function participantPayload(ActivityParticipant $participant): array
     {
         $photoUrl = filled($participant->photo_path)
-            ? app(AppFileStorageService::class)->url($participant->photo_path, $participant->photo_disk)
+            ? route('participant-photo.proxy.v3', $participant)
             : null;
 
         return [

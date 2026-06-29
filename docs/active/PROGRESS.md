@@ -612,3 +612,11 @@ Catatan validasi:
 - Dokumentasi/lampiran user terkait ikut masuk Activity History.
 - Ditambahkan runtime polish asset dan reset cache PWA.
 - Code-only polish; tidak ada migration, seed, atau reset database.
+
+## 20260629_113056 — Fix Foto Peserta Shared Visibility
+
+- Foto peserta sekarang disajikan melalui proxy Laravel `/participant-photo/{participant}/photo`.
+- Akses foto peserta diizinkan untuk Admin, Direktur, person in charge, dan user yang assigned pada event terkait.
+- Payload PWA selection memakai route proxy `participant-photo.proxy.v3`, bukan URL storage langsung.
+- Proxy memiliki fallback membaca file dari URL public storage/R2 ketika adapter storage gagal mengecek bucket.
+- Fix bersifat code-only; tidak ada migration, seed, reset, atau perubahan data.
