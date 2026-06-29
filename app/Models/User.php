@@ -17,6 +17,7 @@ class User extends Authenticatable implements FilamentUser, HasAvatar
 
     public const ROLE_ADMIN = 'admin';
     public const ROLE_USER = 'user';
+    public const ROLE_DIREKTUR = 'direktur';
 
     protected $fillable = [
         'name',
@@ -75,6 +76,31 @@ class User extends Authenticatable implements FilamentUser, HasAvatar
         return $this->role === self::ROLE_USER;
     }
 
+    public function isDirektur(): bool
+    {
+        return $this->role === self::ROLE_DIREKTUR;
+    }
+
+    public function canAccessPwa(): bool
+    {
+        return $this->is_active && ($this->isUser() || $this->isDirektur());
+    }
+
+    public function canInputPwa(): bool
+    {
+        return $this->is_active && $this->isUser();
+    }
+
+
+    public function jabatanLabel(): string
+    {
+        return match ($this->role) {
+            self::ROLE_ADMIN => 'Admin',
+            self::ROLE_DIREKTUR => 'Direktur',
+            self::ROLE_USER => 'Petugas',
+            default => 'Petugas',
+        };
+    }
     public function createdLpjs(): HasMany
     {
         return $this->hasMany(Lpj::class, 'created_by');
@@ -109,4 +135,32 @@ class User extends Authenticatable implements FilamentUser, HasAvatar
     {
         return $this->hasMany(LpjAdvanceClaim::class);
     }
+    // KICAP_ADMIN_AVATAR_PREVIEW_URL_V1
+    public function getAdminAvatarPreviewUrlAttribute(): ?string
+    {
+        if (! empty($this->profile_photo_path)) {
+            try {
+                $url = app(\App\Services\AppFileStorageService::class)->url(
+                    $this->profile_photo_path,
+                    $this->profile_photo_disk ?: 'public'
+                );
+
+                if (is_string($url) && trim($url) !== '') {
+                    return $url;
+                }
+            } catch (\Throwable $e) {
+                // Fallback ke proxy internal jika resolver storage gagal.
+            }
+        }
+
+        try {
+            return route('admin.user-avatar.proxy', [
+                'user' => $this->getKey(),
+                'v' => optional($this->updated_at)->timestamp,
+            ]);
+        } catch (\Throwable $e) {
+            return url('/admin/user-avatar/' . $this->getKey() . '/avatar');
+        }
+    }
+
 }

@@ -19,6 +19,7 @@ class LpjsTable
     public static function configure(Table $table): Table
     {
         return $table
+            ->recordUrl(fn (\App\Models\Lpj $record): string => route('admin.lpjs.detail', $record))
             ->columns([
                 TextColumn::make('code')
                     ->label('Kode')

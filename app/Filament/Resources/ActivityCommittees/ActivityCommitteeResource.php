@@ -19,6 +19,10 @@ use Filament\Tables\Table;
 
 class ActivityCommitteeResource extends Resource
 {
+    // KICAP_HIDE_COMMITTEE_NAVIGATION
+    // Panitia/Pendamping internal sekarang bersumber dari user yang di-assign ke Event.
+    // Resource lama tetap ada untuk kompatibilitas data, tetapi tidak ditampilkan di sidebar Admin.
+    protected static bool $shouldRegisterNavigation = false;
     protected static ?string $model = ActivityCommittee::class;
 
     protected static ?string $navigationLabel = 'Panitia/Pendamping';

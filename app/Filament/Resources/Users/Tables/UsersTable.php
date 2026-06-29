@@ -2,9 +2,12 @@
 
 namespace App\Filament\Resources\Users\Tables;
 
+use App\Filament\Resources\Users\UserResource;
+use App\Models\User;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
+use Filament\Actions\ViewAction;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\ImageColumn;
 use Filament\Tables\Columns\TextColumn;
@@ -16,51 +19,83 @@ class UsersTable
     {
         return $table
             ->columns([
-                ImageColumn::make('profile_photo_path')
+                ImageColumn::make('admin_avatar_preview_url')
                     ->label('Avatar')
-                    ->disk(fn ($record): string => $record->profile_photo_disk ?: 'public')
-                    ->circular()
-                    ->imageSize(40)
-                    ->defaultImageUrl('/icons/user-avatar-placeholder.svg'),
+                    ->getStateUsing(fn (User $record): ?string => $record->admin_avatar_preview_url)
+                    ->circular(),
+
                 TextColumn::make('name')
                     ->label('Nama')
-                    ->searchable(),
+                    ->searchable()
+                    ->sortable()
+                    ->weight('semibold'),
+
+                TextColumn::make('username')
+                    ->label('Username')
+                    ->searchable()
+                    ->sortable()
+                    ->copyable()
+                    ->placeholder('-'),
+
                 TextColumn::make('email')
                     ->label('Email')
-                    ->searchable(),
-                TextColumn::make('email_verified_at')
-                    ->label('Email Terverifikasi')
-                    ->dateTime()
-                    ->sortable(),
+                    ->searchable()
+                    ->sortable()
+                    ->copyable(),
+
                 TextColumn::make('role')
                     ->label('Role')
                     ->badge()
-                    ->searchable(),
+                    ->formatStateUsing(function (?string $state): string {
+                        $role = strtolower(trim((string) $state));
+
+                        return match ($role) {
+                            'admin' => 'Admin',
+                            'director', 'direktur' => 'Direktur',
+                            'user' => 'Petugas',
+                            default => $state ? \Illuminate\Support\Str::headline(str_replace(['_', '-'], ' ', $state)) : '-',
+                        };
+                    })
+                    ->color(function (?string $state): string {
+                        $role = strtolower(trim((string) $state));
+
+                        return match ($role) {
+                            'admin' => 'warning',
+                            'director', 'direktur' => 'success',
+                            'user' => 'info',
+                            default => 'gray',
+                        };
+                    })
+                    ->sortable(),
+
                 IconColumn::make('is_active')
                     ->label('Aktif')
                     ->boolean(),
-                IconColumn::make('can_create_lpj')
-                    ->label('Buat Event')
-                    ->boolean(),
-                IconColumn::make('can_transfer_balance')
-                    ->label('Transfer Saldo')
-                    ->boolean(),
+
+                TextColumn::make('email_verified_at')
+                    ->label('Email Terverifikasi')
+                    ->dateTime('d M Y H:i')
+                    ->placeholder('-')
+                    ->sortable()
+                    ->toggleable(),
+
                 TextColumn::make('created_at')
-                    ->dateTime()
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
-                TextColumn::make('updated_at')
-                    ->dateTime()
+                    ->label('Dibuat')
+                    ->dateTime('d M Y H:i')
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
-            ->filters([
-                //
+            ->recordUrl(fn (User $record): string => UserResource::getUrl('view', ['record' => $record]))
+            ->actions([
+                ViewAction::make()
+                    ->label('Preview')
+                    ->icon('heroicon-m-eye'),
+
+                EditAction::make()
+                    ->label('Edit')
+                    ->icon('heroicon-m-pencil-square'),
             ])
-            ->recordActions([
-                EditAction::make(),
-            ])
-            ->toolbarActions([
+            ->bulkActions([
                 BulkActionGroup::make([
                     DeleteBulkAction::make(),
                 ]),

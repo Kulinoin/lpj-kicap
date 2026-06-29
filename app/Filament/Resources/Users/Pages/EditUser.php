@@ -24,4 +24,9 @@ class EditUser extends EditRecord
 
         return $data;
     }
+    public function getTitle(): string
+    {
+        return 'Edit User';
+    }
+
 }

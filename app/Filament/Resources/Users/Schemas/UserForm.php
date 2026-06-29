@@ -39,14 +39,16 @@ class UserForm
                 TextInput::make('password')
                     ->label('Password')
                     ->password()
+                    ->helperText('Kosongkan jika password tidak diubah saat edit user.')
                     ->required(fn (string $operation): bool => $operation === 'create')
                     ->dehydrateStateUsing(fn (?string $state): ?string => filled($state) ? $state : null)
                     ->dehydrated(fn (?string $state): bool => filled($state)),
                 Select::make('role')
                     ->label('Role')
                     ->options([
-                        User::ROLE_ADMIN => 'Admin',
-                        User::ROLE_USER => 'User',
+                        'admin' => 'Admin',
+                        'direktur' => 'Direktur',
+                        'user' => 'Petugas',
                     ])
                     ->placeholder('Pilih role')
                     ->required()

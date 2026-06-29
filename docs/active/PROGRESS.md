@@ -604,26 +604,196 @@ Catatan validasi:
 - Menambahkan halaman create/edit Filament untuk Peserta Seleksi, Rundown Event, dan Panitia/Pendamping.
 - Patch code-only: tidak migration, tidak hapus data, tidak menyentuh flow PWA User.
 
-## 20260626_132431 — PWA Activity History & Dashboard Polish
+## 20260626_131612 — PWA Activity History & Dashboard Polish
 
-- Dashboard: nama lembaga dibuat ringkas agar muat 1 baris.
-- Avatar Beranda dan Profil dibuat bulat penuh, foto ikut ter-clip rapi.
-- Activity History profil menampilkan aktivitas user login saja melalui endpoint backend `/api/app/activity-history`.
-- Dokumentasi/lampiran user terkait ikut masuk Activity History.
-- Ditambahkan runtime polish asset dan reset cache PWA.
-- Code-only polish; tidak ada migration, seed, atau reset database.
+- Dashboard: nama lembaga dibuat lebih ringkas agar muat 1 baris.
+- Avatar Beranda dan Profil dibuat bulat penuh dan foto ikut ter-clip rapi.
+- Activity History profil menampilkan aktivitas user login saja.
+- Dokumentasi, lampiran, transaksi, transfer saldo, dana talangan, catatan, peserta/rundown terkait user masuk ke Activity History.
+- Ditambahkan endpoint backend `/api/app/activity-history` agar filter aktivitas user dilakukan dari server, bukan tebak-tebakan frontend.
+- Patch bersifat code-only/runtime polish; tidak ada migration/reset database.
 
-## 20260629_113056 — Fix Foto Peserta Shared Visibility
+## 20260629_115219 — Admin Polish 01 Visual Base V2
 
-- Foto peserta sekarang disajikan melalui proxy Laravel `/participant-photo/{participant}/photo`.
-- Akses foto peserta diizinkan untuk Admin, Direktur, person in charge, dan user yang assigned pada event terkait.
-- Payload PWA selection memakai route proxy `participant-photo.proxy.v3`, bukan URL storage langsung.
-- Proxy memiliki fallback membaca file dari URL public storage/R2 ketika adapter storage gagal mengecek bucket.
-- Fix bersifat code-only; tidak ada migration, seed, reset, atau perubahan data.
+- Menambahkan polish visual global untuk Admin/Filament.
+- Scope hanya tampilan: card, table, section, badge, form, sidebar, modal, dan responsive spacing.
+- Revisi V2 memakai PHP CLI karena container tidak menyediakan python3.
+- Tidak mengubah database, migration, role, PWA, API, atau workflow operasional.
+- Commit/push belum dilakukan, menunggu validasi dan ACC.
 
-## 20260629_135407 — PWA Participant Photo Speed & Popup Polish
+## 20260629_115639 — Rollback Admin Polish 01 Visual Base
 
-- Foto peserta dipercepat dengan route fast redirect `participant-photo.fast` setelah akses user diverifikasi.
-- Payload PWA selection diarahkan ke route fast redirect agar thumbnail peserta lebih cepat dimuat.
-- Runtime polish ditambah untuk kontrol tutup popup detail peserta.
-- Tidak ada migration, seed, reset database, atau perubahan data.
+- Rollback polish visual global Admin/Filament karena tampilan menjadi tidak sesuai.
+- Hook render CSS global `filament.admin-polish-css` dihapus dari AppServiceProvider.
+- File CSS polish global dinonaktifkan dan dipindah ke backup patch.
+- Tidak mengubah database, migration, PWA, API, atau workflow operasional.
+- Commit/push belum dilakukan.
+
+## 20260629_120901 — Admin Polish 02 V2 Fix Users Preview + Avatar
+
+- Melanjutkan patch Users yang berhenti saat register route preview.
+- Route Preview User berhasil ditambahkan secara robust ke UserResource.
+- Tabel Users diarahkan agar klik baris membuka Preview User, bukan Edit.
+- Avatar tabel Users memakai accessor proxy internal untuk menampilkan avatar dari storage/R2.
+- Tidak mengubah database, migration, PWA, API operasional, atau workflow Event.
+- Commit/push belum dilakukan.
+
+## 20260629_121201 — Fix Admin Users Preview Filament V4
+
+- Memperbaiki ViewUser.php agar kompatibel dengan Filament v4.
+- Properti view diubah dari static menjadi non-static: `protected string $view`.
+- Patch tetap scoped ke menu Users.
+- Tidak mengubah database, migration, PWA, API operasional, atau workflow Event.
+- Commit/push belum dilakukan.
+
+## 20260629_122027 — Fix Admin Users Avatar R2 URL
+
+- Memperbaiki avatar tabel Users agar mengambil URL dari AppFileStorageService.
+- Sumber data avatar memakai `profile_photo_path` dan `profile_photo_disk`.
+- Mendukung avatar yang tersimpan di R2 seperti path `event/profile-photos/...`.
+- Fallback proxy tetap tersedia jika user belum memiliki avatar.
+- Tidak mengubah database, migration, PWA, API operasional, atau workflow Event.
+- Commit/push belum dilakukan.
+
+## 20260629_123224 — Admin Users Username Display
+
+- Menambahkan tampilan Username pada tabel Users.
+- Menambahkan Username pada halaman Preview User.
+- Avatar Users tetap memakai URL dari AppFileStorageService/R2.
+- Tidak mengubah database, migration, PWA, API operasional, atau workflow Event.
+- Commit/push belum dilakukan.
+
+## 20260629_123817 — Clean Preview User Layout
+
+- Membersihkan halaman Preview User.
+- Menghapus output mentah username di bawah nama.
+- Username tetap tampil di section Informasi User.
+- Status Akun dipindahkan ke section Aktivitas Akun.
+- Row Email Diverifikasi dihapus agar tampilan lebih clean.
+- Tidak mengubah database, migration, PWA, API operasional, atau workflow Event.
+- Commit/push belum dilakukan.
+
+## 20260629_124105 — Fix Admin Users Role Display
+
+- Memperbaiki mapping tampilan role di tabel Users dan Preview User.
+- Role `director` / `direktur` sekarang tampil sebagai Direktur, bukan User Lapangan.
+- Role yang belum dikenal ditampilkan secara headline agar tidak jatuh menjadi User biasa.
+- Tidak mengubah database, migration, PWA, API operasional, atau workflow Event.
+- Commit/push belum dilakukan.
+
+## 20260629_124738 — Fix Users Create Route + Petugas Label
+
+- Mengubah route Preview User dari `/admin/users/{record}` menjadi `/admin/users/{record}/preview` agar tidak bentrok dengan `/admin/users/create`.
+- Label tampilan role `User Lapangan` diganti menjadi `Petugas`.
+- Tombol `New user` dirapikan menjadi `Tambah User` jika pola file mendukung.
+- Tidak mengubah database, migration, PWA, API operasional, atau workflow Event.
+- Commit/push belum dilakukan.
+
+## 20260629_125046 — Admin Users Form Polish
+
+- Memoles label halaman Tambah/Edit User.
+- Role tampilan dirapikan menjadi Admin, Direktur, dan Petugas.
+- Label field user dibuat lebih manusiawi.
+- Password diberi helper agar lebih jelas saat edit.
+- Tidak mengubah database, migration, PWA, API operasional, atau workflow Event.
+- Commit/push belum dilakukan.
+
+## 20260629_125339 — Admin Event Preview 01
+
+- Menambahkan halaman Preview Event pada resource Semua Event.
+- Klik baris Event diarahkan ke Preview Event, bukan langsung Edit.
+- Preview Event menampilkan ringkasan status, dana, peserta, dokumentasi, catatan, dan petugas assigned.
+- Tombol Edit Event, Print LPJ, dan PDF tetap tersedia di header jika route tersedia.
+- Tidak mengubah database, migration, PWA, API operasional, atau workflow Event.
+- Commit/push belum dilakukan.
+
+## 20260629_125709 — Rollback Admin Event Preview 01
+
+- Rollback Preview Event karena halaman preview menghasilkan error 500 saat diklik.
+- LpjResource dan LpjsTable dikembalikan dari backup sebelum patch.
+- File ViewLpj dan view-lpj dinonaktifkan sementara.
+- Tidak mengubah database, migration, PWA, API operasional, atau data produksi.
+- Commit/push belum dilakukan.
+
+## 20260629_130539 — Admin Event Preview 01 Safe V2
+
+- Menambahkan halaman Preview Event versi aman.
+- Klik baris Event diarahkan ke Preview Event.
+- Preview menampilkan ringkasan event, dana, peserta, dokumentasi, petugas, dan status.
+- Script memakai auto-rollback jika syntax/route/preview menghasilkan error 500.
+- Validasi preview memakai Laravel Tinker agar bootstrap aplikasi benar.
+- Tidak mengubah database, migration, PWA, API operasional, atau data produksi.
+- Commit/push belum dilakukan.
+
+## 20260629_130739 — Emergency Rollback Admin Event Preview 01 Safe V2
+
+- Rollback Preview Event karena aplikasi/browser menghasilkan error 500 setelah patch.
+- LpjResource dan LpjsTable dikembalikan dari backup sebelum patch.
+- ViewLpj dan view-lpj dinonaktifkan/dihapus sementara.
+- Tidak mengubah database, migration, PWA, API operasional, atau data produksi.
+- Commit/push belum dilakukan.
+
+## 20260629_131021 — Admin Custom Event Detail
+
+- Menambahkan custom route detail Event: `/admin/lpjs/{lpj}/detail`.
+- Klik baris Semua Event diarahkan ke detail custom, bukan Filament ViewRecord.
+- Detail menampilkan ringkasan Event, dana, peserta, dokumentasi, petugas, dan catatan terbaru.
+- Script memakai auto-rollback jika syntax/route/render/curl menghasilkan error.
+- Tidak mengubah database, migration, PWA, API operasional, atau data produksi.
+- Commit/push belum dilakukan.
+
+## 20260629_140024 — Admin Event Detail Shell Polish
+
+- Custom Event Detail dibuat lebih terasa sebagai bagian Admin dengan sidebar mini, topbar, dark theme, dan layout dashboard.
+- Tidak kembali memakai Filament ViewRecord agar tetap aman dari error 500 sebelumnya.
+- Tidak mengubah database, migration, PWA, API operasional, atau data produksi.
+- Commit/push belum dilakukan.
+
+## 20260629_141530 — Admin Event Detail Sidebar Polish V2
+
+- Sidebar custom Event Detail dipoles agar lebih mirip navigasi Admin/Kicap Event.
+- Menu dikelompokkan menjadi menu utama, Operasional Seleksi, dan Data Pelaksanaan.
+- Icon navigasi diganti SVG rapi.
+- Tidak mengubah database, migration, PWA, API operasional, atau data produksi.
+- Commit/push belum dilakukan.
+
+## 20260629_141927 — Admin Event Detail 02 Quick Links
+
+- Menambahkan quick links pada detail Event: Peserta, Rundown, Dokumentasi, Catatan, dan Transaksi.
+- Petugas Event dipoles dengan badge peran dan helper bahwa panitia/pendamping mengikuti user assigned.
+- Tidak mengubah database, migration, PWA, API operasional, atau data produksi.
+- Commit/push belum dilakukan.
+
+## 20260629_142421 — Admin Event Detail 03 Assigned Panitia/Pendamping
+
+- Section Petugas Event diganti menjadi Panitia / Pendamping.
+- Data Panitia/Pendamping internal diambil dari user yang di-assign ke event.
+- Quick link dan sidebar menu Panitia/Pendamping ditambahkan dan diarahkan ke section detail.
+- Activity Committees tidak dihapus; namun sumber utama tampilan internal adalah assigned users.
+- Tidak mengubah database, migration, PWA, API operasional, atau data produksi.
+- Commit/push belum dilakukan.
+
+## 20260629_142452 — Admin Event Detail 03 Assigned Panitia/Pendamping
+
+- Section Petugas Event diganti menjadi Panitia / Pendamping.
+- Data Panitia/Pendamping internal diambil dari user yang di-assign ke event.
+- Quick link dan sidebar menu Panitia/Pendamping ditambahkan dan diarahkan ke section detail.
+- Activity Committees tidak dihapus; namun sumber utama tampilan internal adalah assigned users.
+- Tidak mengubah database, migration, PWA, API operasional, atau data produksi.
+- Commit/push belum dilakukan.
+
+## 20260629_143024 — Remove Panitia/Pendamping Shortcut/Menu V2
+
+- Menghapus quick card Panitia/Pendamping dari detail Event.
+- Menghapus sidebar menu Panitia/Pendamping agar tidak membuka halaman/list kosong.
+- Section Panitia / Pendamping tetap ada di detail Event dan tetap bersumber dari assigned users.
+- Tidak mengubah database, migration, PWA, API operasional, atau data produksi.
+- Commit/push belum dilakukan.
+
+## 20260629_143306 — Hide Panitia/Pendamping Sidebar Menu
+
+- Menu Resource Panitia/Pendamping disembunyikan dari sidebar Admin.
+- Data/resource lama tidak dihapus agar aman untuk kompatibilitas.
+- Sumber utama Panitia/Pendamping internal tetap assigned users pada detail Event.
+- Tidak mengubah database, migration, PWA, API operasional, atau data produksi.
+- Commit/push belum dilakukan.
