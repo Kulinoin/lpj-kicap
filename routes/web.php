@@ -2868,3 +2868,216 @@ Route::get('/admin/lpjs/{lpj}/detail', function (\App\Models\Lpj $lpj) {
     ]);
 })->middleware(['web', 'auth'])->name('admin.lpjs.detail');
 
+// KICAP_LPJ_REPORT_MEDIA_ROUTE_V6_BEGIN
+\Illuminate\Support\Facades\Route::get('/lpj-report-media/{path}', function (string $path) {
+    $raw = rawurldecode($path);
+    $raw = trim(str_replace('\\', '/', $raw));
+    $raw = ltrim($raw, '/');
+
+    if ($raw === '' || str_contains($raw, '..')) {
+        abort(404);
+    }
+
+    $clean = $raw;
+
+    foreach ([
+        'storage/app/public/',
+        'storage/app/private/',
+        'storage/app/',
+        'public/storage/',
+        'storage/',
+        'public/',
+        'private/',
+        'app/public/',
+        'app/private/',
+        'app/',
+    ] as $prefix) {
+        if (str_starts_with($clean, $prefix)) {
+            $clean = substr($clean, strlen($prefix));
+        }
+    }
+
+    $makeResponse = function (string $body, ?string $mime = null) {
+        $mime = $mime ?: 'image/jpeg';
+
+        return response($body, 200, [
+            'Content-Type' => $mime,
+            'Cache-Control' => 'public, max-age=31536000',
+        ]);
+    };
+
+    $fileResponse = function (string $file) {
+        $mime = 'image/jpeg';
+
+        if (function_exists('mime_content_type')) {
+            $detected = @mime_content_type($file);
+            if ($detected) {
+                $mime = $detected;
+            }
+        }
+
+        return response()->file($file, [
+            'Content-Type' => $mime,
+            'Cache-Control' => 'public, max-age=31536000',
+        ]);
+    };
+
+    $variants = [$raw, $clean];
+
+    try {
+        if (\Illuminate\Support\Facades\Schema::hasTable('storage_settings')) {
+            $setting = \Illuminate\Support\Facades\DB::table('storage_settings')->orderByDesc('id')->first();
+
+            if ($setting) {
+                $rootPrefix = trim((string) ($setting->root_prefix ?? ''), '/');
+
+                if ($rootPrefix !== '') {
+                    if ($clean === $rootPrefix) {
+                        $withoutRoot = '';
+                    } elseif (str_starts_with($clean, $rootPrefix . '/')) {
+                        $withoutRoot = substr($clean, strlen($rootPrefix) + 1);
+                    } else {
+                        $withoutRoot = $clean;
+                    }
+
+                    if ($withoutRoot !== '') {
+                        $variants[] = $withoutRoot;
+                        $variants[] = $rootPrefix . '/' . $withoutRoot;
+                    }
+
+                    $variants[] = $rootPrefix . '/' . basename($clean);
+                }
+            }
+        }
+    } catch (\Throwable $e) {
+        // Abaikan, lanjut kandidat lain.
+    }
+
+    $variants[] = 'public/' . $clean;
+    $variants[] = 'private/' . $clean;
+    $variants[] = basename($clean);
+
+    $variants = array_values(array_unique(array_filter(array_map(
+        fn ($item) => ltrim(str_replace('\\', '/', (string) $item), '/'),
+        $variants
+    ))));
+
+    // 1) Tetap cek lokal dulu, untuk kompatibilitas.
+    $localCandidates = [];
+
+    foreach ($variants as $variant) {
+        $localCandidates[] = public_path($variant);
+        $localCandidates[] = public_path('storage/' . $variant);
+        $localCandidates[] = storage_path('app/' . $variant);
+        $localCandidates[] = storage_path('app/public/' . $variant);
+        $localCandidates[] = storage_path('app/private/' . $variant);
+    }
+
+    foreach (array_unique($localCandidates) as $file) {
+        if ($file && is_file($file) && is_readable($file)) {
+            return $fileResponse($file);
+        }
+    }
+
+    // 2) Baca Cloudflare R2 dari database storage_settings.
+    try {
+        if (\Illuminate\Support\Facades\Schema::hasTable('storage_settings')) {
+            $setting = \Illuminate\Support\Facades\DB::table('storage_settings')->orderByDesc('id')->first();
+
+            if (
+                $setting
+                && ($setting->provider ?? null) === 'r2'
+                && ! empty($setting->r2_access_key_id)
+                && ! empty($setting->r2_secret_access_key)
+                && ! empty($setting->r2_bucket)
+                && ! empty($setting->r2_endpoint)
+            ) {
+                $disk = \Illuminate\Support\Facades\Storage::build([
+                    'driver' => 's3',
+                    'key' => $setting->r2_access_key_id,
+                    'secret' => $setting->r2_secret_access_key,
+                    'region' => 'auto',
+                    'bucket' => $setting->r2_bucket,
+                    'endpoint' => rtrim($setting->r2_endpoint, '/'),
+                    'use_path_style_endpoint' => true,
+                    'throw' => false,
+                ]);
+
+                foreach ($variants as $variant) {
+                    try {
+                        if (! $disk->exists($variant)) {
+                            continue;
+                        }
+
+                        $mime = 'image/jpeg';
+
+                        try {
+                            $detected = $disk->mimeType($variant);
+                            if ($detected) {
+                                $mime = $detected;
+                            }
+                        } catch (\Throwable $e) {
+                            // Abaikan mime error.
+                        }
+
+                        return $makeResponse($disk->get($variant), $mime);
+                    } catch (\Throwable $e) {
+                        // Coba variant berikutnya.
+                    }
+                }
+
+                // Fallback redirect ke public URL R2/custom domain jika tersedia.
+                if (! empty($setting->r2_public_url)) {
+                    $publicBase = rtrim($setting->r2_public_url, '/');
+
+                    foreach ($variants as $variant) {
+                        $encoded = collect(explode('/', $variant))
+                            ->map(fn ($part) => rawurlencode($part))
+                            ->implode('/');
+
+                        // Redirect kandidat paling masuk akal pertama.
+                        return redirect()->away($publicBase . '/' . $encoded);
+                    }
+                }
+            }
+        }
+    } catch (\Throwable $e) {
+        // Abaikan, lanjut Laravel disk config biasa.
+    }
+
+    // 3) Fallback semua disk Laravel yang terdaftar.
+    foreach (array_keys(config('filesystems.disks') ?: []) as $diskName) {
+        try {
+            $disk = \Illuminate\Support\Facades\Storage::disk($diskName);
+
+            foreach ($variants as $variant) {
+                try {
+                    if (! $disk->exists($variant)) {
+                        continue;
+                    }
+
+                    $mime = 'image/jpeg';
+
+                    try {
+                        $detected = $disk->mimeType($variant);
+                        if ($detected) {
+                            $mime = $detected;
+                        }
+                    } catch (\Throwable $e) {
+                        // Abaikan.
+                    }
+
+                    return $makeResponse($disk->get($variant), $mime);
+                } catch (\Throwable $e) {
+                    // Coba berikutnya.
+                }
+            }
+        } catch (\Throwable $e) {
+            // Disk tidak tersedia.
+        }
+    }
+
+    abort(404, 'LPJ media not found: ' . $clean);
+})->where('path', '.*')->name('kicap.lpj.report.media');
+// KICAP_LPJ_REPORT_MEDIA_ROUTE_V6_END
+

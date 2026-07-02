@@ -77,3 +77,8 @@ Deploy ke VPS mengikuti `docs/deploy/VPS_LPJ_KICAP_ID_DEPLOY.md`, lalu lakukan s
 - Menu Catatan, Operasional, Dokumentasi, dan Keuangan masing-masing berdiri sesuai fungsi.
 - Build frontend PASS.
 - Test fokus role, input, review/finalisasi, dokumentasi, dan report PASS.
+
+## Setelah 20260702_115809
+
+- Uji export PDF final.
+- Jika foto tampil di preview tetapi tidak tampil di PDF, patch engine PDF agar mengambil media melalui route/public URL atau embed base64.

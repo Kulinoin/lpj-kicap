@@ -797,3 +797,14 @@ Catatan validasi:
 - Sumber utama Panitia/Pendamping internal tetap assigned users pada detail Event.
 - Tidak mengubah database, migration, PWA, API operasional, atau data produksi.
 - Commit/push belum dilakukan.
+
+## 20260702_115809 — Format Dokumen LPJ Compact + Media R2
+
+- Format output LPJ dipoles mengikuti contoh LPJ IM Surabaya 2026:
+  - cover tengah formal,
+  - ukuran Letter,
+  - tabel compact,
+  - heading bergaris,
+  - dokumentasi 2 kolom maksimal 8 foto per halaman.
+- Menambahkan route media `/lpj-report-media/{path}` untuk menampilkan dokumentasi dari Cloudflare R2 berdasarkan `storage_settings`.
+- Preview foto sudah terkonfirmasi tampil setelah route media membaca public/R2 storage.

@@ -325,3 +325,11 @@ Catatan:
 - Auto-rollback enabled.
 - No DB/migration.
 - No commit/push.
+
+## 20260702_115809
+
+Patch report LPJ:
+- Template compact report ditambahkan di `resources/views/reports/lpjs/_sample_exact_format.blade.php`.
+- `resources/views/reports/lpj-final.blade.php` diarahkan ke template compact.
+- Route `/lpj-report-media/{path}` ditambahkan untuk dokumentasi R2.
+- Validasi manual: preview LPJ sudah menampilkan foto dokumentasi.
